@@ -134,6 +134,22 @@ class Gdbgui extends React.PureComponent {
     }
     // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'Split'.
+    let middle_sizes = store.get("show_filesystem")
+      ? [30, 40, 29]
+      : [0, 70, 29];
+    try {
+      if (localStorage.hasOwnProperty("middle_panes_sizes")) {
+        // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
+        const cached = JSON.parse(localStorage.getItem("middle_panes_sizes"));
+        if ( Array.isArray(cached) && cached.length === 3 &&
+          cached.every((v: any) => typeof v === "number" && isFinite(v))) {
+          middle_sizes = cached;
+        }
+      }
+    } catch (e) {
+      void e;
+    }
+
     let middle_panes_split_obj = Split(
       ["#folders_view", "#source_code_view", "#controls_sidebar"],
       {
@@ -141,7 +157,11 @@ class Gdbgui extends React.PureComponent {
         minSize: 100,
         cursor: "col-resize",
         direction: "horizontal", // horizontal makes a left/right pane, and a divider running vertically
-        sizes: store.get("show_filesystem") ? [30, 40, 29] : [0, 70, 29] // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
+        sizes: middle_sizes, // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
+        onDragEnd: () => {
+          const sizes = middle_panes_split_obj.getSizes();
+          localStorage.setItem("middle_panes_sizes", JSON.stringify(sizes));
+        }
       }
     );
 

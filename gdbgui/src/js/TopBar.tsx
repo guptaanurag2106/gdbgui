@@ -397,6 +397,8 @@ class TopBar extends React.Component<{}, State> {
                 store
                   .get("middle_panes_split_obj")
                   .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
+                localStorage.setItem("middle_panes_sizes",
+                  JSON.stringify([new_file_explorer_size, new_source_size, new_sidebar_size]));
               }}
             >
               {store.get("show_filesystem") ? "hide filesystem" : "show filesystem"}
