@@ -270,15 +270,46 @@ class Breakpoints extends React.Component {
   }
   render() {
     let breakpoints_jsx = [];
-    for (let b of store.get("breakpoints")) {
+    const breakpoints = store.get("breakpoints");
+    const all_enabled =
+      breakpoints.length > 0 && breakpoints.every((b: any) => b.enabled === "y");
+    const toggle_label = all_enabled ? "disable all breakpoints" : "enable all breakpoints";
+
+    for (let b of breakpoints) {
       // @ts-expect-error ts-migrate(2322) FIXME: Property 'bkpt' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
       breakpoints_jsx.push(<Breakpoint bkpt={b} key={b.number} />);
     }
 
     if (breakpoints_jsx.length) {
-      return breakpoints_jsx;
+      return (
+        <div>
+          <div
+            className="lighttext"
+            style={{ fontSize: "0.9em", paddingLeft: "5px", paddingTop: "2px" }}
+          >
+            <label style={{ fontWeight: "normal", marginBottom: 0 }}>
+              <input
+                type="checkbox"
+                style={{ marginRight: "6px" }}
+                checked={all_enabled}
+                onChange={() => Breakpoints.enable_or_disable_all(all_enabled)}
+              />
+              {toggle_label}
+            </label>
+          </div>
+
+          {breakpoints_jsx}
+        </div>
+      );
     } else {
       return <span className="placeholder">no breakpoints</span>;
+    }
+  }
+  static enable_or_disable_all(all_enabled: boolean) {
+    if (all_enabled) {
+      GdbApi.run_gdb_command(["disable", GdbApi.get_break_list_cmd()]);
+    } else {
+      GdbApi.run_gdb_command(["enable", GdbApi.get_break_list_cmd()]);
     }
   }
   static enable_or_disable_bkpt(checked: any, bkpt_num: any) {
