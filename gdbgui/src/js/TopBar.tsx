@@ -185,10 +185,13 @@ class TopBar extends React.Component<{}, State> {
         "debug_in_reverse",
         "reverse_supported",
         "source_code_state",
+        "show_inline_disassembly",
         "waiting_for_response",
         "show_filesystem",
         "latest_gdbgui_version",
-        "gdbgui_version"
+        "gdbgui_version",
+        "cached_source_files",
+        "fullname_to_render"
       ],
       this.store_update_callback.bind(this)
     );
@@ -296,9 +299,35 @@ class TopBar extends React.Component<{}, State> {
         title="Erase file from local cache and re-fetch it"
         className={"btn btn-default btn-xs " + reload_button_disabled}
       >
-        <span>reload file</span>
+        <span>Reload file</span>
       </button>
     );
+
+    let toggle_inline_disassembly_button = "";
+    let source_file_obj = FileOps.get_source_file_obj_from_cache(
+      store.get("fullname_to_render")
+    );
+    if (
+      source_file_obj &&
+      source_file_obj.assembly &&
+      Object.keys(source_file_obj.assembly).length > 0
+    ) {
+      // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
+      toggle_inline_disassembly_button = (
+        <button
+          onClick={() =>
+            store.set("show_inline_disassembly", !store.get("show_inline_disassembly"))
+          }
+          type="button"
+          title="Show/Hide disassembly"
+          className="btn btn-default btn-xs"
+        >
+          <span>
+            {store.get("show_inline_disassembly") ? "Hide" : "Show"} disassembly
+          </span>
+        </button>
+      );
+    }
 
     let spinner = (
       <span className="" style={{ height: "100%", margin: "5px", width: "14px" }} />
@@ -401,19 +430,25 @@ class TopBar extends React.Component<{}, State> {
                   JSON.stringify([new_file_explorer_size, new_source_size, new_sidebar_size]));
               }}
             >
-              {store.get("show_filesystem") ? "hide filesystem" : "show filesystem"}
+              {store.get("show_filesystem") ? "Hide filesystem" : "Show filesystem"}
             </button>
 
+            {reload_button}
+
             <button
-              onClick={() => FileOps.fetch_assembly_cur_line()}
+              onClick={() => {
+                store.set("show_inline_disassembly", true);
+                FileOps.fetch_assembly_cur_line();
+              }}
               type="button"
               title="fetch disassembly"
               className="btn btn-default btn-xs"
             >
-              <span>fetch disassembly</span>
+              <span>Fetch disassembly</span>
             </button>
 
-            {reload_button}
+            {toggle_inline_disassembly_button}
+
             {toggle_assm_button}
           </div>
 

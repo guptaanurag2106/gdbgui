@@ -29,6 +29,7 @@ class SourceCode extends React.Component<{}, State> {
       "cached_source_files",
       "missing_files",
       "disassembly_for_missing_file",
+      "show_inline_disassembly",
       "line_of_source_to_flash",
       "paused_on_frame",
       "breakpoints",
@@ -403,7 +404,10 @@ class SourceCode extends React.Component<{}, State> {
           line_num_being_rendered,
           line_gdb_is_paused_on
         ),
+        assembly_for_line;
+      if (store.get("show_inline_disassembly")) {
         assembly_for_line = assembly[line_num_being_rendered];
+      }
 
       body.push(
         this._get_source_line(
