@@ -284,7 +284,7 @@ class GdbVariable extends React.Component {
               title="click to change radix"
               style={{ fontSize: "60%" }}
             >
-              base {obj._radix}
+              { obj._radix == -1 ? 'char' : `base ${obj._radix}` }
             </button>
           </span>
         </div>
@@ -298,8 +298,14 @@ class GdbVariable extends React.Component {
     return val;
   }
   static change_radix(obj: any) {
-    if (obj._radix === 16) {
+    if (obj._radix === -1) {
       obj._radix = 2;
+    } else if (obj._radix === 16) {
+      if (obj.is_char) {
+        obj._radix = -1;
+      } else {
+        obj._radix = 2;
+      }
     } else {
       obj._radix += 2;
     }
@@ -544,7 +550,9 @@ class GdbVariable extends React.Component {
       new_obj._radix = 16;
     } else if (!window.isNaN(parseFloat(new_obj.value))) {
       new_obj.values = [parseFloat(new_obj.value)];
-      if (new_obj.is_int) {
+      if (new_obj.is_char) {
+        new_obj._radix = -1; // radix -1 means char but we allow it to be represented as base <x>
+      } else if (new_obj.is_int) {
         new_obj._radix = 10;
       } else {
         new_obj._radix = 0;
@@ -558,6 +566,16 @@ class GdbVariable extends React.Component {
   }
   static _update_numeric_properties(obj: any) {
     let value = obj.value;
+     const stringTypeRe = // TODO: cpp string type
+        /^(?:const\s+)?(?:char|signed\s+char|unsigned\s+char|wchar_t)\s*(?:\*|\[[^\]]*\])(?:\s+const)?$/;
+    if (stringTypeRe.test(obj.type?.trim())) {
+      obj.is_string = true;
+      obj.is_numeric = false;
+      obj.can_plot = false;
+      obj.is_int = false;
+      return;
+    }
+    obj.is_string = false;
     if (obj.value.startsWith("0x")) {
       value = parseInt(obj.value, 16);
     }
@@ -565,9 +583,21 @@ class GdbVariable extends React.Component {
     obj.is_numeric = !window.isNaN(obj._float_value);
     obj.can_plot = obj.is_numeric && obj.expr_type === "expr";
     obj.is_int = obj.is_numeric ? obj._float_value % 1 === 0 : false;
+    const charTypeRe =
+        /^(?:const\s+)?(?:char|signed\s+char|unsigned\s+char|wchar_t)(?:\s+const)?$/;
+    obj.is_char = charTypeRe.test(obj.type?.trim()); // char is also an int
   }
   static _update_radix_values(obj: any) {
     if (obj.is_int) {
+      if (obj.is_char && obj._radix == -1) {
+        const m = obj.value.match(/^[^']*'((?:\\.|[^'])*)'$/);
+        if (!m) {
+          obj.is_char = false;
+        } else {
+          obj._int_value_to_str_in_radix = "'" + m[1] + "'";
+          return;
+        }
+      }
       obj._int_value_decimal = parseInt(obj.value);
       if (obj._radix < 2 || obj._radix > 36) {
         // defensive programming
@@ -578,6 +608,8 @@ class GdbVariable extends React.Component {
       if (obj._radix === 16) {
         obj._int_value_to_str_in_radix = "0x" + obj._int_value_to_str_in_radix;
       }
+    } else if (obj.is_string) {
+      obj._int_value_to_str_in_radix = obj.value;
     }
   }
   /**
