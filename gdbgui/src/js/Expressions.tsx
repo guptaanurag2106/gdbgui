@@ -87,6 +87,7 @@ class Expressions extends React.Component {
       if (trimmed_expr !== "") {
         GdbVariable.create_variable(trimmed_expr, "expr");
       }
+      e.currentTarget.value = "";
     }
   }
 }
