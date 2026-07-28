@@ -202,7 +202,7 @@ class GdbVariable extends React.Component {
         : () => {};
 
     return (
-      <div style={{paddingLeft: '15px'}}>
+      <div style={{paddingLeft: '6px'}}>
         <span onClick={onclick} className={can_be_expanded ? "pointer" : ""}>
           {can_be_expanded ? "+" : ""} {local.name}&nbsp;
         </span>

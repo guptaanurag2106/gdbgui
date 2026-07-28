@@ -389,9 +389,12 @@ td.line_num {
 
 ul.varUL {
   /* padding-top: 0; */
-  padding-left: 15px;
+  padding-left: 6px;
   border: 0;
   margin: 0;
+}
+.varUL ul li {
+  padding-left: 6px;
 }
 /* Show type of variable in lighter text */
 .var_type {

@@ -130,7 +130,7 @@ class Memory extends React.Component<{}, State> {
     let input_style = {
         display: "inline",
         width: "100px",
-        padding: "6px 6px",
+        padding: "6px 15px",
         height: "25px",
         fontSize: "1em"
       },
