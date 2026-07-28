@@ -64,7 +64,7 @@ def run_server(
         protocol = "http://"
         url_with_prefix = "http://" + url
 
-    socketio.server_options["allow_upgrades"] = False
+    socketio.server_options["allow_upgrades"] = True
     socketio.init_app(app)
 
     if testing is False:

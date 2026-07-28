@@ -413,6 +413,7 @@ const GdbApi = {
       cmds.push("-break-insert main");
     }
     cmds.push(GdbApi.get_break_list_cmd());
+    cmds.push("-file-list-exec-source-files"); // Auto fetch source files on load
     return cmds;
   },
   set_assembly_flavor(flavor: string) {
