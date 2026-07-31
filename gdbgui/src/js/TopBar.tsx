@@ -191,9 +191,10 @@ class TopBar extends React.Component<{}, State> {
         "latest_gdbgui_version",
         "gdbgui_version",
         "cached_source_files",
-        "fullname_to_render"
+        "fullname_to_render",
+        "current_theme",
       ],
-      this.store_update_callback.bind(this)
+      this.store_update_callback.bind(this),
     );
 
     this.spinner_timeout = null;
@@ -366,7 +367,12 @@ class TopBar extends React.Component<{}, State> {
     return (
       <div
         id="top"
-        style={{ background: "#f5f6f7", position: "absolute", width: "100%" }}
+        className={this.state.current_theme}
+        style={{
+          background: this.state.current_theme === "monokai" ? "#2d2d2d" : "#f5f6f7",
+          position: "absolute",
+          width: "100%",
+        }}
       >
         <div className="flexrow">
           {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message */}

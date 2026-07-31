@@ -56,15 +56,21 @@ if (debug) {
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'store' does not exist on type 'Window & ... Remove this comment to see the full error message
 window.store = store;
 
-class Gdbgui extends React.PureComponent {
+class Gdbgui extends React.PureComponent<{}, any> {
   componentWillMount() {
     GdbApi.init();
     GlobalEvents.init();
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'
   }
+  constructor() {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
+    super();
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
+    store.connectComponentState(this, ["current_theme"]);
+  }
   render() {
     return (
-      <div className="splitjs_container">
+      <div className={`splitjs_container ${this.state.current_theme || ""}`}>
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message */}
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
@@ -133,16 +139,16 @@ class Gdbgui extends React.PureComponent {
       console.warn(store.getUnwatchedKeys());
     }
     // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'Split'.
-    let middle_sizes = store.get("show_filesystem")
-      ? [30, 40, 29]
-      : [0, 70, 29];
+    let middle_sizes = store.get("show_filesystem") ? [30, 40, 29] : [0, 70, 29];
     try {
       if (localStorage.hasOwnProperty("middle_panes_sizes")) {
         // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
         const cached = JSON.parse(localStorage.getItem("middle_panes_sizes"));
-        if ( Array.isArray(cached) && cached.length === 3 &&
-          cached.every((v: any) => typeof v === "number" && isFinite(v))) {
+        if (
+          Array.isArray(cached) &&
+          cached.length === 3 &&
+          cached.every((v: any) => typeof v === "number" && isFinite(v))
+        ) {
           middle_sizes = cached;
         }
       }
@@ -150,6 +156,7 @@ class Gdbgui extends React.PureComponent {
       void e;
     }
 
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'Split'.
     let middle_panes_split_obj = Split(
       ["#folders_view", "#source_code_view", "#controls_sidebar"],
       {
@@ -161,8 +168,8 @@ class Gdbgui extends React.PureComponent {
         onDragEnd: () => {
           const sizes = middle_panes_split_obj.getSizes();
           localStorage.setItem("middle_panes_sizes", JSON.stringify(sizes));
-        }
-      }
+        },
+      },
     );
 
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'Split'.

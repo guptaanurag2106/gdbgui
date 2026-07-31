@@ -352,9 +352,9 @@ const GdbApi = {
    */
   _get_refresh_state_for_pause_cmds: function() {
     let cmds = [
+      // get list of threads ids
+      constants.IGNORE_ERRORS_TOKEN_STR + "-thread-list-ids",
       // get info on current thread
-      // TODO run -thread-list-ids to store list of thread id's and know
-      // which thread is the current thread
       constants.IGNORE_ERRORS_TOKEN_STR + "-thread-info",
       // print the name, type and value for simple data types,
       // and the name and type for arrays, structures and unions.

@@ -45,7 +45,7 @@ export class FileLink extends React.Component<Props> {
         </span>
 
         <CopyToClipboard content={clipboard_content} />
-        {this.props.num_lines ? `(${this.props.num_lines} lines total)` : ""}
+        {this.props.num_lines ? ` (${this.props.num_lines} lines total)` : ""}
       </div>
     );
   }

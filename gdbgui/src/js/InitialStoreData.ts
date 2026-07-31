@@ -53,6 +53,7 @@ const initial_store_data = {
 
   paused_on_frame: undefined,
   selected_frame_num: 0,
+  thread_ids: undefined,
   current_thread_id: undefined,
   stack: [],
   locals: [],

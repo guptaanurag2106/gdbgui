@@ -4,11 +4,12 @@ import { store } from "statorgfc";
 import GdbApi from "./GdbApi";
 import Memory from "./Memory";
 import { FileLink } from "./Links";
+import Memory from "./Memory";
 import MemoryLink from "./MemoryLink";
 
 class FrameArguments extends React.Component {
   render_frame_arg(frame_arg: any) {
-    return [frame_arg.name, frame_arg.value];
+    return [frame_arg.name, Memory.make_addrs_into_links_react(frame_arg.value)];
   }
 
   render() {
@@ -22,7 +23,7 @@ class FrameArguments extends React.Component {
       <ReactTable
         // @ts-expect-error ts-migrate(2769) FIXME: Property 'data' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
         data={frame_args.map(this.render_frame_arg)}
-        style={{ fontSize: "0.9em", borderWidth: "0" }}
+        style={{ fontSize: "0.9em", borderWidth: "0", margin: "0" }}
       />
     );
   }
@@ -31,16 +32,19 @@ class FrameArguments extends React.Component {
 type ThreadsState = any;
 
 class Threads extends React.Component<{}, ThreadsState> {
+  thread_data: any;
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(this, [
       "threads",
+      "thread_ids",
       "current_thread_id",
       "stack",
-      "selected_frame_num"
+      "selected_frame_num",
     ]);
+    this.thread_data = {}; // per thread table of func, file, addr, args
   }
 
   static select_thread_id(thread_id: any) {
@@ -56,26 +60,41 @@ class Threads extends React.Component<{}, ThreadsState> {
 
   render() {
     if (this.state.threads.length <= 0) {
+      this.thread_data = {};
       return <span className="placeholder" />;
     }
 
     let content = [];
+    let thread_ids = this.state.thread_ids || this.state.threads.map((t: any) => t.id);
+    for (let thread_id of Object.keys(this.thread_data)) {
+      if (thread_ids.indexOf(thread_id) === -1) {
+        delete this.thread_data[thread_id];
+      }
+    }
+
+    for (let thread_id of thread_ids) {
+      for (let thread of this.state.threads) {
+        if (thread.id == thread_id) {
+          this.update_thread_data(thread);
+          break;
+        }
+      }
+    }
 
     for (let thread of this.state.threads) {
       let is_current_thread_being_rendered =
         parseInt(thread.id) === this.state.current_thread_id;
-      let stack = Threads.get_stack_for_thread(
-        thread.frame,
-        this.state.stack,
-        is_current_thread_being_rendered
-      );
+      let stack = this.thread_data[thread.id];
+      if (!stack) {
+        continue;
+      }
       let row_data;
       try {
         row_data = Threads.get_row_data_for_stack(
           stack,
           this.state.selected_frame_num,
           thread.id,
-          is_current_thread_being_rendered
+          is_current_thread_being_rendered,
         );
       } catch (err) {
         row_data = ["unknown", "unknown", "unknown"];
@@ -90,29 +109,79 @@ class Threads extends React.Component<{}, ThreadsState> {
           key={thread.id}
           header={["func", "file", "addr", "args"]}
           classes={["table-bordered", "table-striped"]}
-        />
+        />,
       );
       content.push(<br key={thread.id + "br"} />);
     }
     return <div>{content}</div>;
   }
 
-  static get_stack_for_thread(
-    cur_frame: any,
-    stack_data: any,
-    is_current_thread_being_rendered: any
-  ) {
-    // each thread provides only the frame that it's paused on (cur_frame).
-    // we also have the output of `-stack-list-frames` (stack_data), which
-    // is the full stack of the selected thread
-    if (is_current_thread_being_rendered) {
-      for (let frame of stack_data) {
-        if (frame && cur_frame && frame.addr === cur_frame.addr) {
-          return stack_data;
-        }
+  update_thread_data(thread: any) {
+    let thread_id = thread.id;
+    if (parseInt(thread_id) === this.state.current_thread_id) {
+      let stack = this.get_current_thread_stack(thread);
+      if (stack) {
+        this.thread_data[thread_id] = stack;
+      } else if (!this.thread_data[thread_id] && thread.frame) {
+        this.thread_data[thread_id] = [thread.frame];
+      }
+    } else if (!this.thread_data[thread_id] && thread.frame) {
+      this.thread_data[thread_id] = [thread.frame];
+    }
+  }
+
+  get_current_thread_stack(thread: any) {
+    if (!thread.frame || !Array.isArray(this.state.stack)) {
+      return null;
+    }
+
+    let current_frame_index = -1;
+    for (let i = 0; i < this.state.stack.length; i++) {
+      if (this.state.stack[i] && this.state.stack[i].addr === thread.frame.addr) {
+        current_frame_index = i;
+        break;
       }
     }
-    return [cur_frame];
+
+    if (current_frame_index === -1) {
+      return null;
+    }
+
+    let previous_stack = this.thread_data[thread.id] || [];
+    let stack = this.state.stack.map((frame: any) => {
+      let previous_frame = Threads.get_matching_previous_frame(frame, previous_stack);
+      return Object.assign(
+        {},
+        frame,
+        previous_frame && previous_frame.args
+          ? {
+              args: previous_frame.args,
+            }
+          : {},
+      );
+    });
+    stack[current_frame_index] = Object.assign({}, stack[current_frame_index], {
+      args: thread.frame.args,
+    });
+    return stack;
+  }
+
+  static get_matching_previous_frame(frame: any, previous_stack: any) {
+    for (let previous_frame of previous_stack) {
+      if (previous_frame && previous_frame.addr === frame.addr) {
+        return previous_frame;
+      }
+    }
+    for (let previous_frame of previous_stack) {
+      if (
+        previous_frame &&
+        previous_frame.func === frame.func &&
+        previous_frame.fullname === frame.fullname
+      ) {
+        return previous_frame;
+      }
+    }
+    return null;
   }
 
   static get_thread_header(thread: any, is_current_thread_being_rendered: any) {
@@ -162,7 +231,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     is_selected_frame: any,
     thread_id: any,
     is_current_thread_being_rendered: any,
-    frame_num: any
+    frame_num: any,
   ) {
     let onclick;
     let classes = [];
@@ -196,7 +265,7 @@ class Threads extends React.Component<{}, ThreadsState> {
       <FileLink fullname={frame.fullname} file={frame.file} line={frame.line} />,
       <MemoryLink addr={frame.addr} />,
       // @ts-expect-error ts-migrate(2769) FIXME: Property 'args' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
-      <FrameArguments args={frame.args} />
+      <FrameArguments args={frame.args} />,
     ];
   }
 
@@ -204,7 +273,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     stack: any,
     selected_frame_num: any,
     thread_id: any,
-    is_current_thread_being_rendered: any
+    is_current_thread_being_rendered: any,
   ) {
     let row_data = [];
     let frame_num = 0;
@@ -217,8 +286,8 @@ class Threads extends React.Component<{}, ThreadsState> {
           is_selected_frame,
           thread_id,
           is_current_thread_being_rendered,
-          frame_num
-        )
+          frame_num,
+        ),
       );
       frame_num++;
     }
@@ -233,11 +302,18 @@ class Threads extends React.Component<{}, ThreadsState> {
     store.set("paused_on_frame", stack[store.get("selected_frame_num") || 0]);
     store.set(
       "fullname_to_render",
-      store.get("paused_on_frame") ? store.get("paused_on_frame").fullname : {}
+      store.get("paused_on_frame") ? store.get("paused_on_frame").fullname : {},
     );
     store.set("line_of_source_to_flash", parseInt(store.get("paused_on_frame").line));
     store.set("current_assembly_address", store.get("paused_on_frame").addr);
     store.set("make_current_line_visible", true);
+  }
+  static update_thread_ids(thread_id: string | string[]) {
+    if (typeof thread_id == "string") {
+      store.set("thread_ids", [thread_id]);
+    } else {
+      store.set("thread_ids", thread_id);
+    }
   }
   set_thread_id(id: any) {
     store.set("current_thread_id", parseInt(id));

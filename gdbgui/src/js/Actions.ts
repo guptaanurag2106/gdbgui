@@ -12,7 +12,7 @@ const Actions = {
     store.set("line_of_source_to_flash", undefined);
     store.set("paused_on_frame", undefined);
     store.set("selected_frame_num", 0);
-    store.set("current_thread_id", undefined);
+    store.set("thread_ids", undefined);
     store.set("stack", []);
     store.set("threads", []);
     Memory.clear_cache();

@@ -3,6 +3,7 @@
  * in the source code
  */
 
+import { store } from "statorgfc";
 import React from "react";
 
 import Breakpoints from "./Breakpoints";
@@ -86,7 +87,8 @@ class Collapser extends React.Component<{}, CollapserState> {
   render() {
     let style = {
       height: this.state.autosize ? "auto" : this.state.height_px + "px",
-      overflow: this.state.autosize ? "visible" : "auto"
+      overflow: this.state.autosize ? "visible" : "auto",
+      padding: "0 6px",
     };
 
     let reset_size_button = "";
@@ -161,6 +163,14 @@ class Collapser extends React.Component<{}, CollapserState> {
 }
 
 class RightSidebar extends React.Component {
+  constructor() {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
+    super();
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
+    store.connectComponentState(this, [
+        "current_theme"
+    ]);
+  }
   render() {
     let input_style = {
         display: "inline",
@@ -181,7 +191,7 @@ class RightSidebar extends React.Component {
 
     return (
       <div
-        className="content"
+        className={`content ${this.state.current_theme}`}
         onMouseUp={onmouseup_in_parent_callback}
         onMouseMove={onmousemove_in_parent_callback}
       >
@@ -214,7 +224,7 @@ class RightSidebar extends React.Component {
         />
 
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message */}
-        <Collapser title="threads" content={<Threads />} />
+        <Collapser title="threads" collapsed={false} content={<Threads />} />
 
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message */}
         <Collapser id="locals" title="local variables" content={<Locals />} />
@@ -223,6 +233,7 @@ class RightSidebar extends React.Component {
         <Collapser
           // @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message
           title="Tree"
+          collapsed={true} 
           content={
             <div>
               <input
@@ -242,17 +253,18 @@ class RightSidebar extends React.Component {
           }
         />
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message */}
-        <Collapser id="memory" title="memory" content={<Memory />} />
+        <Collapser id="memory" title="memory" collapsed={true} content={<Memory />} />
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message */}
         <Collapser title="breakpoints" content={<Breakpoints />} />
-        <Collapser
-          // @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message
-          title="signals"
-          // @ts-expect-error ts-migrate(2322) FIXME: Property 'signals' does not exist on type 'Intrins... Remove this comment to see the full error message
-          content={<InferiorProgramInfo signals={this.props.signals} />}
-        />
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message */}
         <Collapser title="registers" collapsed={true} content={<Registers />} />
+        <Collapser
+        // @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message
+        title="signals"
+        collapsed={true}
+        // @ts-expect-error ts-migrate(2322) FIXME: Property 'signals' does not exist on type 'Intrins... Remove this comment to see the full error message
+        content={<InferiorProgramInfo signals={this.props.signals} />}
+        />
 
         {mi_output}
       </div>

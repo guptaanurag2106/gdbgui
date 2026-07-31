@@ -54,6 +54,10 @@ td {
   /* glyphicons are too bold, make them lighter*/
   color: #848484;
 }
+.glyphicon-book {
+  /* glyphicons are too bold, make them lighter*/
+  margin-left: 4px;
+}
 .visibility_toggler {
   cursor: pointer;
 }
@@ -72,6 +76,9 @@ td {
   display: flex;
   flex-direction: column;
 }
+.collapser {
+    margin: 0 0 10px 0;
+}
 /* components get their own titlebars */
 .titlebar {
   width: 100%;
@@ -80,6 +87,7 @@ td {
   border-color: #c3c3c3;
   border-width: 1px;
   border-style: solid;
+  padding: 2px 1px;
 }
 .pointer {
   cursor: pointer;
@@ -112,6 +120,7 @@ td {
 }
 .highlight {
   background: rgba(255, 255, 0, 0.5) !important;
+  color: #333;
 }
 div.breakpoint {
   border: solid;
