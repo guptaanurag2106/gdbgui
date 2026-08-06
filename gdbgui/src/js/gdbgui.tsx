@@ -185,22 +185,25 @@ class Gdbgui extends React.PureComponent<{}, any> {
     // Fetch the latest version only if using in normal mode. If debugging, we tend to
     // refresh quite a bit, which might make too many requests to github and cause them
     // to block our ip? Either way it just seems weird to make so many ajax requests.
-    if (!store.get("debug")) {
-      // fetch version
-      $.ajax({
-        url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
-        cache: false,
-        method: "GET",
-        success: data => {
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-          store.set("latest_gdbgui_version", _.trim(data));
-        },
-        error: data => {
-          void data;
-          store.set("latest_gdbgui_version", "(could not contact server)");
-        }
-      });
-    }
+    // TODO: commented for now as the only subscriber to `latest_gdbgui_version`
+    // is TopBar.tsx, which uses it in `needs_to_update_gdbgui_version` to see if you need to upgrade,
+    // doesn't ever do anything with that info (the function is never called)
+    // if (!store.get("debug")) {
+    //   // fetch version
+    //   $.ajax({
+    //     url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
+    //     cache: false,
+    //     method: "GET",
+    //     success: data => {
+    //       // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
+    //       store.set("latest_gdbgui_version", _.trim(data));
+    //     },
+    //     error: data => {
+    //       void data;
+    //       store.set("latest_gdbgui_version", "(could not contact server)");
+    //     }
+    //   });
+    // }
   }
 }
 

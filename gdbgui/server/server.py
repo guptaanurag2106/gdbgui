@@ -1,5 +1,7 @@
 import os
 import socket
+import threading
+import time
 import webbrowser
 
 from .constants import DEFAULT_HOST, DEFAULT_PORT, colorize
@@ -30,6 +32,19 @@ def get_extra_files():
                         if skipfile not in filepath:
                             extra_files.append(filepath)
     return extra_files
+
+
+def wait_and_open_browser(browsername, url, host, port):
+    # to not just race against flask starting we can try to connect to the host,port
+    # with small sleep until it connects
+    while True:
+        try:
+            with socket.create_connection((host, port), timeout=0.1):
+                break
+        except OSError:
+            time.sleep(0.02)
+    b = webbrowser.get(browsername) if browsername else webbrowser
+    b.open_new_tab(url)
 
 
 def run_server(
@@ -81,8 +96,11 @@ def run_server(
             args = (browsertext,) + url
             text = ("Opening gdbgui with %s at " + protocol + "%s:%d") % args
             print(colorize(text))
-            b = webbrowser.get(browsername) if browsername else webbrowser
-            b.open(url_with_prefix)
+            threading.Thread(
+                target=wait_and_open_browser,
+                args=(browsername, url_with_prefix, host, port),
+                daemon=True,
+            ).start()
         else:
             print(colorize(f"View gdbgui at {protocol}{url[0]}:{url[1]}"))
         print(
