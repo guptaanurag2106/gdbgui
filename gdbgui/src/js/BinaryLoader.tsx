@@ -3,6 +3,7 @@ import constants from "./constants";
 import Actions from "./Actions";
 import Util from "./Util";
 import ToolTipTourguide from "./ToolTipTourguide";
+import CompletionDropdown from "./CompletionDropdown";
 
 const TARGET_TYPES = {
   file: "file",
@@ -117,15 +118,14 @@ class BinaryLoader extends React.Component<{}, State> {
             </button>
           </div>
 
-          <input
-            type="text"
+          <CompletionDropdown
+            initialValue={this.state.user_input}
+            list={this.state.past_binaries}
             placeholder={placeholder}
-            list="past_binaries"
-            style={{ fontFamily: "courier" }}
-            className="form-control"
-            onKeyUp={this.onkeyup_user_input.bind(this)}
+            showAllOnEmpty
             onChange={this.onchange_user_inpu.bind(this)}
-            value={this.state.user_input}
+            onSelect={this.onselect_user_input.bind(this)}
+            onSubmit={this.click_set_target_app.bind(this)}
           />
         </div>
         <ToolTipTourguide
@@ -164,11 +164,6 @@ class BinaryLoader extends React.Component<{}, State> {
             </div>
           }
         />
-        <datalist id="past_binaries">
-          {this.state.past_binaries.map((b: any, i: any) => (
-            <option key={i}>{b}</option>
-          ))}
-        </datalist>
       </form>
     );
   }
@@ -178,19 +173,17 @@ class BinaryLoader extends React.Component<{}, State> {
       this.set_target_app();
     }
   }
-  onkeyup_user_input(e: any) {
-    if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-      this.set_target_app();
-    }
-  }
-  onchange_user_inpu(e: any) {
+  onchange_user_inpu(text: string) {
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
     if (initial_data.using_windows) {
       // replace backslashes with forward slashes when using windows
-      this.setState({ user_input: e.target.value.replace(/\\/g, "/") });
+      this.setState({ user_input: text.replace(/\\/g, "/") });
     } else {
-      this.setState({ user_input: e.target.value });
+      this.setState({ user_input: text });
     }
+  }
+  onselect_user_input(text: string) {
+    this.setState({ user_input: text });
   }
   click_set_target_app() {
     this.set_target_app();

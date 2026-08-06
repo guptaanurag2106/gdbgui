@@ -70,7 +70,7 @@ class FoldersView extends React.Component<{}, State> {
         </button>
 
         <div style={{ width: "100%" }}>
-          <SourceFileAutocomplete />
+          <SourceFileAutocomplete file_paths={this.state.source_file_paths} />
         </div>
         <div role="group" className="btn-group btn-group" style={{ padding: "4px" }}>
           <button className="btn btn-xs btn-default" onClick={this.expand_all}>
