@@ -2,7 +2,6 @@ import React from "react";
 import ReactTable from "./ReactTable";
 import { store } from "statorgfc";
 import GdbApi from "./GdbApi";
-import Memory from "./Memory";
 import { FileLink } from "./Links";
 import Memory from "./Memory";
 import MemoryLink from "./MemoryLink";
