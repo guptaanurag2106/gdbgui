@@ -202,7 +202,7 @@ class GdbVariable extends React.Component {
         : () => {};
 
     return (
-      <div style={{paddingLeft: '6px'}}>
+      <div style={{ paddingLeft: "6px" }}>
         <span onClick={onclick} className={can_be_expanded ? "pointer" : ""}>
           {can_be_expanded ? "+" : ""} {local.name}&nbsp;
         </span>
@@ -284,7 +284,7 @@ class GdbVariable extends React.Component {
               title="click to change radix"
               style={{ fontSize: "60%" }}
             >
-              { obj._radix == -1 ? 'char' : `base ${obj._radix}` }
+              {obj._radix == -1 ? "char" : `base ${obj._radix}`}
             </button>
           </span>
         </div>
@@ -566,8 +566,7 @@ class GdbVariable extends React.Component {
   }
   static _update_numeric_properties(obj: any) {
     let value = obj.value;
-     const stringTypeRe = // TODO: cpp string type
-        /^(?:const\s+)?(?:char|signed\s+char|unsigned\s+char|wchar_t)\s*(?:\*|\[[^\]]*\])(?:\s+const)?$/;
+    const stringTypeRe = /^(?:const\s+)?(?:char|signed\s+char|unsigned\s+char|wchar_t)\s*(?:\*|\[[^\]]*\])(?:\s+const)?$/; // TODO: cpp string type
     if (stringTypeRe.test(obj.type?.trim())) {
       obj.is_string = true;
       obj.is_numeric = false;
@@ -583,8 +582,7 @@ class GdbVariable extends React.Component {
     obj.is_numeric = !window.isNaN(obj._float_value);
     obj.can_plot = obj.is_numeric && obj.expr_type === "expr";
     obj.is_int = obj.is_numeric ? obj._float_value % 1 === 0 : false;
-    const charTypeRe =
-        /^(?:const\s+)?(?:char|signed\s+char|unsigned\s+char|wchar_t)(?:\s+const)?$/;
+    const charTypeRe = /^(?:const\s+)?(?:char|signed\s+char|unsigned\s+char|wchar_t)(?:\s+const)?$/;
     obj.is_char = charTypeRe.test(obj.type?.trim()); // char is also an int
   }
   static _update_radix_values(obj: any) {

@@ -168,8 +168,8 @@ class Gdbgui extends React.PureComponent<{}, any> {
         onDragEnd: () => {
           const sizes = middle_panes_split_obj.getSizes();
           localStorage.setItem("middle_panes_sizes", JSON.stringify(sizes));
-        },
-      },
+        }
+      }
     );
 
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'Split'.

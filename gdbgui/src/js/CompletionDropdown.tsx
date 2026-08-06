@@ -178,7 +178,10 @@ class CompletionDropdown extends React.Component<
         const transposition = H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1);
 
         H[i + 1][j + 1] = Math.min(
-          H[i][j] + cost, H[i + 1][j] + 1, H[i][j + 1] + 1, transposition
+          H[i][j] + cost,
+          H[i + 1][j] + 1,
+          H[i][j + 1] + 1,
+          transposition
         );
       }
 

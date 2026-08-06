@@ -8,7 +8,7 @@ import glob
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
-python_version = ["3.13"]
+python_version = ["3.14"]
 
 prettier_command = [
     "npx",

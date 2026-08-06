@@ -192,9 +192,9 @@ class TopBar extends React.Component<{}, State> {
         "gdbgui_version",
         "cached_source_files",
         "fullname_to_render",
-        "current_theme",
+        "current_theme"
       ],
-      this.store_update_callback.bind(this),
+      this.store_update_callback.bind(this)
     );
 
     this.spinner_timeout = null;
@@ -371,7 +371,7 @@ class TopBar extends React.Component<{}, State> {
         style={{
           background: this.state.current_theme === "monokai" ? "#2d2d2d" : "#f5f6f7",
           position: "absolute",
-          width: "100%",
+          width: "100%"
         }}
       >
         <div className="flexrow">
@@ -432,8 +432,14 @@ class TopBar extends React.Component<{}, State> {
                 store
                   .get("middle_panes_split_obj")
                   .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
-                localStorage.setItem("middle_panes_sizes",
-                  JSON.stringify([new_file_explorer_size, new_source_size, new_sidebar_size]));
+                localStorage.setItem(
+                  "middle_panes_sizes",
+                  JSON.stringify([
+                    new_file_explorer_size,
+                    new_source_size,
+                    new_sidebar_size
+                  ])
+                );
               }}
             >
               {store.get("show_filesystem") ? "Hide filesystem" : "Show filesystem"}

@@ -116,7 +116,7 @@ class InferiorProgramInfo extends React.Component<{}, State> {
       </button>
     );
     return (
-      <div style={{paddingLeft: "6px"}}>
+      <div style={{ paddingLeft: "6px" }}>
         send&nbsp;
         {this.get_dropdown()}
         &nbsp;to&nbsp;

@@ -41,7 +41,7 @@ class Threads extends React.Component<{}, ThreadsState> {
       "thread_ids",
       "current_thread_id",
       "stack",
-      "selected_frame_num",
+      "selected_frame_num"
     ]);
     this.thread_data = {}; // per thread table of func, file, addr, args
   }
@@ -93,7 +93,7 @@ class Threads extends React.Component<{}, ThreadsState> {
           stack,
           this.state.selected_frame_num,
           thread.id,
-          is_current_thread_being_rendered,
+          is_current_thread_being_rendered
         );
       } catch (err) {
         row_data = ["unknown", "unknown", "unknown"];
@@ -108,7 +108,7 @@ class Threads extends React.Component<{}, ThreadsState> {
           key={thread.id}
           header={["func", "file", "addr", "args"]}
           classes={["table-bordered", "table-striped"]}
-        />,
+        />
       );
       content.push(<br key={thread.id + "br"} />);
     }
@@ -154,13 +154,13 @@ class Threads extends React.Component<{}, ThreadsState> {
         frame,
         previous_frame && previous_frame.args
           ? {
-              args: previous_frame.args,
+              args: previous_frame.args
             }
-          : {},
+          : {}
       );
     });
     stack[current_frame_index] = Object.assign({}, stack[current_frame_index], {
-      args: thread.frame.args,
+      args: thread.frame.args
     });
     return stack;
   }
@@ -230,7 +230,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     is_selected_frame: any,
     thread_id: any,
     is_current_thread_being_rendered: any,
-    frame_num: any,
+    frame_num: any
   ) {
     let onclick;
     let classes = [];
@@ -264,7 +264,7 @@ class Threads extends React.Component<{}, ThreadsState> {
       <FileLink fullname={frame.fullname} file={frame.file} line={frame.line} />,
       <MemoryLink addr={frame.addr} />,
       // @ts-expect-error ts-migrate(2769) FIXME: Property 'args' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
-      <FrameArguments args={frame.args} />,
+      <FrameArguments args={frame.args} />
     ];
   }
 
@@ -272,7 +272,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     stack: any,
     selected_frame_num: any,
     thread_id: any,
-    is_current_thread_being_rendered: any,
+    is_current_thread_being_rendered: any
   ) {
     let row_data = [];
     let frame_num = 0;
@@ -285,8 +285,8 @@ class Threads extends React.Component<{}, ThreadsState> {
           is_selected_frame,
           thread_id,
           is_current_thread_being_rendered,
-          frame_num,
-        ),
+          frame_num
+        )
       );
       frame_num++;
     }
@@ -301,7 +301,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     store.set("paused_on_frame", stack[store.get("selected_frame_num") || 0]);
     store.set(
       "fullname_to_render",
-      store.get("paused_on_frame") ? store.get("paused_on_frame").fullname : {},
+      store.get("paused_on_frame") ? store.get("paused_on_frame").fullname : {}
     );
     store.set("line_of_source_to_flash", parseInt(store.get("paused_on_frame").line));
     store.set("current_assembly_address", store.get("paused_on_frame").addr);

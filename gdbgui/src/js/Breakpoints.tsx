@@ -273,7 +273,9 @@ class Breakpoints extends React.Component {
     const breakpoints = store.get("breakpoints");
     const all_enabled =
       breakpoints.length > 0 && breakpoints.every((b: any) => b.enabled === "y");
-    const toggle_label = all_enabled ? "disable all breakpoints" : "enable all breakpoints";
+    const toggle_label = all_enabled
+      ? "disable all breakpoints"
+      : "enable all breakpoints";
 
     for (let b of breakpoints) {
       // @ts-expect-error ts-migrate(2322) FIXME: Property 'bkpt' does not exist on type 'IntrinsicA... Remove this comment to see the full error message

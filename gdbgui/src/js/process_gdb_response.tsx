@@ -19,7 +19,7 @@ import Modal from "./GdbguiModal";
 import Actions from "./Actions";
 import { processFeatures } from "./processFeatures";
 
-const process_gdb_response = function (response_array: any) {
+const process_gdb_response = function(response_array: any) {
   /**
    * Determines if response is an error and client does not want to be notified of errors for this particular response.
    * @param response: gdb mi response object
@@ -79,7 +79,7 @@ const process_gdb_response = function (response_array: any) {
             </a>
             <span> to fix this error</span>
           </React.Fragment>,
-          constants.console_entry_type.GDBGUI_OUTPUT_RAW,
+          constants.console_entry_type.GDBGUI_OUTPUT_RAW
         );
         continue;
       }
@@ -98,7 +98,7 @@ const process_gdb_response = function (response_array: any) {
             (b: any) =>
               new_bkpt.fullname === b.fullname &&
               new_bkpt.func === b.func &&
-              new_bkpt.line === b.line,
+              new_bkpt.line === b.line
           )
           .map((b: any) => GdbApi.get_delete_break_cmd(b.number));
         GdbApi.run_gdb_command(cmds);
@@ -137,7 +137,7 @@ const process_gdb_response = function (response_array: any) {
         // filter out empty names
         store.set(
           "register_names",
-          names.filter((name: any) => name !== ""),
+          names.filter((name: any) => name !== "")
         );
       }
       if ("register-values" in r.payload) {
@@ -151,7 +151,7 @@ const process_gdb_response = function (response_array: any) {
         if (r.payload.files.length > 0) {
           // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
           let source_file_paths = _.uniq(
-            r.payload.files.map((f: any) => f.fullname),
+            r.payload.files.map((f: any) => f.fullname)
           ).sort();
           store.set("source_file_paths", source_file_paths);
 
@@ -163,9 +163,9 @@ const process_gdb_response = function (response_array: any) {
             if (gdb_version_array[0] == 7 && gdb_version_array[1] == 12) {
               Actions.add_console_entries(
                 `Warning: Due to a bug in gdb version ${store.get(
-                  "gdb_version",
+                  "gdb_version"
                 )}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`,
-                constants.console_entry_type.STD_ERR,
+                constants.console_entry_type.STD_ERR
               );
               store.set("can_fetch_register_values", false);
             }
@@ -175,7 +175,7 @@ const process_gdb_response = function (response_array: any) {
           store.set("language", language);
         } else {
           store.set("source_file_paths", [
-            "Either no executable is loaded or the executable was compiled without debug symbols.",
+            "Either no executable is loaded or the executable was compiled without debug symbols."
           ]);
 
           if (store.get("inferior_binary_path")) {
@@ -191,7 +191,7 @@ const process_gdb_response = function (response_array: any) {
                 <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">
                   http://www.delorie.com/gnu/docs/gdb/gdb_17.html
                 </a>
-              </div>,
+              </div>
             );
           }
         }
@@ -199,7 +199,7 @@ const process_gdb_response = function (response_array: any) {
       if ("memory" in r.payload) {
         Memory.add_value_to_cache(
           r.payload.memory[0].begin,
-          r.payload.memory[0].contents,
+          r.payload.memory[0].contents
         );
       }
       // gdb returns local variables as "variables" which is confusing, because you can also create variables
@@ -245,7 +245,7 @@ const process_gdb_response = function (response_array: any) {
         r.payload,
         r.stream === "stderr"
           ? constants.console_entry_type.STD_ERR
-          : constants.console_entry_type.STD_OUT,
+          : constants.console_entry_type.STD_OUT
       );
       if (store.get("gdb_version") === undefined) {
         // parse gdb version from string such as
@@ -263,7 +263,7 @@ const process_gdb_response = function (response_array: any) {
         r.payload,
         r.stream === "stderr"
           ? constants.console_entry_type.STD_ERR
-          : constants.console_entry_type.STD_OUT,
+          : constants.console_entry_type.STD_OUT
       );
     } else if (r.type === "notify") {
       if (r.message === "thread-group-started") {
@@ -290,13 +290,13 @@ const process_gdb_response = function (response_array: any) {
           if (r.payload["signal-name"] !== "SIGINT") {
             Actions.add_console_entries(
               `Signal received: (${r.payload["signal-meaning"]}, ${r.payload["signal-name"]}).`,
-              constants.console_entry_type.GDBGUI_OUTPUT,
+              constants.console_entry_type.GDBGUI_OUTPUT
             );
             Actions.add_console_entries(
               "If the program exited due to a fault, you can attempt to re-enter " +
                 "the state of the program when the fault occurred by running the " +
                 "command 'backtrace' in the gdb terminal.",
-              constants.console_entry_type.GDBGUI_OUTPUT,
+              constants.console_entry_type.GDBGUI_OUTPUT
             );
           }
         } else {

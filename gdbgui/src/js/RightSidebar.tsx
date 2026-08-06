@@ -88,7 +88,7 @@ class Collapser extends React.Component<{}, CollapserState> {
     let style = {
       height: this.state.autosize ? "auto" : this.state.height_px + "px",
       overflow: this.state.autosize ? "visible" : "auto",
-      padding: "0 6px",
+      padding: "0 6px"
     };
 
     let reset_size_button = "";
@@ -167,9 +167,7 @@ class RightSidebar extends React.Component {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, [
-        "current_theme"
-    ]);
+    store.connectComponentState(this, ["current_theme"]);
   }
   render() {
     let input_style = {
@@ -234,7 +232,7 @@ class RightSidebar extends React.Component {
         <Collapser
           // @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message
           title="Tree"
-          collapsed={true} 
+          collapsed={true}
           content={
             <div>
               <input
@@ -260,11 +258,11 @@ class RightSidebar extends React.Component {
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message */}
         <Collapser title="registers" collapsed={true} content={<Registers />} />
         <Collapser
-        // @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message
-        title="signals"
-        collapsed={true}
-        // @ts-expect-error ts-migrate(2322) FIXME: Property 'signals' does not exist on type 'Intrins... Remove this comment to see the full error message
-        content={<InferiorProgramInfo signals={this.props.signals} />}
+          // @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message
+          title="signals"
+          collapsed={true}
+          // @ts-expect-error ts-migrate(2322) FIXME: Property 'signals' does not exist on type 'Intrins... Remove this comment to see the full error message
+          content={<InferiorProgramInfo signals={this.props.signals} />}
         />
 
         {mi_output}
