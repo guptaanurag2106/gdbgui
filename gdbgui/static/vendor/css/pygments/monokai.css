@@ -81,12 +81,6 @@
   color: #f8f8f2;
 }
 
-.splitjs_container.monokai #hovervar {
-  background-color: #3c3c3c;
-  color: #f8f8f2;
-  border-color: #555;
-}
-
 /* when hovering, set background color of entire row */
 .splitjs_container.monokai .paused_on_line,
 .splitjs_container.monokai .paused_on_line td {
