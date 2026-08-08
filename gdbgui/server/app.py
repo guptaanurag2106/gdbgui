@@ -1,6 +1,7 @@
 import binascii
 import logging
 import os
+import time
 from typing import Dict, List
 import traceback
 from flask import Flask, abort, request, session
@@ -10,7 +11,11 @@ from flask_socketio import SocketIO, emit  # type: ignore
 from .constants import DEFAULT_GDB_EXECUTABLE, STATIC_DIR, TEMPLATE_DIR
 from .http_routes import blueprint
 from .http_util import is_cross_origin
-from .sessionmanager import SessionManager, DebugSession
+from .sessionmanager import (
+    DebugSession,
+    SessionManager,
+    TERMINATED_GDB_TEARDOWN_TIMEOUT,
+)
 
 logger = logging.getLogger(__file__)
 # Create flask application and add some configuration keys to be used in various callbacks
@@ -235,6 +240,14 @@ def read_and_forward_gdb_and_pty_output():
                         timeout_sec=0, raise_error_on_timeout=False
                     )
 
+                    for resp in response:
+                        if (
+                            resp.get("payload") in ("^exit\r", "^exit")
+                            or resp.get("message") == "exit"
+                        ):
+                            debug_session.clean()
+                            debug_sessions_to_remove.append(debug_session)
+
                 except Exception:
                     response = None
                     send_msg_to_clients(
@@ -261,6 +274,17 @@ def read_and_forward_gdb_and_pty_output():
 
             except Exception:
                 logger.error("caught exception, continuing:" + traceback.format_exc())
+
+        # force kill terminating gdb if they dont send exit resp
+        timeout_deadline = time.monotonic() - TERMINATED_GDB_TEARDOWN_TIMEOUT
+        for debug_session in list(manager.debug_session_to_client_ids):
+            if (
+                debug_session.terminating
+                and debug_session.terminating_since is not None
+                and debug_session.terminating_since <= timeout_deadline
+            ):
+                debug_session.clean()
+                debug_sessions_to_remove.append(debug_session)
 
         debug_sessions_to_remove += check_and_forward_pty_output()
         for debug_session in set(debug_sessions_to_remove):

@@ -45,8 +45,19 @@ class Pty:
             (master, slave) = pty.openpty()
             self.stdin = master
             self.stdout = master
+            self.slave_fd = slave
             self.name = os.ttyname(slave)
             self.set_echo(echo)
+
+    def close(self):
+        for fd_attr in ("stdin", "stdout", "slave_fd"):
+            fd = getattr(self, fd_attr, None)
+            if fd is not None:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+                setattr(self, fd_attr, None)
 
     def set_echo(self, echo_on: bool) -> None:
         (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = termios.tcgetattr(self.stdin)
@@ -70,7 +81,7 @@ class Pty:
 
     def read(self) -> Optional[str]:
         if self.stdout is None:
-            return "done"
+            return None
         timeout_sec = 0
         (data_to_read, _, _) = select.select([self.stdout], [], [], timeout_sec)
         if data_to_read:

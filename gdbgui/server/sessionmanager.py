@@ -2,7 +2,7 @@ import datetime
 import logging
 import os
 import signal
-import traceback
+import time
 from collections import defaultdict
 from typing import Dict, List, Optional, Set
 
@@ -11,6 +11,8 @@ from pygdbmi.IoManager import IoManager
 from .ptylib import Pty
 
 logger = logging.getLogger(__name__)
+
+TERMINATED_GDB_TEARDOWN_TIMEOUT = 2.0  # sec
 
 
 class DebugSession:
@@ -34,15 +36,27 @@ class DebugSession:
         self.pid = pid
         self.start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.client_ids: Set[str] = set()
+        self.terminating = False
+        self.terminating_since: Optional[float] = None
 
     def terminate(self):
-        if self.pid:
+        if self.terminating:
+            return
+        self.terminating = True
+        self.terminating_since = time.monotonic()
+        if self.pygdbmi_controller:
             try:
-                os.kill(self.pid, signal.SIGKILL)
+                self.pygdbmi_controller.write(
+                    "-gdb-exit\n",
+                    timeout_sec=0,
+                    raise_error_on_timeout=False,
+                    read_response=False,
+                )
             except Exception as e:
-                logger.error(f"Failed to kill pid {self.pid}: {str(e)}")
-
-        self.pygdbmi_controller = None
+                logger.error(
+                    f"Failed to write '-gdb-exit' to controller {self.pid}: {str(e)}"
+                )
+                self.clean()
 
     def to_dict(self):
         return {
@@ -60,6 +74,32 @@ class DebugSession:
         self.client_ids.discard(client_id)
         if len(self.client_ids) == 0:
             self.terminate()
+
+    def clean(self):
+        self.terminating = False
+        if self.pid:
+            try:
+                try:
+                    os.kill(-self.pid, signal.SIGKILL)
+                except OSError:
+                    os.kill(self.pid, signal.SIGKILL)
+                os.waitpid(self.pid, 0)
+            except Exception as e:
+                try:
+                    os.waitpid(self.pid, 0)
+                except OSError:
+                    pass
+                logger.error(f"Failed to clean up pid {self.pid}: {str(e)}")
+
+        if self.pty_for_gdbgui:
+            self.pty_for_gdbgui.close()
+        if self.pty_for_gdb:
+            self.pty_for_gdb.close()
+        if self.pty_for_debugged_program:
+            self.pty_for_debugged_program.close()
+
+        self.pygdbmi_controller = None
+        self.pid = None
 
 
 class SessionManager(object):
@@ -99,9 +139,11 @@ class SessionManager(object):
 
         pid = pty_for_gdb.pid
         debug_session = DebugSession(
+            # dup fds because in pty both stdin,stdout point to same fd so 'OSError: [Errno 9] Bad file descriptor'
+            # manually close pty_for_* so ned 2 dup for when GC closes controller's fd
             pygdbmi_controller=IoManager(
-                os.fdopen(pty_for_gdbgui.stdin, mode="wb", buffering=0),  # type: ignore
-                os.fdopen(pty_for_gdbgui.stdout, mode="rb", buffering=0),  # type: ignore
+                os.fdopen(os.dup(pty_for_gdbgui.stdin), mode="wb", buffering=0),  # type: ignore
+                os.fdopen(os.dup(pty_for_gdbgui.stdout), mode="rb", buffering=0),  # type: ignore
                 None,
             ),
             pty_for_gdbgui=pty_for_gdbgui,
@@ -125,21 +167,20 @@ class SessionManager(object):
         return orphaned_client_ids
 
     def remove_debug_session(self, debug_session: DebugSession) -> List[str]:
-        logger.info(f"Removing debug session for pid {debug_session.pid}")
-        try:
-            debug_session.terminate()
-        except Exception:
-            logger.error(traceback.format_exc())
-        orphaned_client_ids = self.debug_session_to_client_ids.pop(debug_session, [])
+        pid = debug_session.pid
+        debug_session.terminate()
+        if debug_session.pid is None and debug_session.pygdbmi_controller is None:
+            logger.info(f"Removing debug session for pid {pid}")
+            orphaned_client_ids = self.debug_session_to_client_ids.pop(
+                debug_session, []
+            )
+        else:
+            # graceful shutdown in progress; the poll loop will finish the
+            # cleanup and remove this session from the registry
+            orphaned_client_ids = self.debug_session_to_client_ids.get(
+                debug_session, []
+            )
         return orphaned_client_ids
-
-    def remove_debug_sessions_with_no_clients(self) -> None:
-        to_remove = []
-        for debug_session, _ in self.debug_session_to_client_ids.items():
-            if len(debug_session.client_ids) == 0:
-                to_remove.append(debug_session)
-        for debug_session in to_remove:
-            self.remove_debug_session(debug_session)
 
     def get_pid_from_debug_session(self, debug_session: DebugSession) -> Optional[int]:
         if debug_session and debug_session.pid:
@@ -170,4 +211,3 @@ class SessionManager(object):
             if client_id in client_ids:
                 client_ids.remove(client_id)
                 debug_session.remove_client(client_id)
-        self.remove_debug_sessions_with_no_clients()
