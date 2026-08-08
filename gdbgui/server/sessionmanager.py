@@ -37,13 +37,13 @@ class DebugSession:
         self.start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.client_ids: Set[str] = set()
         self.terminating = False
-        self.terminating_since: Optional[float] = None
+        self.terminate_on: Optional[float] = None
 
     def terminate(self):
         if self.terminating:
             return
         self.terminating = True
-        self.terminating_since = time.monotonic()
+        self.terminate_on = time.monotonic() + TERMINATED_GDB_TEARDOWN_TIMEOUT
         if self.pygdbmi_controller:
             try:
                 self.pygdbmi_controller.write(

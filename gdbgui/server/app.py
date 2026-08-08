@@ -11,11 +11,7 @@ from flask_socketio import SocketIO, emit  # type: ignore
 from .constants import DEFAULT_GDB_EXECUTABLE, STATIC_DIR, TEMPLATE_DIR
 from .http_routes import blueprint
 from .http_util import is_cross_origin
-from .sessionmanager import (
-    DebugSession,
-    SessionManager,
-    TERMINATED_GDB_TEARDOWN_TIMEOUT,
-)
+from .sessionmanager import DebugSession, SessionManager
 
 logger = logging.getLogger(__file__)
 # Create flask application and add some configuration keys to be used in various callbacks
@@ -275,16 +271,18 @@ def read_and_forward_gdb_and_pty_output():
             except Exception:
                 logger.error("caught exception, continuing:" + traceback.format_exc())
 
-        # force kill terminating gdb if they dont send exit resp
-        timeout_deadline = time.monotonic() - TERMINATED_GDB_TEARDOWN_TIMEOUT
+        time_now = None
         for debug_session in list(manager.debug_session_to_client_ids):
-            if (
-                debug_session.terminating
-                and debug_session.terminating_since is not None
-                and debug_session.terminating_since <= timeout_deadline
-            ):
-                debug_session.clean()
-                debug_sessions_to_remove.append(debug_session)
+            # force kill terminating gdb if they dont send exit resp
+            if debug_session.terminating:
+                if time_now is None:
+                    time_now = time.monotonic()
+                if (
+                    debug_session.terminate_on is not None
+                    and debug_session.terminate_on <= time_now
+                ):
+                    debug_session.clean()
+                    debug_sessions_to_remove.append(debug_session)
 
         debug_sessions_to_remove += check_and_forward_pty_output()
         for debug_session in set(debug_sessions_to_remove):
