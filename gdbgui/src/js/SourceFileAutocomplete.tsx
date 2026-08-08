@@ -39,6 +39,7 @@ class SourceFileAutocomplete extends React.Component<SourceFileAutocompleteProps
           onSelect={this.onFileSelect.bind(this)}
           onSubmit={this.onSubmit.bind(this)}
           maxItems={10}
+          showAllOnEmpty
         />
       </div>
     );

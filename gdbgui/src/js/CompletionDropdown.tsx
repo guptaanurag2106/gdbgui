@@ -18,6 +18,7 @@ type CompletionDropdownState = {
   results: string[];
   currentIndex: number;
   current_theme: string;
+  isFocused: boolean;
 };
 
 type DropdownItem = {
@@ -46,7 +47,8 @@ class CompletionDropdown extends React.Component<
       term: this.props.initialValue || "",
       results: [],
       currentIndex: -1,
-      current_theme: store.get("current_theme")
+      current_theme: store.get("current_theme"),
+      isFocused: false
     };
     this.items = this.make_dropdown_items(props.list);
   }
@@ -292,18 +294,20 @@ class CompletionDropdown extends React.Component<
   search(term: string) {
     let results: string[] = [];
     if (term.trim() === "") {
-      if (this.props.showAllOnEmpty) {
+      if (this.props.showAllOnEmpty && this.state.isFocused) {
         results = this.items.map(item => item.text);
       }
     } else {
       const field_array = this.make_array_of_str(term);
       const scores: Array<{ i: number; score: number }> = [];
       for (let i = 0; i < this.items.length; i++) {
-        scores.push({ i, score: this.match_score(field_array, this.items[i].tokens) });
+        const score = this.match_score(field_array, this.items[i].tokens);
+        if (score > 0) {
+          scores.push({ i, score });
+        }
       }
       scores.sort((a, b) => b.score - a.score);
       for (const obj of scores) {
-        if (obj.score <= 0) break;
         results.push(this.items[obj.i].text);
       }
     }
@@ -388,7 +392,13 @@ class CompletionDropdown extends React.Component<
           value={term}
           onChange={this.on_input_change.bind(this)}
           onKeyDown={this.on_keydown.bind(this)}
-          onBlur={() => this.setState({ results: [], currentIndex: -1 })}
+          onFocus={() =>
+            this.setState({ isFocused: true }, () => this.search(this.state.term))
+          }
+          onBlur={() => {
+            if (this.timer) clearTimeout(this.timer);
+            this.setState({ results: [], currentIndex: -1, isFocused: false });
+          }}
         />
         <ul
           ref={this.ulRef}

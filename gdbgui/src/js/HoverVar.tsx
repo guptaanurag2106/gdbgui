@@ -49,7 +49,7 @@ class HoverVar extends React.Component {
         top: HoverVar.top + "px",
         backgroundColor: is_dark ? "#3c3c3c" : "white",
         color: is_dark ? "#f8f8f2" : undefined,
-        borderColor: is_dark ? "#555" : undefined,
+        borderColor: is_dark ? "#555" : undefined
       };
       return (
         // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type '"absolute... Remove this comment to see the full error message
