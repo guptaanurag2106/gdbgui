@@ -18,7 +18,18 @@ type Feature =
   | "breakpoint-notification";
 
 export function processFeatures(features: Array<Feature>) {
-  if (features.indexOf("reverse") !== -1) {
-    store.set("reverse_supported", true);
+  // TODO:what if -list-features returns []
+  // only 2 in target_features (refer above link), target_features can be []
+  if (
+    features.length === 0 ||
+    features.includes("async") ||
+    features.includes("reverse")
+  ) {
+    store.set("reverse_supported", features.includes("reverse"));
+    const current = store.get("features");
+    store.set("features", { ...current, target_features: features });
+  } else {
+    const current = store.get("features");
+    store.set("features", { ...current, features: features });
   }
 }

@@ -539,7 +539,7 @@ const FileOps = {
       return 4;
     } else if (
       gdb_version_array[0] < 7 ||
-      (parseInt(gdb_version_array[0]) === 7 && gdb_version_array[1] <= 7)
+      (gdb_version_array[0] === 7 && gdb_version_array[1] <= 7)
     ) {
       // this option has been deprecated in newer versions, but is required in older ones
       return 3;

@@ -43,6 +43,7 @@ const process_gdb_response = function(response_array: any) {
 
   for (let r of response_array) {
     // gdb mi output
+    //TODO: not do this when debug is false??
     GdbMiOutput.add_mi_output(r);
 
     if (isError(r)) {
@@ -62,7 +63,8 @@ const process_gdb_response = function(response_array: any) {
       ) {
         // we tried to fetch disassembly for a newer version of gdb, but it didn't work
         // try again with mode 3, for older gdb api's
-        store.set("gdb_version", ["7", "6", "0"]);
+        store.set("gdb_version_array", [7, 6, 0]);
+        store.set("gdb_version", "7.6.0");
         // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '3' is not assignable to paramete... Remove this comment to see the full error message
         FileOps.fetch_assembly_cur_line(3);
       } else if (
@@ -224,11 +226,6 @@ const process_gdb_response = function(response_array: any) {
       if ("features" in r.payload) {
         processFeatures(r.payload.features);
       }
-      // features list
-      if ("target_features" in r.payload) {
-        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'processTargetFeatures'.
-        processTargetFeatures(r.payload.target_features);
-      }
     } else if (r.type === "result" && r.message === "error") {
       // render it in the status bar, and don't render the last response in the array as it does by default
       Actions.add_gdb_response_to_console(r);
@@ -247,14 +244,14 @@ const process_gdb_response = function(response_array: any) {
           ? constants.console_entry_type.STD_ERR
           : constants.console_entry_type.STD_OUT
       );
-      if (store.get("gdb_version") === undefined) {
+      if (store.get("gdb_version_array").length === 0) {
         // parse gdb version from string such as
         // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
-        let m = /GNU gdb \(.*\)\s+([0-9|.]*)\\n/g;
+        let m = /GNU gdb(?:\s+\(.*?\))?\s+([0-9]+(?:\.[0-9]+)+)/;
         let a = m.exec(r.payload);
         if (Array.isArray(a) && a.length === 2) {
           store.set("gdb_version", a[1]);
-          store.set("gdb_version_array", a[1].split("."));
+          store.set("gdb_version_array", a[1].split(".").map(Number));
         }
       }
     } else if (r.type === "output" || r.type === "target" || r.type === "log") {

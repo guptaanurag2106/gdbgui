@@ -22,6 +22,8 @@ const initial_store_data = {
   can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
   show_settings: false,
 
+  features: { features: [], target_features: [] }, // stores both cmd features and target features
+
   debug_in_reverse: false,
   reverse_supported: false,
   show_modal: false,

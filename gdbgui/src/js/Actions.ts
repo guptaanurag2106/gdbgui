@@ -162,6 +162,9 @@ const Actions = {
     Actions.inferior_program_exited();
     GdbApi.run_gdb_command([`-target-select remote ${user_input}`]);
   },
+  get_target_features() {
+    GdbApi.run_gdb_command("-list-target-features");
+  },
   remote_connected() {
     Actions.inferior_program_paused();
     let cmds = [];

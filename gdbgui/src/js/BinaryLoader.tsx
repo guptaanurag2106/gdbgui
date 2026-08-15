@@ -243,6 +243,7 @@ class BinaryLoader extends React.Component<{}, State> {
     } else if (this.state.target_type === TARGET_TYPES.process) {
       Actions.attach_to_process(user_input);
     }
+    Actions.get_target_features();
   }
 }
 

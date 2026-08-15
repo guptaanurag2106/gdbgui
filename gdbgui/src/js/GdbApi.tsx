@@ -155,11 +155,12 @@ const GdbApi = {
     GdbApi.run_gdb_command("-exec-run");
   },
   run_initial_commands: function() {
-    const cmds = ["-list-features", "-list-target-features"];
+    const cmds = ["-list-features", "-gdb-version"];
     for (const src in initial_data.remap_sources) {
       const dst = initial_data.remap_sources[src];
       cmds.push(`set substitute-path "${src}" "${dst}"`);
     }
+
     GdbApi.run_gdb_command(cmds);
   },
   inferior_is_paused: function() {
@@ -403,10 +404,9 @@ const GdbApi = {
     return "-break-list";
   },
   get_load_binary_and_arguments_cmds(binary: any, args: any) {
-    // tell gdb which arguments to use when calling the binary, before loading the binary
     let cmds = [
-      `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
-      `-file-exec-and-symbols ${binary}` // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
+      `-file-exec-and-symbols ${binary}`, // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
+      `-exec-arguments ${args}` // Set the inferior program arguments, to be used in the next `-exec-run`
     ];
     // add breakpoint if we don't already have one
     if (store.get("auto_add_breakpoint_to_main")) {
