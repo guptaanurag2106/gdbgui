@@ -229,7 +229,9 @@ def read_and_forward_gdb_and_pty_output():
     while True:
         socketio.sleep(0.05)
         debug_sessions_to_remove = []
-        for debug_session, client_ids in manager.debug_session_to_client_ids.items():
+        for debug_session, client_ids in list(
+            manager.debug_session_to_client_ids.items()
+        ):
             try:
                 try:
                     response = debug_session.pygdbmi_controller.get_gdb_response(
@@ -291,7 +293,7 @@ def read_and_forward_gdb_and_pty_output():
 
 def check_and_forward_pty_output() -> List[DebugSession]:
     debug_sessions_to_remove = []
-    for debug_session, client_ids in manager.debug_session_to_client_ids.items():
+    for debug_session, client_ids in list(manager.debug_session_to_client_ids.items()):
         try:
             response = debug_session.pty_for_gdb.read()
             if response is not None:

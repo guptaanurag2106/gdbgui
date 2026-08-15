@@ -49,6 +49,8 @@ def read_file():
     start_line = max(1, start_line)  # make sure it's not negative
     end_line = int(request.args.get("end_line"))
 
+    # Fix for when you use '~' in paths
+    path = os.path.expanduser(path)
     if path and os.path.isfile(path):
         try:
             last_modified = os.path.getmtime(path)
