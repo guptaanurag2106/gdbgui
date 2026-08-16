@@ -33,10 +33,10 @@ class BinaryLoader extends React.Component<{}, State> {
     };
     try {
       // @ts-expect-error ts-migrate(2542) FIXME: Index signature in type 'Readonly<any>' only permi... Remove this comment to see the full error message
-      this.state.past_binaries = _.uniq(
+      this.state.past_binaries = [
         // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-        JSON.parse(localStorage.getItem("past_binaries"))
-      );
+        ...new Set(JSON.parse(localStorage.getItem("past_binaries")))
+      ];
       if (!this.state.user_input) {
         let most_recent_binary = this.state.past_binaries[0];
         // @ts-expect-error ts-migrate(2542) FIXME: Index signature in type 'Readonly<any>' only permi... Remove this comment to see the full error message
@@ -190,8 +190,10 @@ class BinaryLoader extends React.Component<{}, State> {
   }
   // save to list of binaries used that autopopulates the input dropdown
   _add_user_input_to_history(binary_and_args: any) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    _.remove(this.state.past_binaries, (i: any) => i === binary_and_args);
+    const found_index = this.state.past_binaries.indexOf(binary_and_args);
+    if (found_index !== -1) {
+      this.state.past_binaries.splice(found_index, 1);
+    }
     this.state.past_binaries.unshift(binary_and_args); // add to beginning
     this.setState({ past_binaries: this.state.past_binaries });
     // @ts-expect-error ts-migrate(2345) FIXME: Type 'never[]' is not assignable to type 'string'.

@@ -45,8 +45,7 @@ class ToolTip extends React.Component {
           : 0,
       left = rect.x - horizontal_buffer + "px",
       top = rect.y + tooltip.node.offsetHeight + "px";
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (_.isInteger(tooltip.show_for_n_sec)) {
+    if (Number.isInteger(tooltip.show_for_n_sec)) {
       this.timeout = setTimeout(ToolTip.hide_tooltip, tooltip.show_for_n_sec * 1000);
     }
     return (

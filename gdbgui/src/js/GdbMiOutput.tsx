@@ -8,6 +8,7 @@
  */
 import React from "react";
 import { store } from "statorgfc";
+import Util from "./Util";
 
 type State = any;
 
@@ -20,8 +21,7 @@ class GdbMiOutput extends React.Component<{}, State> {
     super();
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(this, ["gdb_mi_output"]);
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    this._debounced_scroll_to_bottom = _.debounce(
+    this._debounced_scroll_to_bottom = Util.debounce(
       this._scroll_to_bottom.bind(this),
       300,
       {

@@ -70,15 +70,15 @@ class Registers extends React.Component<{}, State> {
     store.set("register_names", []);
   }
   static clear_cached_values() {
-    store.set("previous_register_values", {});
-    store.set("current_register_values", {});
+    store.set("previous_register_values", []);
+    store.set("current_register_values", []);
   }
   static inferior_program_exited() {
     Registers.clear_cached_values();
   }
   render() {
     let num_register_names = store.get("register_names").length,
-      num_register_values = Object.keys(store.get("current_register_values")).length;
+      num_register_values = store.get("current_register_values").length;
 
     if (this.state.inferior_program !== constants.inferior_states.paused) {
       return <span className="placeholder">no data to display</span>;
@@ -100,12 +100,11 @@ class Registers extends React.Component<{}, State> {
         register_table_data = [],
         register_names = store.get("register_names"),
         register_values = store.get("current_register_values"),
-        prev_register_values = store.get("previous_register_values");
+        previous_register_values = store.get("previous_register_values");
 
       for (let i in register_names) {
         let name = register_names[i],
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-          obj = _.find(register_values, (v: any) => v["number"] === i),
+          obj = register_values.find((v: any) => v["number"] === i),
           hex_val_raw = "",
           disp_hex_val = "",
           disp_dec_val = "",
@@ -115,8 +114,7 @@ class Registers extends React.Component<{}, State> {
         if (obj && obj.value) {
           hex_val_raw = obj["value"];
 
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-          let old_obj = _.find(prev_register_values, (v: any) => v["number"] === i),
+          let old_obj = previous_register_values.find((v: any) => v["number"] === i),
             old_hex_val_raw,
             changed = false;
           if (old_obj) {

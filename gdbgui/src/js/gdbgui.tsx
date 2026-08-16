@@ -195,8 +195,7 @@ class Gdbgui extends React.PureComponent<{}, any> {
     //     cache: false,
     //     method: "GET",
     //     success: data => {
-    //       // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    //       store.set("latest_gdbgui_version", _.trim(data));
+    //       store.set("latest_gdbgui_version", data.trim());
     //     },
     //     error: data => {
     //       void data;

@@ -87,8 +87,8 @@ const initial_store_data = {
 
   // registers
   register_names: [],
-  previous_register_values: {},
-  current_register_values: {},
+  previous_register_values: [],
+  current_register_values: [],
 
   // memory
   memory_cache: {},
@@ -147,8 +147,7 @@ for (let key in initial_store_data) {
 if (localStorage.hasOwnProperty("max_lines_of_code_to_fetch")) {
   // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
   let savedval = JSON.parse(localStorage.getItem("max_lines_of_code_to_fetch"));
-  // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-  if (_.isInteger(savedval) && savedval > 0) {
+  if (Number.isInteger(savedval) && savedval > 0) {
     initial_store_data["max_lines_of_code_to_fetch"] = savedval;
   }
 }

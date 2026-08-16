@@ -112,8 +112,7 @@ const process_gdb_response = function(response_array: any) {
         // gdb will not return a path, but rather the function name. The function name is
         // not a file, and therefore it cannot be displayed. Make sure the path is known before
         // trying to render the file of the newly created breakpoint.
-        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-        if (_.isString(bkpt.fullname_to_display)) {
+        if (typeof bkpt.fullname_to_display === "string") {
           // a normal breakpoint or child breakpoint
           Actions.view_file(bkpt.fullname_to_display, parseInt(bkpt.line));
         }
@@ -151,10 +150,10 @@ const process_gdb_response = function(response_array: any) {
       }
       if ("files" in r.payload) {
         if (r.payload.files.length > 0) {
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-          let source_file_paths = _.uniq(
-            r.payload.files.map((f: any) => f.fullname)
-          ).sort();
+          //TODO: why would there be duplicates
+          let source_file_paths = [
+            ...new Map(r.payload.files.map((f: any) => [f.fullname, f])).keys()
+          ].sort();
           store.set("source_file_paths", source_file_paths);
 
           let language = "c_family";

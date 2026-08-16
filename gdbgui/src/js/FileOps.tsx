@@ -3,6 +3,7 @@ import GdbApi from "./GdbApi";
 import constants from "./constants";
 import Actions from "./Actions";
 import React from "react"; // needed for jsx
+import Util from "./Util";
 void React;
 
 let debug_print: any;
@@ -29,8 +30,7 @@ let FileFetcher = {
       return;
     }
 
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (!_.isString(fullname)) {
+    if (typeof fullname !== "string") {
       console.warn(`trying to fetch filename that is not a string`, fullname);
       FileOps.add_missing_file(fullname);
       FileFetcher._is_fetching = false;
@@ -78,8 +78,7 @@ let FileFetcher = {
       error: function(response) {
         if (response.responseJSON && response.responseJSON.message) {
           Actions.add_console_entries(
-            // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-            _.escape(response.responseJSON.message),
+            Util.escapeHTML(response.responseJSON.message),
             constants.console_entry_type.STD_ERR
           );
         } else {
@@ -552,8 +551,7 @@ const FileOps = {
     start_line: any,
     mi_response_format: any
   ) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (_.isString(fullname)) {
+    if (typeof fullname === "string") {
       return (
         constants.INLINE_DISASSEMBLY_STR +
         `-data-disassemble -f ${fullname} -l ${start_line} -n 1000 -- ${mi_response_format}`
@@ -566,8 +564,7 @@ const FileOps = {
    * Fetch disassembly for current file/line.
    */
   fetch_assembly_cur_line: function(mi_response_format = null) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (mi_response_format === null || !_.isNumber(mi_response_format)) {
+    if (mi_response_format === null || !Number.isFinite(mi_response_format)) {
       // try to determine response format based on our guess of the gdb version being used
       // @ts-expect-error ts-migrate(2322) FIXME: Type '4' is not assignable to type 'null'.
       mi_response_format = FileOps.get_dissasembly_format_num(

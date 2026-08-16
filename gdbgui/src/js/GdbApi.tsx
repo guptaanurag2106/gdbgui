@@ -305,14 +305,11 @@ const GdbApi = {
    * @return nothing
    */
   run_gdb_command: function(cmd: any) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (_.trim(cmd) === "") {
-      return;
-    }
-
     let cmds = cmd;
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (_.isString(cmds)) {
+    if (typeof cmd === "string") {
+      if (cmd.trim() === "") {
+        return;
+      }
       cmds = [cmds];
     }
 
@@ -334,9 +331,8 @@ const GdbApi = {
     let cmds: any[] = [];
     if (Array.isArray(user_cmd)) {
       cmds = cmds.concat(user_cmd);
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    } else if (_.isString(user_cmd) && user_cmd.length > 0) {
-      cmds.push(user_cmd);
+    } else if (typeof user_cmd === "string" && user_cmd.trim().length > 0) {
+      cmds.push(user_cmd.trim());
     }
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
     GdbApi.run_gdb_command(cmds);

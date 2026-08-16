@@ -131,6 +131,42 @@ const Util = {
       }
     }
     return false;
+  },
+  escapeHTML(str: string) {
+    const htmlEntities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    };
+
+    return str.replace(/[&<>"']/g, match => htmlEntities[match]);
+  },
+  debounce<T extends (...args: any[]) => any>(
+    func: T,
+    delay: number,
+    { leading = false, trailing = true }: { leading?: boolean; trailing?: true } = {}
+  ) {
+    let timerId: ReturnType<typeof setTimeout> | undefined;
+
+    return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
+      const callNow: boolean = leading && timerId === undefined;
+
+      clearTimeout(timerId);
+
+      timerId = setTimeout(() => {
+        timerId = undefined;
+
+        if (trailing && !callNow) {
+          func.apply(this, args);
+        }
+      }, delay);
+
+      if (callNow) {
+        func.apply(this, args);
+      }
+    };
   }
 };
 

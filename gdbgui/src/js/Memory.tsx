@@ -190,18 +190,15 @@ class Memory extends React.Component<{}, State> {
   }
 
   static get_gdb_commands_from_state() {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    let start_addr = parseInt(_.trim(store.get("start_addr")), 16),
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-      end_addr = parseInt(_.trim(store.get("end_addr")), 16);
+    let start_addr = parseInt(store.get("start_addr").trim(), 16),
+      end_addr = parseInt(store.get("end_addr").trim(), 16);
 
     if (!window.isNaN(start_addr) && window.isNaN(end_addr)) {
       end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
     }
 
     let cmds = [];
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (_.isInteger(start_addr) && end_addr) {
+    if (Number.isInteger(start_addr) && end_addr) {
       if (start_addr > end_addr) {
         end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
         store.set("end_addr", "0x" + end_addr.toString(16));
@@ -245,8 +242,7 @@ class Memory extends React.Component<{}, State> {
   static click_read_preceding_memory() {
     // update starting value, then re-fetch
     let NUM_ROWS = 3;
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    let start_addr = parseInt(_.trim(store.get("start_addr")), 16),
+    let start_addr = parseInt(store.get("start_addr").trim(), 16),
       byte_offset = store.get("bytes_per_line") * NUM_ROWS;
     store.set("start_addr", "0x" + (start_addr - byte_offset).toString(16));
     Memory.fetch_memory_from_state();
@@ -255,8 +251,7 @@ class Memory extends React.Component<{}, State> {
   static click_read_more_memory() {
     // update ending value, then re-fetch
     let NUM_ROWS = 3;
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    let end_addr = parseInt(_.trim(store.get("end_addr")), 16),
+    let end_addr = parseInt(store.get("end_addr").trim(), 16),
       byte_offset = store.get("bytes_per_line") * NUM_ROWS;
     store.set("end_addr", "0x" + (end_addr + byte_offset).toString(16));
     Memory.fetch_memory_from_state();

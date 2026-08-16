@@ -16,10 +16,9 @@ class Locals extends React.Component {
   }
   render() {
     let content = [];
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    let sorted_local_objs = _.sortBy(
-      store.get("locals"),
-      (unsorted_obj: any) => unsorted_obj.name
+    let sorted_local_objs = [...store.get("locals")];
+    sorted_local_objs = sorted_local_objs.sort((l1: any, l2: any) =>
+      (l1.name || "").localeCompare(l2.name || "")
     );
 
     for (let local of sorted_local_objs) {

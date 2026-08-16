@@ -14,10 +14,9 @@ class Expressions extends React.Component {
   }
 
   render() {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    let sorted_expression_objs = _.sortBy(
-      store.get("expressions"),
-      (unsorted_obj: any) => unsorted_obj.expression
+    let sorted_expression_objs = store.get("expressions");
+    sorted_expression_objs.sort((e1: any, e2: any) =>
+      e1.expression.localeCompare(e2.expression)
     );
     // only render variables in scope that were not created for the Locals component
     this.objs_to_render = sorted_expression_objs.filter(
@@ -81,8 +80,7 @@ class Expressions extends React.Component {
   static keydown_on_input(e: any) {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
       let expr = e.currentTarget.value,
-        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-        trimmed_expr = _.trim(expr);
+        trimmed_expr = expr.trim();
 
       if (trimmed_expr !== "") {
         GdbVariable.create_variable(trimmed_expr, "expr");

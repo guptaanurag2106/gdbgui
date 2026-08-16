@@ -193,10 +193,10 @@ class GdbVariable extends React.Component {
    */
   get_ul_for_local(local: any) {
     let can_be_expanded = local.can_be_expanded,
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-      value = _.isString(local.value)
-        ? Memory.make_addrs_into_links_react(local.value)
-        : local.value,
+      value =
+        typeof local.value === "string"
+          ? Memory.make_addrs_into_links_react(local.value)
+          : local.value,
       onclick = can_be_expanded
         ? () => GdbVariable.create_variable(local.name, "local")
         : () => {};
@@ -208,8 +208,7 @@ class GdbVariable extends React.Component {
         </span>
         {value}
 
-        {/* @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'. */}
-        <span className="var_type">{_.trim(local.type)}</span>
+        <span className="var_type">{(local.type || "").trim()}</span>
       </div>
     );
   }
@@ -290,10 +289,10 @@ class GdbVariable extends React.Component {
         </div>
       );
     } else {
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-      val = _.isString(obj.value)
-        ? Memory.make_addrs_into_links_react(obj.value)
-        : obj.value;
+      val =
+        typeof obj.value === "string"
+          ? Memory.make_addrs_into_links_react(obj.value)
+          : obj.value;
     }
     return val;
   }
@@ -387,8 +386,7 @@ class GdbVariable extends React.Component {
 
           {GdbVariable._get_value_jsx(mi_obj)}
 
-          {/* @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'. */}
-          <span className="var_type">{_.trim(mi_obj.type) || ""}</span>
+          <span className="var_type">{(mi_obj.type || "").trim()}</span>
 
           <div className="right_help_icon_show_on_hover">
             <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)} />:{tree}
@@ -787,8 +785,7 @@ class GdbVariable extends React.Component {
    */
   static _delete_local_gdb_var_data(gdb_var_name: any) {
     let expressions = store.get("expressions");
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    _.remove(expressions, (v: any) => v.name === gdb_var_name);
+    expressions = expressions.filter((v: any) => v.name !== gdb_var_name);
     store.set("expressions", expressions);
   }
   /**
@@ -813,16 +810,14 @@ class GdbVariable extends React.Component {
     return undefined;
   }
   static get_root_name_from_gdbvar_name(gdb_var_name: any) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (_.isString(gdb_var_name)) {
+    if (typeof gdb_var_name === "string") {
       return gdb_var_name.split(".")[0];
     } else {
       return "";
     }
   }
   static get_child_names_from_gdbvar_name(gdb_var_name: any) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (_.isString(gdb_var_name)) {
+    if (typeof gdb_var_name === "string") {
       return gdb_var_name.split(".").slice(1, gdb_var_name.length);
     } else {
       return "";

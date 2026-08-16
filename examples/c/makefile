@@ -19,3 +19,7 @@ threads: threads.c
 sleeper: sleeper.c
 	gcc sleeper.c -o sleeper.a -std=c99 -g
 	@echo Run with gdbgui: gdbgui --args $(ROOT)/sleeper.a
+
+file_with_space: file\ with\ space.c
+	gcc "file with space.c" -o "file with space.a" -std=c99 -g
+	@echo Run with gdbgui: gdbgui --args $(ROOT)/file\ with\ space

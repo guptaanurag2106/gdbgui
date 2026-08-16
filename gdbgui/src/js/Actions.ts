@@ -5,6 +5,7 @@ import Locals from "./Locals";
 import Memory from "./Memory";
 import constants from "./constants";
 import React from "react";
+import Util from "./Util";
 void React; // using jsx implicity uses React
 
 const Actions = {
@@ -46,8 +47,8 @@ const Actions = {
     store.set("inferior_program", constants.inferior_states.exited);
     store.set("disassembly_for_missing_file", []);
     store.set("root_gdb_tree_var", null);
-    store.set("previous_register_values", {});
-    store.set("current_register_values", {});
+    store.set("previous_register_values", []);
+    store.set("current_register_values", []);
     store.set("inferior_pid", null);
     Actions.clear_program_state();
   },
@@ -243,8 +244,7 @@ const Actions = {
       error: function(response) {
         if (response.responseJSON && response.responseJSON.message) {
           Actions.add_console_entries(
-            // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-            _.escape(response.responseJSON.message),
+            Util.escapeHTML(response.responseJSON.message),
             constants.console_entry_type.STD_ERR
           );
         } else {

@@ -10,20 +10,22 @@ import constants from "./constants";
 const BreakpointSourceLineCache = {
   _cache: {},
   get_line: function(fullname: any, linenum: any) {
-    if (
-      // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
-      BreakpointSourceLineCache._cache["fullname"] !== undefined &&
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-      _.isString(BreakpointSourceLineCache._cache["fullname"][linenum])
-    ) {
-      // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
-      return BreakpointSourceLineCache._cache["fullname"][linenum];
+    //FIX:"fullname" the string or fullname the param
+    // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
+    const fileCache = BreakpointSourceLineCache._cache["fullname"];
+    if (fileCache && typeof fileCache[linenum] === "string") {
+      return fileCache[linenum];
     }
     return null;
   },
   add_line: function(fullname: any, linenum: any, escaped_text: any) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-    if (!_.isObject(BreakpointSourceLineCache._cache["fullname"])) {
+    if (
+      //FIX:"fullname" the string or fullname the param
+      // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
+      BreakpointSourceLineCache._cache["fullname"] === undefined ||
+      // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
+      typeof BreakpointSourceLineCache._cache["fullname"] !== "object"
+    ) {
       // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
       BreakpointSourceLineCache._cache["fullname"] = {};
     }
@@ -51,8 +53,7 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
       // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     } else if (FileOps.line_is_cached(fullname, linenum)) {
       let syntax_highlighted_line = FileOps.get_line_from_file(fullname, linenum);
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
-      line = _.trim(Util.get_text_from_html(syntax_highlighted_line));
+      line = Util.get_text_from_html(syntax_highlighted_line).trim();
 
       if (line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE) {
         line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + "...";
