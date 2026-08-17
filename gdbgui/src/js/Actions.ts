@@ -244,7 +244,7 @@ const Actions = {
       error: function(response) {
         if (response.responseJSON && response.responseJSON.message) {
           Actions.add_console_entries(
-            Util.escapeHTML(response.responseJSON.message),
+            Util.escape_HTML(response.responseJSON.message),
             constants.console_entry_type.STD_ERR
           );
         } else {

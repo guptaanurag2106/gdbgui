@@ -115,10 +115,10 @@ const Util = {
     return output;
   },
   /* Return true is latest is > current
-    1.0.0, 0.9.9 -> true
-    0.1.0, 0.0.9 -> true
-    0.0.9, 0.0.8 -> false
-  */
+        1.0.0, 0.9.9 -> true
+        0.1.0, 0.0.9 -> true
+        0.0.9, 0.0.8 -> false
+      */
   is_newer(latest: any, current: any) {
     latest = latest.split(".");
     current = current.split(".");
@@ -132,7 +132,7 @@ const Util = {
     }
     return false;
   },
-  escapeHTML(str: string) {
+  escape_HTML(str: string) {
     const htmlEntities: Record<string, string> = {
       "&": "&amp;",
       "<": "&lt;",
@@ -167,6 +167,17 @@ const Util = {
         func.apply(this, args);
       }
     };
+  },
+  format_timestamp(seconds: number): string {
+    if (!seconds) return "Unknown";
+    return new Date(seconds * 1000).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit"
+    });
   }
 };
 

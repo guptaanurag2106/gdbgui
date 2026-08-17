@@ -78,7 +78,7 @@ let FileFetcher = {
       error: function(response) {
         if (response.responseJSON && response.responseJSON.message) {
           Actions.add_console_entries(
-            Util.escapeHTML(response.responseJSON.message),
+            Util.escape_HTML(response.responseJSON.message),
             constants.console_entry_type.STD_ERR
           );
         } else {
@@ -436,16 +436,15 @@ const FileOps = {
             was compiled. Recompile the binary, then try again. Otherwise the source code
             may not match the binary.
             <p />
-            {/* @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'moment'. */}
-            <p>{`Source file: ${fullname}, modified ${moment(
-              src_last_modified_unix_sec * 1000
-            ).format(constants.DATE_FORMAT)}`}</p>
+            <p>{`Source file: ${fullname}, modified ${Util.format_timestamp(
+              src_last_modified_unix_sec
+            )}`}</p>
             <p>
-              {/* @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'moment'. */}
-              {`Binary: ${store.get("inferior_binary_path")}, modified ${moment(
-                store.get("inferior_binary_path_last_modified_unix_sec") * 1000
-              ).format(constants.DATE_FORMAT)}`}
-              )
+              {`Binary: ${store.get(
+                "inferior_binary_path"
+              )}, modified ${Util.format_timestamp(
+                store.get("inferior_binary_path_last_modified_unix_sec")
+              )}`}
             </p>
           </div>
         );
