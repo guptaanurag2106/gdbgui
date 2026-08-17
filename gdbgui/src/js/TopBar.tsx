@@ -178,7 +178,6 @@ class TopBar extends React.Component<{}, State> {
       show_spinner: false
     };
     // global state attached to this component
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(
       this,
       [

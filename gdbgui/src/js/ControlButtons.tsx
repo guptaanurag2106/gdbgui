@@ -10,7 +10,6 @@ class ControlButtons extends React.Component<{}, State> {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(this, ["gdb_pid", "reverse_supported"]);
   }
   render() {

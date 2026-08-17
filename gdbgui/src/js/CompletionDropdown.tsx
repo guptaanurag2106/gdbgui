@@ -54,7 +54,6 @@ class CompletionDropdown extends React.Component<
   }
 
   componentDidMount() {
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on type ...
     store.connectComponentState(this, ["current_theme"]);
   }
 

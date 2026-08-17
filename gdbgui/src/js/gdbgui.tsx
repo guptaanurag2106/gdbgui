@@ -12,7 +12,6 @@
 
 import ReactDOM from "react-dom";
 import React from "react";
-// @ts-expect-error ts-migrate(2305) FIXME: Module '"statorgfc"' has no exported member 'middl... Remove this comment to see the full error message
 import { store, middleware } from "statorgfc";
 
 import constants from "./constants";
@@ -65,7 +64,6 @@ class Gdbgui extends React.PureComponent<{}, any> {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(this, ["current_theme"]);
   }
   render() {

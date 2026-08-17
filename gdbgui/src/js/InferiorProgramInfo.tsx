@@ -15,7 +15,6 @@ class InferiorProgramInfo extends React.Component<{}, State> {
       selected_signal: "SIGINT",
       other_pid: ""
     };
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
   }
   get_li_for_signal(s: any, signal_key: any) {
