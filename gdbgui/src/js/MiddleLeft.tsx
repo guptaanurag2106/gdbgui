@@ -29,7 +29,6 @@ class MiddleLeft extends React.Component {
     );
   }
   componentDidMount() {
-    // @ts-expect-error ts-migrate(2322) FIXME: Type 'JQuery<HTMLElement>' is not assignable to ty... Remove this comment to see the full error message
     SourceCode.el_code_container = $("#code_container"); // todo: no jquery
 
     if (this.source_code_container_node) {
@@ -48,7 +47,6 @@ class MiddleLeft extends React.Component {
     let fetching_for_top = false; // don't fetch for more at bottom and top at same time
     if (SourceCode.view_more_top_node) {
       let { is_visible } = SourceCode.is_source_line_visible(
-        // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         $(SourceCode.view_more_top_node)
       );
       if (is_visible) {
@@ -59,7 +57,6 @@ class MiddleLeft extends React.Component {
 
     if (!fetching_for_top && SourceCode.view_more_bottom_node) {
       let { is_visible } = SourceCode.is_source_line_visible(
-        // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         $(SourceCode.view_more_bottom_node)
       );
       if (is_visible) {

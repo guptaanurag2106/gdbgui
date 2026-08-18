@@ -174,7 +174,6 @@ class BinaryLoader extends React.Component<{}, State> {
     }
   }
   onchange_user_inpu(text: string) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
     if (initial_data.using_windows) {
       // replace backslashes with forward slashes when using windows
       this.setState({ user_input: text.replace(/\\/g, "/") });

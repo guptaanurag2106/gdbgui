@@ -625,7 +625,6 @@ class GdbVariable extends React.Component {
     }
 
     // make the plot
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'plot' does not exist on type 'JQueryStat... Remove this comment to see the full error message
     $.plot(
       jq,
       [
@@ -645,7 +644,11 @@ class GdbVariable extends React.Component {
     );
 
     // add hover event to show tooltip
-    jq.bind("plothover", function(event, pos, item) {
+    jq.bind("plothover", function(
+      event: JQuery.TriggeredEvent,
+      pos: any,
+      item: any | null
+    ) {
       if (item) {
         let x = item.datapoint[0],
           y = item.datapoint[1];

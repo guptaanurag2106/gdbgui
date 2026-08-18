@@ -224,10 +224,9 @@ const Actions = {
   },
   send_signal(signal_name: any, pid: any) {
     $.ajax({
-      beforeSend: function(xhr) {
+      beforeSend: function(xhr: JQueryXHR) {
         xhr.setRequestHeader(
           "x-csrftoken",
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
           initial_data.csrf_token
         ); /* global initial_data */
       },
@@ -235,13 +234,13 @@ const Actions = {
       cache: false,
       type: "POST",
       data: { signal_name: signal_name, pid: pid },
-      success: function(response) {
+      success: function(response: any) {
         Actions.add_console_entries(
           response.message,
           constants.console_entry_type.GDBGUI_OUTPUT
         );
       },
-      error: function(response) {
+      error: function(response: any) {
         if (response.responseJSON && response.responseJSON.message) {
           Actions.add_console_entries(
             Util.escape_HTML(response.responseJSON.message),

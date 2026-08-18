@@ -7,7 +7,6 @@ import Util from "./Util";
 void React;
 
 let debug_print: any;
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'debug'.
 if (debug) {
   /* global debug */
   debug_print = console.info;
@@ -47,10 +46,9 @@ let FileFetcher = {
     };
 
     $.ajax({
-      beforeSend: function(xhr) {
+      beforeSend: function(xhr: JQueryXHR) {
         xhr.setRequestHeader(
           "x-csrftoken",
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
           initial_data.csrf_token
         ); /* global initial_data */
       },
@@ -58,7 +56,7 @@ let FileFetcher = {
       cache: false,
       type: "GET",
       data: data,
-      success: function(response) {
+      success: function(response: any) {
         response.source_code;
         let source_code_obj = {};
         let linenum = response.start_line;
@@ -75,7 +73,7 @@ let FileFetcher = {
           response.num_lines_in_file
         );
       },
-      error: function(response) {
+      error: function(response: any) {
         if (response.responseJSON && response.responseJSON.message) {
           Actions.add_console_entries(
             Util.escape_HTML(response.responseJSON.message),

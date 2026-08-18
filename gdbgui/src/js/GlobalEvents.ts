@@ -15,7 +15,6 @@ const GlobalEvents = {
       }
     };
     $("body").on("keydown", GlobalEvents.body_keydown);
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'tooltip' does not exist on type 'JQuery<... Remove this comment to see the full error message
     $('[data-toggle="tooltip"]').tooltip();
 
     window.onbeforeunload = () =>

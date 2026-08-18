@@ -21,7 +21,6 @@ let log: {
   (message?: any, ...optionalParams: any[]): void;
   (): void;
 };
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'debug'.
 if (debug) {
   log = console.info;
 } else {
@@ -34,7 +33,6 @@ if (debug) {
  * This object contains methods to interact with
  * gdb, but does not directly render anything in the DOM.
  */
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'initial_data' does not exist on type 'Wi... Remove this comment to see the full error message
 const initial_data = window.initial_data;
 let socket: SocketIOClient.Socket;
 const GdbApi = {

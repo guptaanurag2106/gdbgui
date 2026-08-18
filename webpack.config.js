@@ -1,20 +1,31 @@
 const path = require("path");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
-module.exports = {
+
+module.exports = (env, argv) => ({
+  context: __dirname,
   entry: {
     main: "./gdbgui/src/js/gdbgui.tsx",
     dashboard: "./gdbgui/src/js/dashboard.tsx"
   },
-  devtool: "source-map",
+  devtool: argv.mode === "development" ? "source-map" : false,
   output: {
-    path: path.resolve(__dirname, "gdbgui/static/js/")
+    path: path.resolve(__dirname, "gdbgui/static/js/"),
   },
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader", "postcss-loader"]
+        use: [
+                "style-loader",
+                {
+                  loader: "css-loader",
+                    options: {
+                    url: false
+                  }
+                },
+                "postcss-loader"
+            ]
       },
       {
         test: /\.(j|t)sx?$/,
@@ -29,11 +40,18 @@ module.exports = {
           }
         ],
         exclude: /node_modules/
-      }
+      },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/,
+        type: 'asset/resource',
+      },
     ]
   },
-  plugins: [new ForkTsCheckerWebpackPlugin({})],
+  plugins: [new ForkTsCheckerWebpackPlugin()],
   resolve: {
     extensions: [".js", ".ts", ".tsx", ".css"]
+  },
+  watchOptions: {
+    ignored: /node_modules/,
   }
-};
+});

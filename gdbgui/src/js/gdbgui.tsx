@@ -39,7 +39,6 @@ const store_options = {
 };
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'initialize' does not exist on type '{ ge... Remove this comment to see the full error message
 store.initialize(initial_store_data, store_options);
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'debug'.
 if (debug) {
   // log call store changes in console except if changed key was in
   // constants.keys_to_not_log_changes_in_console
@@ -131,7 +130,6 @@ class Gdbgui extends React.PureComponent<{}, any> {
     );
   }
   componentDidMount() {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'debug'.
     if (debug) {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'getUnwatchedKeys' does not exist on type... Remove this comment to see the full error message
       console.warn(store.getUnwatchedKeys());

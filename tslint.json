@@ -8,8 +8,7 @@
   "globals": {
     "initial_data": true,
     "module": true,
-    "_": true,
-    "moment": true
+    "$": true,
   },
   "jsRules": {
     "indent": {

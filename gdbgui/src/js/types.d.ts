@@ -14,3 +14,19 @@ declare module "statorgfc" {
     logChanges(key: string, oldval: any, newval: any): bool;
   };
 }
+
+declare var $: any;
+declare var jQuery: any;
+declare var initial_data: {
+  csrf_token: string;
+  gdbgui_version: string;
+  gdbpid: number;
+  gdb_command: string;
+  initial_binary_and_args: string[];
+  project_home: string | null;
+  remap_sources: any;
+  themes: string[];
+  signals: any;
+  using_windows: boolean;
+};
+declare var debug: boolean;

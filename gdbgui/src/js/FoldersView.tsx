@@ -41,7 +41,6 @@ class FoldersView extends React.Component<{}, State> {
     );
 
     this.max_filesystem_entries = 300;
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
     this.project_home = initial_data.project_home; /* global initial_data */
     this.onToggle = this.onToggle.bind(this);
     this.onClickName = this.onClickName.bind(this);
