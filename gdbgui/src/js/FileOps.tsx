@@ -555,6 +555,7 @@ const FileOps = {
       );
     } else {
       console.warn("not fetching undefined file");
+      return null;
     }
   },
   /**

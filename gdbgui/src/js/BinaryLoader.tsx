@@ -67,6 +67,10 @@ class BinaryLoader extends React.Component<{}, State> {
       title =
         "Attach to a process pid or a file file outside of GDB, or a thread group gid. If attaching to a thread group, the id previously returned by ‘-list-thread-groups --available’ must be used. Note: to do this, you usually need to run gdbgui as sudo.";
       placeholder = "pid | gid | file";
+    } else {
+      button_text = "Unknown";
+      title = "Unknown";
+      placeholder = "Unknown";
     }
 
     return (

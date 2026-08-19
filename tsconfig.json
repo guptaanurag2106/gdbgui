@@ -1,21 +1,39 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "downlevelIteration": true,
-    "forceConsistentCasingInFileNames": true,
-    "jsx": "react",
-    "lib": ["dom", "es2015", "es2016.array.include"],
+    "target": "es2018",
     "module": "esnext",
-    "moduleResolution": "node",
-    "newLine": "LF",
-    "noEmitOnError": false,
-    "outDir": "dist",
-    "preserveConstEnums": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
+    "moduleResolution": "bundler",
+
+    "lib": ["dom", "dom.iterable", "es2018"],
+
+    "jsx": "react",
+
     "strict": true,
-    "target": "es5",
-    "allowSyntheticDefaultImports": true
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    "allowJs": true,
+    "noEmitOnError": false,
+
+    "sourceMap": true,
+    "outDir": "dist",
+
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": false, //TODO: Turn these on eventually
+    "noUnusedLocals": true,
+    "noUnusedParameters": false, 
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": false,
+
+    "moduleDetection": "force"
   },
-  "include": ["./gdbgui/src/js/*", "./gdbgui/src/js/types.d.ts"]
+  "include": [
+    "./gdbgui/src/js/**/*",
+    "./gdbgui/src/js/types.d.ts"
+  ]
 }
+

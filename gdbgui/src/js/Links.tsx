@@ -4,8 +4,8 @@ import CopyToClipboard from "./CopyToClipboard";
 import MemoryLink from "./MemoryLink";
 
 type Props = {
-  file?: string;
-  fullname?: string;
+  file: string | undefined;
+  fullname: string | undefined;
   line: string;
   num_lines?: number;
 };

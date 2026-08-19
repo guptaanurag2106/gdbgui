@@ -161,7 +161,7 @@ export class Terminals extends React.Component {
     // gdbguiPty is written to elsewhere
     store.set("gdbguiPty", gdbguiPty);
 
-    const interval = setInterval(() => {
+    setInterval(() => {
       fitAddon.fit();
       programFitAddon.fit();
       gdbguiFitAddon.fit();

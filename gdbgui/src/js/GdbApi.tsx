@@ -6,7 +6,6 @@ import { store } from "statorgfc";
 import Registers from "./Registers";
 import Memory from "./Memory";
 import Actions from "./Actions";
-import GdbVariable from "./GdbVariable";
 import constants from "./constants";
 import process_gdb_response from "./process_gdb_response";
 import React from "react";
