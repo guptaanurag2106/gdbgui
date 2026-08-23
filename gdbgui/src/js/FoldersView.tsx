@@ -194,12 +194,11 @@ class FoldersView extends React.Component<{}, State> {
         });
     }
     for (let path of relative_source_paths) {
+      let depth = 0;
       let new_node,
         names = path.split("/").filter((n: any) => n !== ""),
         curnode = rootnode,
-        // @ts-expect-error ts-migrate(2448) FIXME: Block-scoped variable 'depth' used before its decl... Remove this comment to see the full error message
         toggled = depth === 0;
-      let depth = 0;
       for (let name of names) {
         let child = get_child_node_with_name(name, curnode);
         if (child) {

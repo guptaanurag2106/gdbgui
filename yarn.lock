@@ -694,13 +694,6 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.9.tgz#cf3f0e876d7bee15a93ab925b82bf570a3904a24"
   integrity sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==
 
-"@types/flot@^0.0.36":
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/@types/flot/-/flot-0.0.36.tgz#59961afa913561236ed7dd2f2c710de0695ec3e2"
-  integrity sha512-xRo4MUIMnRPGXJCuQXAWvo+uKRmziRGHAy9LQHsLgbKanknpe5z3EThqVuYkVCC6ZWPZ/8pllBXnzQmGzFkJ/Q==
-  dependencies:
-    "@types/jquery" "*"
-
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.1", "@types/istanbul-lib-coverage@^2.0.6":
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/@types/istanbul-lib-coverage/-/istanbul-lib-coverage-2.0.6.tgz#7739c232a1fee9b4d3ce8985f314c0c6d33549d7"
@@ -727,11 +720,6 @@
   dependencies:
     expect "^30.0.0"
     pretty-format "^30.0.0"
-
-"@types/jquery@*":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@types/jquery/-/jquery-4.0.1.tgz#7c08ca6492876b70e11e4724af35b347069038cd"
-  integrity sha512-9a59A/tycXgYuPABcp6/3spSShn0NT2UOM4EfHvMumjYi4lJWTsK5SZWjhx3yRm9IHGCeWXdV2YfNsrWrft/CA==
 
 "@types/jquery@3.5.1":
   version "3.5.1"

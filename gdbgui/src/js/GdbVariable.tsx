@@ -11,6 +11,7 @@ import { store } from "statorgfc";
 import GdbApi from "./GdbApi";
 import CopyToClipboard from "./CopyToClipboard";
 import Actions from "./Actions";
+import Graph from "./Graph";
 
 /**
  * Simple object to manage fetching of child variables. Maintains a queue of parent expressions
@@ -352,8 +353,6 @@ class GdbVariable extends React.Component {
         ? () => GdbVariable.click_toggle_children_visibility(mi_obj.name)
         : () => {};
     if (mi_obj.can_plot && mi_obj.show_plot) {
-      // dots are not allowed in the dom as id's. replace with '-'.
-      let id = mi_obj.dom_id_for_plot;
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
       plot_button = (
         <span
@@ -364,7 +363,14 @@ class GdbVariable extends React.Component {
         />
       );
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
-      plot_content = <div id={id} className="plot" />;
+      plot_content = (
+        <Graph
+          data={mi_obj.values}
+          data_version={mi_obj.data_version}
+          minSize={300}
+          maxSize={500}
+        />
+      );
     } else if (mi_obj.can_plot && !mi_obj.show_plot) {
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
       plot_button = (
@@ -535,19 +541,18 @@ class GdbVariable extends React.Component {
 
     GdbVariable._update_numeric_properties(new_obj);
 
-    new_obj.dom_id_for_plot = new_obj.name
-      .replace(/\./g, "-") // replace '.' with '-'
-      .replace(/\$/g, "_") // replace '$' with '-'
-      .replace(/\[/g, "_") // replace '[' with '_'
-      .replace(/\]/g, "_"); // replace ']' with '_'
     new_obj.show_plot = false; // used when rendering to decide whether to show plot or not
+
+    // change each data push/pop/change. sorta hack to trigger graph re-render on data change without its ref changing,
+    // to also not trigger graph render if data doesn't change, but the gdbvariable is re-rendered
+    new_obj.data_version = 0;
     // push to this array each time a new value is assigned if value is numeric.
     // Plots use this data
     if (new_obj.value.indexOf("0x") === 0) {
-      new_obj.values = [parseInt(new_obj.value, 16)];
+      new_obj.values = [[0, parseInt(new_obj.value, 16)]];
       new_obj._radix = 16;
     } else if (!window.isNaN(parseFloat(new_obj.value))) {
-      new_obj.values = [parseFloat(new_obj.value)];
+      new_obj.values = [[0, parseFloat(new_obj.value)]];
       if (new_obj.is_char) {
         new_obj._radix = -1; // radix -1 means char but we allow it to be represented as base <x>
       } else if (new_obj.is_int) {
@@ -606,73 +611,6 @@ class GdbVariable extends React.Component {
       }
     } else if (obj.is_string) {
       obj._int_value_to_str_in_radix = obj.value;
-    }
-  }
-  /**
-   * function render a plot on an existing element
-   * @param obj: object to make a plot for
-   */
-  static _make_plot(obj: any) {
-    let id = "#" + obj.dom_id_for_plot, // this div should have been created already
-      jq = $(id),
-      data = [],
-      i = 0;
-
-    // collect data
-    for (let val of obj.values) {
-      data.push([i, val]);
-      i++;
-    }
-
-    // make the plot
-    $.plot(
-      jq,
-      [
-        {
-          data: data,
-          shadowSize: 0,
-          color: "#33cdff"
-        }
-      ],
-      {
-        series: {
-          lines: { show: true },
-          points: { show: true }
-        },
-        grid: { hoverable: true, clickable: false }
-      }
-    );
-
-    // add hover event to show tooltip
-    jq.bind("plothover", function(
-      event: JQuery.TriggeredEvent,
-      pos: any,
-      item: any | null
-    ) {
-      if (item) {
-        let x = item.datapoint[0],
-          y = item.datapoint[1];
-
-        $("#plot_coordinate_tooltip")
-          .html(`(${x}, ${y})`)
-          .css({ top: item.pageY + 5, left: item.pageX + 5 })
-          .show();
-      } else {
-        $("#plot_coordinate_tooltip").hide();
-      }
-    });
-  }
-  /**
-   * look through all expression objects and see if they are supposed to show their plot.
-   * If so, update the dom accordingly
-   * @param obj: expression object to plot (may have children to plot too)
-   */
-  static plot_var_and_children(obj: any) {
-    if (obj.show_plot) {
-      GdbVariable._make_plot(obj);
-    }
-    for (let child of obj.children) {
-      GdbVariable.plot_var_and_children(child);
     }
   }
   static fetch_and_show_children_for_var(gdb_var_name: any) {
@@ -765,7 +703,8 @@ class GdbVariable extends React.Component {
         GdbVariable._update_numeric_properties(obj);
         GdbVariable._update_radix_values(obj);
         if (obj.can_plot) {
-          obj.values.push(obj._float_value);
+          obj.values.push([obj.values.length, obj._float_value]);
+          obj.data_version++;
         }
         store.set("expressions", expressions);
       } else {

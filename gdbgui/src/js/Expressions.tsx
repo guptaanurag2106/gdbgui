@@ -19,6 +19,7 @@ class Expressions extends React.Component {
     );
     // only render variables in scope that were not created for the Locals component
     this.objs_to_render = sorted_expression_objs.filter(
+      //TODO: does it just remove not in scope variable? may be just show not in scope
       (obj: any) => obj.in_scope === "true" && obj.expr_type === "expr"
     );
     this.objs_to_delete = sorted_expression_objs.filter(
@@ -32,6 +33,7 @@ class Expressions extends React.Component {
       <GdbVariable
         // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
         obj={obj}
+        //same key no need for re-renders
         key={obj.expression}
         expression={obj.expression}
         expr_type="expr"
@@ -44,9 +46,6 @@ class Expressions extends React.Component {
         </span>
       );
     }
-    content.push(
-      <div key="tt" id="plot_coordinate_tooltip" style={{ display: "hidden" }} />
-    );
 
     return (
       <div>
@@ -70,12 +69,6 @@ class Expressions extends React.Component {
       </div>
     );
   }
-  componentDidUpdate() {
-    for (let obj of this.objs_to_render) {
-      GdbVariable.plot_var_and_children(obj);
-    }
-  }
-
   static keydown_on_input(e: any) {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
       let expr = e.currentTarget.value,
