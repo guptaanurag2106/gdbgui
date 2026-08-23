@@ -35,6 +35,8 @@ class CompletionDropdown extends React.Component<
   items: DropdownItem[] = [];
   timer: number | null = null;
   ulRef = React.createRef<HTMLUListElement>();
+  _search_tokens: string[] = [];
+  _damerau_cache: Map<string, number> = new Map();
 
   static defaultProps = {
     debounceDelay: 10,
@@ -73,9 +75,9 @@ class CompletionDropdown extends React.Component<
   make_array_of_str(str: string): string[] {
     let str_array: string[] = [];
     let temp_str = "";
-    let temp_str_l = 0;
     let last_type = -1; // 0 means lowercase, 1 means upper case, 2 means digit
-    for (let i = 0; i < str.length; i++) {
+    const str_len = str.length;
+    for (let i = 0; i < str_len; i++) {
       let char = str[i];
       let curr_type = -1;
       const code = char.charCodeAt(0);
@@ -89,34 +91,33 @@ class CompletionDropdown extends React.Component<
       }
 
       if (char === " " || char === "\n" || char === "\r" || char === "\t") {
-        if (temp_str_l > 0) {
+        if (temp_str.length > 0) {
           str_array.push(temp_str);
-          temp_str_l = 0;
           temp_str = "";
         }
-      } else if (curr_type >= 0) {
-        if (
-          (curr_type === 2 && last_type !== 2) ||
-          (curr_type === 1 && last_type === 0)
-        ) {
-          if (temp_str_l > 0) {
+      } else {
+        if (curr_type >= 0) {
+          if (
+            (curr_type === 1 && last_type === 0) ||
+            (curr_type === 2 && last_type !== 2)
+          ) {
+            if (temp_str.length > 0) {
+              str_array.push(temp_str);
+              temp_str = "";
+            }
+          }
+          temp_str += char;
+          last_type = curr_type;
+        } else {
+          if (temp_str.length > 0) {
             str_array.push(temp_str);
-            temp_str_l = 0;
             temp_str = "";
           }
-        }
-        temp_str_l++;
-        temp_str += char;
-      } else {
-        if (temp_str_l > 0) {
-          str_array.push(temp_str);
-          temp_str_l = 0;
-          temp_str = "";
+          continue;
         }
       }
-      last_type = curr_type;
     }
-    if (temp_str_l > 0) {
+    if (temp_str.length > 0) {
       str_array.push(temp_str);
     }
     return str_array;
@@ -124,14 +125,27 @@ class CompletionDropdown extends React.Component<
 
   // least to towards edges, max at around 80% then again reduce
   // more emphasis to file name, then extension then folder/path
+  // so gradual increase from 0 to rise_end, then plateau around rise_end to fall_start, then fall down
   position_score(i: number, len: number): number {
     const t = i / (len - 1);
+    const rise_end = 0.7;
+    const fall_start = 0.9;
 
-    let weight: number;
-    if (t < 0.8) weight = 0.4 + 0.8 * t;
-    else weight = 1.04 - (0.3 * (t - 0.8)) / 0.2;
+    function smoothstep(x: number): number {
+      x = Math.max(0, Math.min(1, x));
+      return x * x * (3 - 2 * x);
+    }
 
-    return weight;
+    if (t < rise_end) {
+      return 0.5 + 0.5 * smoothstep(t / rise_end);
+    }
+
+    if (t < fall_start) {
+      return 1.0;
+    }
+
+    const s = smoothstep((t - fall_start) / (1.0 - fall_start));
+    return 1.0 - 0.25 * s;
   }
 
   damerauLevenshtein(a: string, b: string): number {
@@ -192,84 +206,115 @@ class CompletionDropdown extends React.Component<
     return H[m + 1][n + 1];
   }
 
+  get_damerau(a: string, b: string): number {
+    const key = a + "\0" + b;
+    let d = this._damerau_cache.get(key);
+    if (d === undefined) {
+      d = this.damerauLevenshtein(a, b);
+      this._damerau_cache.set(key, d);
+    }
+    return d;
+  }
+
   // arr1 is the search term, arr2 the string to search in
-  match_score(arr1: string[], arr2: string[]): number {
+  match_score(arr2: string[]): number {
+    const arr1 = this._search_tokens;
     let match_score = 0;
-    let last_match = -1;
     let matched = 0;
-    let found2 = Array(arr2.length).fill(false);
-    for (let fa of arr1) {
+    const arr2_len = arr2.length;
+    let found2 = new Uint8Array(arr2_len);
+    const matches: number[] = [];
+    let arr1_len = arr1.length;
+    for (let i = 0; i < arr1_len; i++) {
+      let fa = arr1[i];
+      let fa_len = fa.length;
       let current_match_score = 0;
       let best_i = -1;
       let best_l = Infinity;
-      for (let i = 0; i < arr2.length; i++) {
+
+      for (let j = 0; j < arr2_len; j++) {
         let l = 10000000;
-        if (arr2[i] === fa) {
+        const arr2_j = arr2[j];
+        const arr2_j_len = arr2_j.length;
+        if (arr2_j === fa) {
           best_l = 0;
-          best_i = i;
+          best_i = j;
           break;
         }
-        const index = arr2[i].indexOf(fa);
-        if (index === 0) {
-          l = (arr2[i].length - fa.length) / arr2[i].length;
-        } else if (index > 0) {
-          l = (arr2[i].length + index) / (2 * arr2[i].length);
-        } else {
-          if (Math.abs(fa.length - arr2[i].length) > 3) {
-            l = 1;
-          } else {
-            l =
-              this.damerauLevenshtein(fa, arr2[i]) / Math.max(fa.length, arr2[i].length);
+        if (fa_len < arr2_j_len) {
+          const index = arr2_j.indexOf(fa);
+          if (index >= 0) {
+            const x = 1 - fa_len / arr2_j_len;
+            l = 0.6 * x * x + index / arr2_j_len;
+            if (l < best_l) {
+              best_l = l;
+              best_i = j;
+              continue;
+            }
           }
+        }
+
+        const len_diff = fa_len - arr2_j_len;
+        if (len_diff > 4 || len_diff < -4) {
+          l = 1;
+        } else {
+          l = this.get_damerau(fa, arr2_j) / Math.max(arr2_j_len, fa_len);
         }
         if (l < best_l) {
           best_l = l;
-          best_i = i;
+          best_i = j;
         }
       }
-      if (best_l > 0.7) {
+
+      const cap = 0.5;
+      if (best_l >= cap) {
         current_match_score += 0;
-        continue;
-      }
-
-      if (best_l === 0) {
-        current_match_score += 100;
+        match_score += current_match_score;
       } else {
-        current_match_score += 100 * (1 - best_l * best_l);
-      }
+        current_match_score += 80 * (1 - best_l * best_l);
 
-      if (last_match === -1) {
-        last_match = best_i;
-      } else {
-        // add points for correct order, and close by
-        if (best_i <= last_match) current_match_score -= 20;
-        else {
-          current_match_score += Math.max(30 - (best_i - last_match - 1) * 2, 0);
-          if (best_i - last_match === 1) {
-            // a bit more score for consecutive match
-            current_match_score += 20;
-          }
-          last_match = best_i;
+        // Remember the match. Order/proximity is calculated after all
+        // search tokens have been matched.
+        matches.push(best_i);
+
+        if (found2[best_i]) {
+          current_match_score -= 30;
+        } else {
+          found2[best_i] = 1;
         }
 
-        if (!found2[best_i]) {
-          // not repeat find
-          current_match_score += 50;
-          found2[best_i] = true;
-        }
+        // IMP: specifically for file paths, matching file names (ignoring other path, ext) is bonus
+        current_match_score += 15 * this.position_score(best_i, arr2_len);
+
+        match_score += current_match_score * fa_len;
+        // matched another search token
+        matched++;
+      }
+    }
+    const matches_len = matches.length;
+    for (let i = 1; i < matches_len; i++) {
+      const previous = matches[i - 1];
+      const current = matches[i];
+
+      // correct order
+      if (current > previous) {
+        match_score += 50;
       }
 
-      // matched another search token
-      matched++;
+      // add points for being close
+      const distance = Math.abs(current - previous) - 1;
 
-      // IMP: specifically for file paths, matching file names (ignoring other path, ext) is bonus
-      current_match_score += 50 * this.position_score(best_i, arr2.length);
+      // proximity bonus, max 50
+      match_score += Math.max(50 - distance * 3, 0);
 
-      match_score += current_match_score * fa.length;
+      if (distance === 0) {
+        match_score += 30;
+      }
     }
-    if (matched === arr1.length) {
-      match_score += 30;
-    }
+    // penalize every query token that didn't match any candidate token:
+    // an all-token match must outrank a partial one
+    const matched_ratio = matched / arr1_len;
+    match_score *= matched_ratio * matched_ratio;
     return match_score;
   }
 
@@ -298,16 +343,22 @@ class CompletionDropdown extends React.Component<
       }
     } else {
       const field_array = this.make_array_of_str(term);
+      this._search_tokens = field_array;
+      this._damerau_cache.clear();
       const scores: Array<{ i: number; score: number }> = [];
       for (let i = 0; i < this.items.length; i++) {
-        const score = this.match_score(field_array, this.items[i].tokens);
-        if (score > 0) {
+        const score = this.match_score(this.items[i].tokens);
+        if (score != 0) {
           scores.push({ i, score });
         }
       }
       scores.sort((a, b) => b.score - a.score);
-      for (const obj of scores) {
-        results.push(this.items[obj.i].text);
+      if (scores.length > 0) {
+        const max_score = scores[0].score;
+        for (const obj of scores) {
+          if (obj.score / max_score <= 0.5) break;
+          results.push(this.items[obj.i].text);
+        }
       }
     }
     this.setState({ results, currentIndex: -1 });
