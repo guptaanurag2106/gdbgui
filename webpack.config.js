@@ -1,6 +1,7 @@
 const path = require("path");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 module.exports = (env, argv) => {
   const is_dev = argv.mode === "development";
@@ -13,7 +14,9 @@ module.exports = (env, argv) => {
     },
     devtool: is_dev ? "source-map" : false,
     output: {
-      path: path.resolve(__dirname, "gdbgui/static/js/"),
+      path: path.resolve(__dirname, "gdbgui/static/"),
+      filename: "js/[name].js",
+      clean: false, // can make to !is_dev after removing vendor folder
     },
     cache: {
       type: "filesystem",
@@ -26,7 +29,7 @@ module.exports = (env, argv) => {
         {
           test: /\.css$/,
           use: [
-                  "style-loader",
+                  is_dev? "style-loader": MiniCssExtractPlugin.loader,
                   {
                     loader: "css-loader",
                       options: {
@@ -57,13 +60,22 @@ module.exports = (env, argv) => {
     plugins: [
       new ForkTsCheckerWebpackPlugin({
         async: is_dev
-      })
+      }),
+      is_dev? null: new MiniCssExtractPlugin({
+        filename: "css/[name].css",
+      }),
     ],
     resolve: {
       extensions: [".js", ".ts", ".tsx", ".css"]
     },
     watchOptions: {
       ignored: /node_modules/,
-    }
+    },
+    optimization: {
+      minimizer: [
+        "...",
+        new CssMinimizerPlugin(),
+      ],
+    },
   }
 };

@@ -29,8 +29,8 @@ import ToolTip from "./ToolTip";
 import TopBar from "./TopBar";
 import ToolTipTourguide from "./ToolTipTourguide";
 
-import "../../static/css/gdbgui.css";
-import "../../static/css/splitjs-gdbgui.css";
+import "../css/gdbgui.css";
+import "../css/splitjs-gdbgui.css";
 import { Terminals } from "./Terminals";
 
 const store_options = {

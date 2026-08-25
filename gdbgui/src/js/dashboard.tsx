@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import React, { useState } from "react";
-import "../../static/css/tailwind.css";
+import "../css/gdbgui.css";
 
 type GdbguiSession = {
   pid: number;

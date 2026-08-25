@@ -14,5 +14,6 @@ yarn-error.log
 venv
 site
 gdbgui/static/js/*
+gdbgui/static/css/*
 __pycache__
 .coverage*
