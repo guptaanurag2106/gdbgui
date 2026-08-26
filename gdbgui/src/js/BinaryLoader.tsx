@@ -29,7 +29,8 @@ class BinaryLoader extends React.Component<{}, State> {
       user_input: props.initial_user_input.join(" "),
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message
       initial_set_target_app: props.initial_user_input.length, // if user supplied initial binary, load it immediately
-      target_type: TARGET_TYPES.file
+      target_type: TARGET_TYPES.file,
+      dropdown_open: false
     };
     try {
       // @ts-expect-error ts-migrate(2542) FIXME: Index signature in type 'Readonly<any>' only permi... Remove this comment to see the full error message
@@ -76,11 +77,15 @@ class BinaryLoader extends React.Component<{}, State> {
     return (
       <form style={{ marginBottom: 1, flex: "2 0 0" }}>
         <div className="input-group input-group-sm">
-          <div className="dropdown input-group-btn">
+          <div
+            className={`dropdown input-group-btn  ${
+              this.state.dropdown_open ? "open" : ""
+            }`}
+          >
             <button
               className="btn btn-primary dropdown-toggle"
               type="button"
-              data-toggle="dropdown"
+              onClick={() => this.setState({ dropdown_open: !this.state.dropdown_open })}
             >
               <span className="caret" />
             </button>
@@ -89,7 +94,12 @@ class BinaryLoader extends React.Component<{}, State> {
               <li>
                 <a
                   className="pointer"
-                  onClick={() => this.setState({ target_type: TARGET_TYPES.file })}
+                  onClick={() =>
+                    this.setState({
+                      target_type: TARGET_TYPES.file,
+                      dropdown_open: false
+                    })
+                  }
                 >
                   Load Binary
                 </a>
@@ -97,7 +107,12 @@ class BinaryLoader extends React.Component<{}, State> {
               <li>
                 <a
                   className="pointer"
-                  onClick={() => this.setState({ target_type: TARGET_TYPES.server })}
+                  onClick={() =>
+                    this.setState({
+                      target_type: TARGET_TYPES.server,
+                      dropdown_open: false
+                    })
+                  }
                 >
                   Connect to gdbserver
                 </a>
@@ -105,7 +120,12 @@ class BinaryLoader extends React.Component<{}, State> {
               <li>
                 <a
                   className="pointer"
-                  onClick={() => this.setState({ target_type: TARGET_TYPES.process })}
+                  onClick={() =>
+                    this.setState({
+                      target_type: TARGET_TYPES.process,
+                      dropdown_open: false
+                    })
+                  }
                 >
                   Attach to Process
                 </a>

@@ -63,8 +63,8 @@ const process_gdb_response = function(response_array: any) {
       ) {
         // we tried to fetch disassembly for a newer version of gdb, but it didn't work
         // try again with mode 3, for older gdb api's
-        store.set("gdb_version_array", [7, 6, 0]);
-        store.set("gdb_version", "7.6.0");
+        // store.set("gdb_version_array", [7, 6, 0]);
+        // store.set("gdb_version", "7.6.0");
         // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '3' is not assignable to paramete... Remove this comment to see the full error message
         FileOps.fetch_assembly_cur_line(3);
       } else if (

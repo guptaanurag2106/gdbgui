@@ -131,6 +131,7 @@ def serve(session):
 def build(session):
     """Build python distribution (sdist and wheels)"""
     session.install(*publish_deps)
+    autoformat(session)
     session.run("rm", "-rf", "dist", "build", external=True)
     session.run("yarn", external=True)
     session.run("yarn", "build", external=True)

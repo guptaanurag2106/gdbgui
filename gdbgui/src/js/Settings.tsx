@@ -145,7 +145,6 @@ class Settings extends React.Component {
             <button
               className="btn btn-success"
               onClick={() => Settings.toggle_key("show_settings")}
-              data-dismiss="modal"
             >
               Close
             </button>

@@ -13,7 +13,8 @@ class InferiorProgramInfo extends React.Component<{}, State> {
     this.get_dropdown = this.get_dropdown.bind(this);
     this.state = {
       selected_signal: "SIGINT",
-      other_pid: ""
+      other_pid: "",
+      dropdown_open: false
     };
     store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
   }
@@ -52,18 +53,22 @@ class InferiorProgramInfo extends React.Component<{}, State> {
   }
   get_dropdown() {
     return (
-      <div className="dropdown btn-group">
+      <div className={`dropdown btn-group ${this.state.dropdown_open ? "open" : ""}`}>
         <button
           className="btn btn-default btn-xs dropdown-toggle"
           type="button"
-          data-toggle="dropdown"
+          onClick={() => this.setState({ dropdown_open: !this.state.dropdown_open })}
         >
           {this.state.selected_signal}
           <span className="caret" style={{ marginLeft: "5px" }}>
             {" "}
           </span>
         </button>
-        <ul className="dropdown-menu" style={{ maxHeight: "300px", overflow: "auto" }}>
+        <ul
+          className="dropdown-menu"
+          style={{ maxHeight: "300px", overflow: "auto" }}
+          onClick={() => this.setState({ dropdown_open: false })}
+        >
           {this.get_signal_choices("selected_signal")}
         </ul>
       </div>

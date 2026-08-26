@@ -15,7 +15,6 @@ const GlobalEvents = {
       }
     };
     $("body").on("keydown", GlobalEvents.body_keydown);
-    $('[data-toggle="tooltip"]').tooltip();
 
     window.onbeforeunload = () =>
       "text here makes dialog appear when exiting. Set function to back to null for nomal behavior.";

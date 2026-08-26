@@ -77,92 +77,97 @@ let show_session_info = function() {
   );
 };
 
-const menu = (
-  <ul
-    style={{ height: 25, padding: 0, paddingRight: "15px", fontSize: "1.3em" }}
-    className="nav navbar-nav navbar-right"
-  >
-    <li id="menudropdown" className="dropdown">
-      <a
-        href="#"
-        data-toggle="dropdown"
-        role="button"
-        style={{ height: 25, padding: 0, paddingRight: 20 }}
-        className="dropdown-toggle"
-      >
-        <span className="glyphicon glyphicon-menu-hamburger"> </span>
-      </a>
-      <ul className="dropdown-menu">
-        <li>
-          <a title="dashboard" className="pointer" href="/dashboard">
-            Dashboard
-          </a>
-        </li>
-        <li>
-          <a
-            title="show guide"
-            className="pointer"
-            onClick={ToolTipTourguide.start_guide}
-          >
-            Show Guide
-          </a>
-        </li>
-        <li>
-          <a onClick={show_session_info} className="pointer">
-            Session Information
-          </a>
-        </li>
+let get_menu = function(open: boolean, on_toggle: () => void) {
+  return (
+    <ul
+      style={{ height: 25, padding: 0, paddingRight: "15px", fontSize: "1.3em" }}
+      className="nav navbar-nav navbar-right"
+    >
+      <li id="menudropdown" className={`dropdown ${open ? "open" : ""}`}>
+        <a
+          href="#"
+          role="button"
+          style={{ height: 25, padding: 0, paddingRight: 20 }}
+          className="dropdown-toggle"
+          onClick={e => {
+            e.preventDefault();
+            on_toggle();
+          }}
+        >
+          <span className="glyphicon glyphicon-menu-hamburger"> </span>
+        </a>
+        <ul className="dropdown-menu" onClick={() => on_toggle()}>
+          <li>
+            <a title="dashboard" className="pointer" href="/dashboard">
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a
+              title="show guide"
+              className="pointer"
+              onClick={ToolTipTourguide.start_guide}
+            >
+              Show Guide
+            </a>
+          </li>
+          <li>
+            <a onClick={show_session_info} className="pointer">
+              Session Information
+            </a>
+          </li>
 
-        <li role="separator" className="divider" />
-        <li>
-          <a href="https://github.com/cs01/gdbgui" className="pointer">
-            GitHub
-          </a>
-        </li>
-        <li>
-          <a href="http://gdbgui.com" className="pointer">
-            Homepage
-          </a>
-        </li>
+          <li role="separator" className="divider" />
+          <li>
+            <a href="https://github.com/cs01/gdbgui" className="pointer">
+              GitHub
+            </a>
+          </li>
+          <li>
+            <a href="http://gdbgui.com" className="pointer">
+              Homepage
+            </a>
+          </li>
 
-        <li>
-          <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
-            YouTube Channel
-          </a>
-        </li>
+          <li>
+            <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
+              YouTube Channel
+            </a>
+          </li>
 
-        <li role="separator" className="divider" />
-        <li>
-          <a onClick={show_license} className="pointer">
-            License
-          </a>
-        </li>
-        <li>
-          <a onClick={About.show_about} className="pointer">
-            About gdbgui
-          </a>
-        </li>
-      </ul>
+          <li role="separator" className="divider" />
+          <li>
+            <a onClick={show_license} className="pointer">
+              License
+            </a>
+          </li>
+          <li>
+            <a onClick={About.show_about} className="pointer">
+              About gdbgui
+            </a>
+          </li>
+        </ul>
 
-      <ToolTipTourguide
-        // @ts-expect-error ts-migrate(2322) FIXME: Property 'top' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
-        top={"100%"}
-        left={"-300px"}
-        step_num={0}
-        content={
-          <div>
-            <h5>Welcome to gdbgui.</h5>
-            <p>
-              This guide can be shown at any time by clicking the menu button,
-              <span className="glyphicon glyphicon-menu-hamburger"> </span>, then clicking
-              "Show Guide".
-            </p>
-          </div>
-        }
-      />
-    </li>
-  </ul>
-);
+        <ToolTipTourguide
+          // @ts-expect-error ts-migrate(2322) FIXME: Property 'top' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
+          top={"100%"}
+          left={"-300px"}
+          step_num={0}
+          content={
+            <div>
+              <h5>Welcome to gdbgui.</h5>
+              <p>
+                This guide can be shown at any time by clicking the menu button,
+                <span className="glyphicon glyphicon-menu-hamburger"> </span>, then
+                clicking "Show Guide".
+              </p>
+            </div>
+          }
+        />
+      </li>
+    </ul>
+  );
+};
 
 type State = any;
 
@@ -175,7 +180,8 @@ class TopBar extends React.Component<{}, State> {
     // state local to the component
     this.state = {
       assembly_flavor: "intel", // default to intel (choices are 'att' or 'intel')
-      show_spinner: false
+      show_spinner: false,
+      show_hamburger_menu: false
     };
     // global state attached to this component
     store.connectComponentState(
@@ -387,7 +393,9 @@ class TopBar extends React.Component<{}, State> {
             className="pointer glyphicon glyphicon-cog"
             style={{ marginRight: "10px", fontSize: "1.3em" }}
           />
-          {menu}
+          {get_menu(this.state.show_hamburger_menu, () =>
+            this.setState({ show_hamburger_menu: !this.state.show_hamburger_menu })
+          )}
         </div>
 
         {/* @ts-expect-error ts-migrate(2322) FIXME: Object literal may only specify known properties, ... Remove this comment to see the full error message */}
