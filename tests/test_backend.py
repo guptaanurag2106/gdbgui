@@ -54,7 +54,13 @@ def test_get_initial_binary_and_args():
         "./program",
         "--args",
     ]
-    assert cli.get_initial_binary_and_args(["./program", "--args",], None) == [
+    assert cli.get_initial_binary_and_args(
+        [
+            "./program",
+            "--args",
+        ],
+        None,
+    ) == [
         "./program",
         "--args",
     ]

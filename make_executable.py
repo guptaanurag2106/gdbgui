@@ -4,7 +4,6 @@
 Build an executable of gdbgui for the current platform
 """
 
-
 import subprocess
 from sys import platform
 from gdbgui import __version__

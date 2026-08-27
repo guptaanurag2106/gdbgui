@@ -21,7 +21,7 @@ class Pty:
 
     def __init__(self, *, cmd: Optional[str] = None, echo: bool = True):
         if cmd:
-            (child_pid, fd) = pty.fork()
+            child_pid, fd = pty.fork()
             if child_pid == 0:
                 # this is the child process fork.
                 # anything printed here will show up in the pty, including the output
@@ -42,7 +42,7 @@ class Pty:
                 self.stdout = fd
                 self.pid = child_pid
         else:
-            (master, slave) = pty.openpty()
+            master, slave = pty.openpty()
             self.stdin = master
             self.stdout = master
             self.slave_fd = slave
@@ -50,7 +50,7 @@ class Pty:
             self.set_echo(echo)
 
     def close(self):
-        for fd_attr in ("stdin", "stdout", "slave_fd"):
+        for fd_attr in ("stdin", "stdout"):
             fd = getattr(self, fd_attr, None)
             if fd is not None:
                 try:
@@ -58,9 +58,16 @@ class Pty:
                 except OSError:
                     pass
                 setattr(self, fd_attr, None)
+        # do slave_fd manually because vulture thinks it is unused
+        if self.slave_fd is not None:
+            try:
+                os.close(self.slave_fd)
+            except OSError:
+                pass
+            self.slave_fd = None
 
     def set_echo(self, echo_on: bool) -> None:
-        (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = termios.tcgetattr(self.stdin)
+        iflag, oflag, cflag, lflag, ispeed, ospeed, cc = termios.tcgetattr(self.stdin)
         if echo_on:
             lflag = lflag | termios.ECHO  # type: ignore
         else:
@@ -83,7 +90,7 @@ class Pty:
         if self.stdout is None:
             return None
         timeout_sec = 0
-        (data_to_read, _, _) = select.select([self.stdout], [], [], timeout_sec)
+        data_to_read, _, _ = select.select([self.stdout], [], [], timeout_sec)
         if data_to_read:
             try:
                 response = os.read(self.stdout, self.max_read_bytes).decode()

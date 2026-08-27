@@ -19,7 +19,6 @@ from gdbgui.server.app import app, socketio
 from gdbgui.server.constants import DEFAULT_GDB_EXECUTABLE, DEFAULT_HOST, DEFAULT_PORT
 from gdbgui.server.server import run_server
 
-
 logger = logging.getLogger(__name__)
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 

@@ -22,7 +22,7 @@ prettier_command = [
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
 lint_dependencies = [
-    "black==22.10.0",
+    "black==26.5.1",
     "vulture",
     "flake8",
     "mypy==1.6.1",
@@ -115,10 +115,11 @@ def docs(session):
 @nox.session(reuse_venv=True)
 def develop(session):
     session.install("-e", ".")
+    session.install("watchfiles")
     session.run("yarn", "install", external=True)
     print("Watching JavaScript file and Python files for changes")
     with subprocess.Popen(["yarn", "start"]):
-        session.run("python", "-m", "gdbgui")
+        session.run("watchfiles", "python -m gdbgui --debug")
 
 
 @nox.session(reuse_venv=True)
@@ -131,6 +132,8 @@ def serve(session):
 def build(session):
     """Build python distribution (sdist and wheels)"""
     session.install(*publish_deps)
+    lint(session)
+    tests(session)
     autoformat(session)
     session.run("rm", "-rf", "dist", "build", external=True)
     session.run("yarn", external=True)
