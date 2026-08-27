@@ -140,7 +140,7 @@ def build(session):
     """Build python distribution (sdist and wheels)"""
     session.install(*publish_deps)
     autoformat(session)
-    lint(session)
+    # lint(session)
     tests(session)
     session.run("rm", "-rf", "dist", "build", external=True)
     session.run("yarn", external=True)

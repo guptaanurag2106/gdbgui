@@ -6,7 +6,7 @@ import time
 from collections import defaultdict
 from typing import Dict, List, Optional, Set
 
-from pygdbmi.IoManager import IoManager
+from .iomanager import IoManager
 
 from .ptylib import Pty
 
