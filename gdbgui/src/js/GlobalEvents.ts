@@ -14,7 +14,7 @@ const GlobalEvents = {
         e.preventDefault();
       }
     };
-    $("body").on("keydown", GlobalEvents.body_keydown);
+    document.body.addEventListener("keydown", GlobalEvents.body_keydown);
 
     window.onbeforeunload = () =>
       "text here makes dialog appear when exiting. Set function to back to null for nomal behavior.";

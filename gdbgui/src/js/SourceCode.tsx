@@ -14,11 +14,10 @@ import Actions from "./Actions";
 type State = any;
 
 class SourceCode extends React.Component<{}, State> {
-  static el_code_container = null; // todo: no jquery
-  static el_code_container_node = null;
-  static code_container_node = null;
-  static view_more_top_node = null;
-  static view_more_bottom_node = null;
+  static el_code_container = React.createRef<HTMLDivElement>();
+  static view_more_top_node = React.createRef<HTMLTableRowElement>();
+  static view_more_bottom_node = React.createRef<HTMLTableRowElement>();
+  static scroll_to_line = React.createRef<HTMLTableRowElement>();
 
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
@@ -44,6 +43,7 @@ class SourceCode extends React.Component<{}, State> {
     ]);
 
     // bind methods
+    // TODO: whyy bind????
     this.get_body_assembly_only = this.get_body_assembly_only.bind(this);
     this._get_source_line = this._get_source_line.bind(this);
     this._get_assm_row = this._get_assm_row.bind(this);
@@ -175,20 +175,20 @@ class SourceCode extends React.Component<{}, State> {
       row_class.push("flash");
     }
 
-    let id = "";
+    let assign_scroll_to_line_ref = false;
     if (
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.PAUSED_FRAME
     ) {
       if (is_gdb_paused_on_this_line) {
-        id = "scroll_to_line";
+        assign_scroll_to_line_ref = true;
       }
     } else if (
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.USER_SELECTION
     ) {
       if (line_should_flash) {
-        id = "scroll_to_line";
+        assign_scroll_to_line_ref = true;
       }
     }
 
@@ -212,7 +212,11 @@ class SourceCode extends React.Component<{}, State> {
     }
 
     return (
-      <tr id={id} key={line_num_being_rendered} className={`${row_class.join(" ")}`}>
+      <tr
+        ref={assign_scroll_to_line_ref ? SourceCode.scroll_to_line : null}
+        key={line_num_being_rendered}
+        className={`${row_class.join(" ")}`}
+      >
         {this.get_linenum_td(line_num_being_rendered, gutter_cls)}
 
         <td style={{ verticalAlign: "top" }} className="loc">
@@ -300,7 +304,7 @@ class SourceCode extends React.Component<{}, State> {
   get_view_more_tr(fullname: any, linenum: any, node_key: any) {
     return (
       // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      <tr key={linenum} className="srccode" ref={el => (SourceCode[node_key] = el)}>
+      <tr key={linenum} className="srccode" ref={SourceCode[node_key]}>
         <td />
         <td
           onClick={() => {
@@ -424,8 +428,8 @@ class SourceCode extends React.Component<{}, State> {
       line_num_being_rendered++;
     }
 
-    SourceCode.view_more_top_node = null;
-    SourceCode.view_more_bottom_node = null;
+    SourceCode.view_more_top_node = React.createRef();
+    SourceCode.view_more_bottom_node = React.createRef();
 
     // add "view more" buttons if necessary
     if (start_linenum_to_render > start_linenum) {
@@ -476,22 +480,22 @@ class SourceCode extends React.Component<{}, State> {
     );
   }
   static make_current_line_visible() {
-    return SourceCode._make_jq_selector_visible($("#scroll_to_line"));
+    return SourceCode._make_selector_visible(SourceCode.scroll_to_line);
   }
-  static is_source_line_visible(jq_selector: any) {
-    if (jq_selector.length !== 1) {
+  static is_source_line_visible(ref: React.RefObject<any>) {
+    if (!ref.current || !this.el_code_container.current) {
       // make sure something is selected before trying to scroll to it
-      throw "Unexpected jquery selector";
+      throw "Unexpected ref";
     }
 
-    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-    let top_of_container = SourceCode.el_code_container.position().top,
-      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-      height_of_container = SourceCode.el_code_container.height(),
+    const ref_bounding_rect = ref.current.getBoundingClientRect();
+    const el_code_container_rect = this.el_code_container.current.getBoundingClientRect();
+    let top_of_container = el_code_container_rect.top,
+      height_of_container = el_code_container_rect?.height,
       bottom_of_container = top_of_container + height_of_container,
-      top_of_line = jq_selector.position().top,
-      bottom_of_line = top_of_line + jq_selector.height(),
-      top_of_table = jq_selector.closest("table").position().top,
+      top_of_line = ref_bounding_rect.top,
+      bottom_of_line = top_of_line + ref_bounding_rect.height,
+      top_of_table = ref.current.closest("table").getBoundingClientRect().top,
       is_visible =
         top_of_line >= top_of_container && bottom_of_line <= bottom_of_container;
 
@@ -502,26 +506,28 @@ class SourceCode extends React.Component<{}, State> {
     }
   }
   /**
-   * Scroll to a jQuery selection in the source code table
+   * Scroll to a selection in the source code table
    * Used to jump around to various lines
    * returns true on success
    */
-  static _make_jq_selector_visible(jq_selector: any) {
-    if (jq_selector.length === 1) {
+  static _make_selector_visible(selector: React.RefObject<HTMLTableRowElement>) {
+    if (selector.current) {
       // make sure something is selected before trying to scroll to it
       const {
         is_visible,
         top_of_line,
         top_of_table,
         height_of_container
-      } = SourceCode.is_source_line_visible(jq_selector);
+      } = SourceCode.is_source_line_visible(selector);
 
       if (!is_visible) {
         // line is out of view, scroll so it's in the middle of the table
-        const time_to_scroll = 0;
         let scroll_top = top_of_line - (top_of_table + height_of_container / 2);
         // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-        SourceCode.el_code_container.animate({ scrollTop: scroll_top }, time_to_scroll);
+        SourceCode.el_code_container.current.scrollTo({
+          top: scroll_top,
+          behavior: "smooth"
+        });
       }
       return true;
     } else {

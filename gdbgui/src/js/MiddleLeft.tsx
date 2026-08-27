@@ -9,7 +9,7 @@ import FileOps from "./FileOps";
 class MiddleLeft extends React.Component {
   fetch_more_at_top_timeout: any;
   onscroll_timeout: any;
-  source_code_container_node: any;
+  source_code_container_node = React.createRef<HTMLDivElement>();
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
@@ -22,18 +22,15 @@ class MiddleLeft extends React.Component {
       <div
         id="code_container"
         style={{ overflow: "auto", height: "100%" }}
-        ref={el => (this.source_code_container_node = el)}
+        ref={this.source_code_container_node}
+        onScroll={this.onscroll_container}
       >
         <SourceCode />
       </div>
     );
   }
   componentDidMount() {
-    SourceCode.el_code_container = $("#code_container"); // todo: no jquery
-
-    if (this.source_code_container_node) {
-      this.source_code_container_node.onscroll = this.onscroll_container.bind(this);
-    }
+    SourceCode.el_code_container = this.source_code_container_node;
   }
 
   onscroll_container() {
@@ -47,7 +44,7 @@ class MiddleLeft extends React.Component {
     let fetching_for_top = false; // don't fetch for more at bottom and top at same time
     if (SourceCode.view_more_top_node) {
       let { is_visible } = SourceCode.is_source_line_visible(
-        $(SourceCode.view_more_top_node)
+        SourceCode.view_more_top_node
       );
       if (is_visible) {
         fetching_for_top = true;
@@ -57,7 +54,7 @@ class MiddleLeft extends React.Component {
 
     if (!fetching_for_top && SourceCode.view_more_bottom_node) {
       let { is_visible } = SourceCode.is_source_line_visible(
-        $(SourceCode.view_more_bottom_node)
+        SourceCode.view_more_bottom_node
       );
       if (is_visible) {
         FileOps.fetch_more_source_at_end();

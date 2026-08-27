@@ -27,9 +27,31 @@ const Util = {
 
       try {
         err.responseJSON = await response.json();
+      } catch {
+        err.statusText = await response.text();
+      }
+      throw err;
+    }
+    return response.json();
+  },
+  post_json: async function<T>(url: string, data: Record<any, unknown> = {}): Promise<T> {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "x-csrftoken": initial_data.csrf_token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const err: any = new Error(response.statusText);
+      err.status = response.status;
+      try {
+        err.responseJSON = await response.json();
       } catch {}
       throw err;
     }
+
     return response.json();
   },
   persist_value_for_key: function(key: any) {
@@ -143,10 +165,10 @@ const Util = {
     return output;
   },
   /* Return true is latest is > current
-          1.0.0, 0.9.9 -> true
-          0.1.0, 0.0.9 -> true
-          0.0.9, 0.0.8 -> false
-        */
+            1.0.0, 0.9.9 -> true
+            0.1.0, 0.0.9 -> true
+            0.0.9, 0.0.8 -> false
+          */
   is_newer(latest: any, current: any) {
     latest = latest.split(".");
     current = current.split(".");

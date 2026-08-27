@@ -10,6 +10,7 @@ import constants from "./constants";
 import process_gdb_response from "./process_gdb_response";
 import React from "react";
 import io from "socket.io-client";
+import Util from "./Util";
 void React; // needed when using JSX, but not marked as used
 /* global debug */
 
@@ -375,17 +376,13 @@ const GdbApi = {
     GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()]);
   },
   get_inferior_binary_last_modified_unix_sec(path: any) {
-    $.ajax({
-      beforeSend: function(xhr: { setRequestHeader: (arg0: string, arg1: any) => void }) {
-        xhr.setRequestHeader("x-csrftoken", initial_data.csrf_token);
-      },
-      url: "/get_last_modified_unix_sec",
-      cache: false,
-      method: "GET",
-      data: { path: path },
-      success: GdbApi._recieve_last_modified_unix_sec,
-      error: GdbApi._error_getting_last_modified_unix_sec
-    });
+    Util.get_json("/get_last_modified_unix_sec", { path: path })
+      .then((response: any) => {
+        GdbApi._recieve_last_modified_unix_sec(response);
+      })
+      .catch((err: any) => {
+        GdbApi._error_getting_last_modified_unix_sec(err);
+      });
   },
   get_insert_break_cmd: function(fullname: any, line: any) {
     return [`-break-insert "${fullname}:${line}"`];

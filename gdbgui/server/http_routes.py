@@ -203,8 +203,9 @@ def kill_session():
 
 @blueprint.route("/send_signal_to_pid", methods=["POST"])
 def send_signal_to_pid():
-    signal_name = request.form.get("signal_name", "").upper()
-    pid_str = str(request.form.get("pid"))
+    data = request.get_json()
+    signal_name = data.get("signal_name", "").upper()
+    pid_str = str(data.get("pid"))
     try:
         pid_int = int(pid_str)
     except ValueError:

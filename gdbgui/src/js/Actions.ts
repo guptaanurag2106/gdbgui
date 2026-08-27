@@ -223,39 +223,27 @@ const Actions = {
     localStorage.setItem("max_lines_of_code_to_fetch", JSON.stringify(new_value));
   },
   send_signal(signal_name: any, pid: any) {
-    $.ajax({
-      beforeSend: function(xhr: JQueryXHR) {
-        xhr.setRequestHeader(
-          "x-csrftoken",
-          initial_data.csrf_token
-        ); /* global initial_data */
-      },
-      url: "/send_signal_to_pid",
-      cache: false,
-      type: "POST",
-      data: { signal_name: signal_name, pid: pid },
-      success: function(response: any) {
+    Util.post_json("/send_signal_to_pid", { signal_name: signal_name, pid: pid })
+      .then((response: any) => {
         Actions.add_console_entries(
           response.message,
           constants.console_entry_type.GDBGUI_OUTPUT
         );
-      },
-      error: function(response: any) {
-        if (response.responseJSON && response.responseJSON.message) {
+      })
+      .catch((err: any) => {
+        if (err.responseJSON && err.responseJSON.message) {
           Actions.add_console_entries(
-            Util.escape_HTML(response.responseJSON.message),
+            Util.escape_HTML(err.responseJSON.message),
             constants.console_entry_type.STD_ERR
           );
         } else {
           Actions.add_console_entries(
-            `${response.statusText} (${response.status} error)`,
+            `${err.statusText} (${err.status} error)`,
             constants.console_entry_type.STD_ERR
           );
         }
-        console.error(response);
-      },
-      complete: function() {}
-    });
+        console.error(err);
+      });
   }
 };
 

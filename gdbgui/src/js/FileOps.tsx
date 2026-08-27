@@ -20,6 +20,7 @@ let FileFetcher = {
   _is_fetching: false,
   _queue: [],
   _fetch: function(fullname: any, start_line: any, end_line: any) {
+    FileFetcher._is_fetching = true;
     if (FileOps.is_missing_file(fullname)) {
       // file doesn't exist and we already know about it
       // don't keep trying to fetch disassembly
@@ -36,8 +37,6 @@ let FileFetcher = {
       FileFetcher._fetch_next();
     }
 
-    FileFetcher._is_fetching = true;
-
     const data = {
       start_line: start_line,
       end_line: end_line,
@@ -45,18 +44,8 @@ let FileFetcher = {
       highlight: store.get("highlight_source_code")
     };
 
-    $.ajax({
-      beforeSend: function(xhr: JQueryXHR) {
-        xhr.setRequestHeader(
-          "x-csrftoken",
-          initial_data.csrf_token
-        ); /* global initial_data */
-      },
-      url: "/read_file",
-      cache: false,
-      type: "GET",
-      data: data,
-      success: function(response: any) {
+    Util.get_json("/read_file", data)
+      .then((response: any) => {
         response.source_code;
         let source_code_obj = {};
         let linenum = response.start_line;
@@ -72,30 +61,29 @@ let FileFetcher = {
           response.last_modified_unix_sec,
           response.num_lines_in_file
         );
-      },
-      error: function(response: any) {
-        if (response.responseJSON && response.responseJSON.message) {
+      })
+      .catch((err: any) => {
+        if (err.responseJSON && err.responseJSON.message) {
           Actions.add_console_entries(
-            Util.escape_HTML(response.responseJSON.message),
+            Util.escape_HTML(err.responseJSON.message),
             constants.console_entry_type.STD_ERR
           );
         } else {
           Actions.add_console_entries(
-            `${response.statusText} (${response.status} error)`,
+            `${err.statusText} (${err.status} error)`,
             constants.console_entry_type.STD_ERR
           );
         }
         FileOps.add_missing_file(fullname);
-      },
-      complete: function() {
+      })
+      .finally(() => {
         FileFetcher._is_fetching = false;
 
         // @ts-expect-error ts-migrate(2339) FIXME: Property 'fullname' does not exist on type 'never'... Remove this comment to see the full error message
         FileFetcher._queue = FileFetcher._queue.filter(o => o.fullname !== fullname);
 
         FileFetcher._fetch_next();
-      }
-    });
+      });
   },
   _fetch_next: function() {
     if (FileFetcher._is_fetching) {
@@ -491,6 +479,7 @@ const FileOps = {
     );
   },
   fetch_more_source_at_end() {
+    //FIX:this doesn't call `Actions.view_file` like `fetch_more_source_at_beginning` does
     store.set("source_code_infinite_scrolling", true);
 
     let fullname = store.get("fullname_to_render");
@@ -500,8 +489,7 @@ const FileOps = {
 
     let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (source_file_obj) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-      end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname)); // don't go past the end of the line
+      end_line = Math.min(end_line, source_file_obj.num_lines_in_file); // don't go past the end of the line
     }
 
     let start_line = end_line - store.get("max_lines_of_code_to_fetch");
@@ -509,6 +497,8 @@ const FileOps = {
     store.set("source_linenum_to_display_end", end_line);
     store.set("source_linenum_to_display_start", start_line);
 
+    //TODO: fetches the full range again, could be a lot of overlap with what is already cached
+    // because `Fileops.lines_are_cached` wants all line to be cached
     FileFetcher.fetch(
       fullname,
       store.get("source_linenum_to_display_start"),

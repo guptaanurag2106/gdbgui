@@ -20,16 +20,27 @@ class HoverVar extends React.Component {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
 
-    // when hovering over a potential variable
-    $("body").on("mouseover", "#code_table span.n", HoverVar.mouseover_variable);
-    $("body").on("mouseleave", "#code_table span.n", HoverVar.mouseout_variable);
-
-    $("body").on("mouseover", "#code_table span.nx", HoverVar.mouseover_variable);
-    $("body").on("mouseleave", "#code_table span.nx", HoverVar.mouseout_variable);
-
-    // when hovering over the hover var "tooltip"-like window
-    $("body").on("mouseenter", "#hovervar", HoverVar.mouseover_hover_window);
-    $("body").on("mouseleave", "#hovervar", HoverVar.mouseout_hover_window);
+    // when hovering over a potential variable in the source code table
+    document.body.addEventListener("mouseover", e => {
+      if (e.target instanceof HTMLElement) {
+        if (
+          e.target.closest("#code_table span.n") ||
+          e.target.closest("#code_table span.nx")
+        ) {
+          HoverVar.mouseover_variable(e);
+        }
+      }
+    });
+    document.body.addEventListener("mouseout", e => {
+      if (e.target instanceof HTMLElement) {
+        if (
+          e.target.closest("#code_table span.n") ||
+          e.target.closest("#code_table span.nx")
+        ) {
+          HoverVar.mouseout_variable(e);
+        }
+      }
+    });
 
     store.connectComponentState(this, ["expressions"]);
   }
@@ -42,7 +53,7 @@ class HoverVar extends React.Component {
     this.obj = obj;
     if (obj) {
       let is_dark = store.get("current_theme") === "monokai";
-      let style = {
+      let style: React.CSSProperties = {
         position: "absolute",
         left: HoverVar.left + "px",
         top: HoverVar.top + "px",
@@ -51,8 +62,12 @@ class HoverVar extends React.Component {
         borderColor: is_dark ? "#555" : undefined
       };
       return (
-        // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type '"absolute... Remove this comment to see the full error message
-        <div style={style} id="hovervar">
+        <div
+          style={style}
+          id="hovervar"
+          onMouseEnter={HoverVar.mouseover_hover_window}
+          onMouseLeave={HoverVar.mouseout_hover_window}
+        >
           <GdbVariable
             // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
             obj={obj}
