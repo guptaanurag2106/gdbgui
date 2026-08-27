@@ -409,7 +409,7 @@ class TopBar extends React.Component<{}, State> {
               className="btn btn-default btn-xs"
               title="Toggle file explorer visibility"
               onClick={() => {
-                let middle_pane_sizes = store.get("middle_panes_split_obj").getSizes(),
+                let middle_pane_sizes = store.get("middle_sizes"),
                   file_explorer_size = middle_pane_sizes[0],
                   source_size = middle_pane_sizes[1],
                   sidebar_size = middle_pane_sizes[2],
@@ -423,7 +423,8 @@ class TopBar extends React.Component<{}, State> {
                   new_source_size = source_size + file_explorer_size / 2;
                   new_sidebar_size = sidebar_size + file_explorer_size / 2;
                 } else {
-                  new_file_explorer_size = 30;
+                  // show it - use stored sizes or defaults
+                  new_file_explorer_size = Math.max(30, file_explorer_size || 30);
                   new_source_size = Math.max(
                     30,
                     source_size - new_file_explorer_size / 2
@@ -432,21 +433,13 @@ class TopBar extends React.Component<{}, State> {
                 }
 
                 store.set("show_filesystem", !store.get("show_filesystem"));
-                localStorage.setItem(
-                  "show_filesystem",
-                  JSON.stringify(store.get("show_filesystem"))
-                ); // save this for next session
-                store
-                  .get("middle_panes_split_obj")
-                  .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
-                localStorage.setItem(
-                  "middle_panes_sizes",
-                  JSON.stringify([
-                    new_file_explorer_size,
-                    new_source_size,
-                    new_sidebar_size
-                  ])
-                );
+                const new_sizes = [
+                  new_file_explorer_size,
+                  new_source_size,
+                  new_sidebar_size
+                ];
+                store.set("middle_sizes", new_sizes);
+                localStorage.setItem("middle_sizes", JSON.stringify(new_sizes));
               }}
             >
               {store.get("show_filesystem") ? "Hide filesystem" : "Show filesystem"}

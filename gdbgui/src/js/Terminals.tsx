@@ -52,10 +52,9 @@ export class Terminals extends React.Component {
   }
 
   terminal(ref: React.RefObject<any>) {
-    let className = " bg-black p-0 m-0 h-full align-baseline ";
     return (
-      <div className={className}>
-        <div className="absolute h-full w-1/3 align-baseline  " ref={ref}></div>
+      <div className="relative bg-black p-0 m-0 h-full w-full">
+        <div className="absolute inset-0" ref={ref}></div>
       </div>
     );
   }
@@ -189,10 +188,15 @@ export class Terminals extends React.Component {
       });
     }, 2000);
 
-    setTimeout(() => {
+    const handleResize = () => {
       fitAddon.fit();
       programFitAddon.fit();
       gdbguiFitAddon.fit();
+    };
+    window.addEventListener("resize", handleResize);
+
+    setTimeout(() => {
+      handleResize();
     }, 0);
   }
 }

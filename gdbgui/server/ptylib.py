@@ -59,7 +59,7 @@ class Pty:
                     pass
                 setattr(self, fd_attr, None)
         # do slave_fd manually because vulture thinks it is unused
-        if self.slave_fd is not None:
+        if hasattr(self, "slave_fd") and self.slave_fd is not None:
             try:
                 os.close(self.slave_fd)
             except OSError:

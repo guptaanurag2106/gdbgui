@@ -248,7 +248,7 @@ class BinaryLoader extends React.Component<{}, State> {
     return { binary: binary, args: args.join(" ") };
   }
   set_target_app() {
-    let user_input = this.state.user_input.trim();
+    let user_input = (this.state.user_input || "").trim();
 
     if (user_input === "") {
       Actions.add_console_entries(

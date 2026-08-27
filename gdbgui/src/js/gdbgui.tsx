@@ -6,13 +6,13 @@
  *
  */
 
-/* global Split */
 /* global initial_data */
 /* global debug */
 
 import ReactDOM from "react-dom";
 import React from "react";
 import { store, middleware } from "statorgfc";
+import Split from "react-split";
 
 import constants from "./constants";
 import GdbApi from "./GdbApi";
@@ -30,7 +30,6 @@ import TopBar from "./TopBar";
 import ToolTipTourguide from "./ToolTipTourguide";
 
 import "../css/gdbgui.css";
-import "../css/splitjs-gdbgui.css";
 import { Terminals } from "./Terminals";
 
 const store_options = {
@@ -63,7 +62,7 @@ class Gdbgui extends React.PureComponent<{}, any> {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    store.connectComponentState(this, ["current_theme"]);
+    store.connectComponentState(this, ["current_theme", "middle_sizes"]);
   }
   render() {
     return (
@@ -71,43 +70,92 @@ class Gdbgui extends React.PureComponent<{}, any> {
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message */}
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-        <div id="middle" style={{ paddingTop: "60px" }}>
-          <div id="folders_view" className="content" style={{ backgroundColor: "#333" }}>
-            <FoldersView />
-          </div>
-
-          <div id="source_code_view" className="content">
-            <MiddleLeft />
-          </div>
-
-          <div id="controls_sidebar" className="content" style={{ overflowX: "visible" }}>
-            {/* @ts-expect-error ts-migrate(2769) FIXME: Property 'signals' does not exist on type 'Intrins... Remove this comment to see the full error message */}
-            <RightSidebar signals={initial_data.signals} debug={debug} />
-          </div>
-        </div>
-
-        <div
-          id="bottom"
-          className="split split-horizontal"
-          style={{ width: "100%", height: "100%" }}
+        <Split
+          direction="vertical"
+          sizes={[70, 30]}
+          gutterSize={8}
+          cursor="row-resize"
+          minSize={[100, 50]}
+          onDrag={() => window.dispatchEvent(new Event("resize"))}
+          style={{
+            height: "100%",
+            width: "100%",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column"
+          }}
         >
-          <ToolTipTourguide
-            // @ts-expect-error ts-migrate(2322) FIXME: Property 'step_num' does not exist on type 'Intrin... Remove this comment to see the full error message
-            step_num={4}
-            position={"topleft"}
-            content={
-              <div>
-                <h5>You can view gdb's output here.</h5>
-                You usually don't need to enter commands here, but you have the option to
-                if there is something you can't do in the UI.
+          <div
+            id="middle"
+            style={{ paddingTop: "60px", boxSizing: "border-box" }}
+            className="flex flex-col overflow-hidden"
+          >
+            <Split
+              direction="horizontal"
+              sizes={this.state.middle_sizes}
+              gutterSize={8}
+              cursor="col-resize"
+              minSize={[0, 100, 100]}
+              expandToMin={false}
+              onDrag={() => window.dispatchEvent(new Event("resize"))}
+              onDragEnd={(sizes: number[]) => {
+                store.set("middle_sizes", sizes);
+                localStorage.setItem("middle_sizes", JSON.stringify(sizes));
+              }}
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "row"
+              }}
+            >
+              <div
+                id="folders_view"
+                className="content"
+                style={{ backgroundColor: "#333" }}
+              >
+                <FoldersView />
               </div>
-            }
-          />
 
-          <div id="bottom_content" className="split content">
-            <Terminals />
+              <div id="source_code_view" className="content">
+                <MiddleLeft />
+              </div>
+
+              <div id="controls_sidebar" className="content">
+                {/* @ts-expect-error ts-migrate(2769) FIXME: Property 'signals' does not exist on type 'Intrins... Remove this comment to see the full error message */}
+                <RightSidebar signals={initial_data.signals} debug={debug} />
+              </div>
+            </Split>
           </div>
-        </div>
+
+          <div id="bottom" className="flex flex-col overflow-hidden">
+            <ToolTipTourguide
+              // @ts-expect-error ts-migrate(2322) FIXME: Property 'step_num' does not exist on type 'Intrin... Remove this comment to see the full error message
+              step_num={4}
+              position={"topleft"}
+              content={
+                <div>
+                  <h5>You can view gdb's output here.</h5>
+                  You usually don't need to enter commands here, but you have the option
+                  to if there is something you can't do in the UI.
+                </div>
+              }
+            />
+
+            <div
+              id="bottom_content"
+              className="content"
+              style={{
+                flex: 1,
+                minHeight: 0,
+                backgroundColor: "#000"
+              }}
+            >
+              <Terminals />
+            </div>
+          </div>
+        </Split>
 
         {/* below are elements that are only displayed under certain conditions */}
         <Modal />
@@ -134,71 +182,6 @@ class Gdbgui extends React.PureComponent<{}, any> {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'getUnwatchedKeys' does not exist on type... Remove this comment to see the full error message
       console.warn(store.getUnwatchedKeys());
     }
-    // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
-    let middle_sizes = store.get("show_filesystem") ? [30, 40, 29] : [0, 70, 29];
-    try {
-      if (localStorage.hasOwnProperty("middle_panes_sizes")) {
-        // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-        const cached = JSON.parse(localStorage.getItem("middle_panes_sizes"));
-        if (
-          Array.isArray(cached) &&
-          cached.length === 3 &&
-          cached.every((v: any) => typeof v === "number" && isFinite(v))
-        ) {
-          middle_sizes = cached;
-        }
-      }
-    } catch (e) {
-      void e;
-    }
-
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'Split'.
-    let middle_panes_split_obj = Split(
-      ["#folders_view", "#source_code_view", "#controls_sidebar"],
-      {
-        gutterSize: 8,
-        minSize: 100,
-        cursor: "col-resize",
-        direction: "horizontal", // horizontal makes a left/right pane, and a divider running vertically
-        sizes: middle_sizes, // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
-        onDragEnd: () => {
-          const sizes = middle_panes_split_obj.getSizes();
-          localStorage.setItem("middle_panes_sizes", JSON.stringify(sizes));
-        }
-      }
-    );
-
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'Split'.
-    Split(["#middle", "#bottom"], {
-      gutterSize: 8,
-      cursor: "row-resize",
-      direction: "vertical", // vertical makes a top and bottom pane, and a divider running horizontally
-      sizes: [70, 30]
-    });
-
-    store.set("middle_panes_split_obj", middle_panes_split_obj);
-
-    // Fetch the latest version only if using in normal mode. If debugging, we tend to
-    // refresh quite a bit, which might make too many requests to github and cause them
-    // to block our ip? Either way it just seems weird to make so many ajax requests.
-    // TODO: commented for now as the only subscriber to `latest_gdbgui_version`
-    // is TopBar.tsx, which uses it in `needs_to_update_gdbgui_version` to see if you need to upgrade,
-    // doesn't ever do anything with that info (the function is never called)
-    // if (!store.get("debug")) {
-    //   // fetch version
-    //   $.ajax({
-    //     url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
-    //     cache: false,
-    //     method: "GET",
-    //     success: data => {
-    //       store.set("latest_gdbgui_version", data.trim());
-    //     },
-    //     error: data => {
-    //       void data;
-    //       store.set("latest_gdbgui_version", "(could not contact server)");
-    //     }
-    //   });
-    // }
   }
 }
 

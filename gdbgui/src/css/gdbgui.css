@@ -13,6 +13,41 @@ body {
   padding: 0px;
   height: 100%;
 }
+/* split layout */
+.splitjs_container {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  background-color: #333;
+}
+.split {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.content {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.gutter {
+  background-color: #3e3e3e;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+}
+.gutter:hover {
+  background-color: #0284c7;
+}
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+  height: 100%;
+}
+.gutter.gutter-vertical {
+  cursor: row-resize;
+  width: 100%;
+}
 pre {
   overflow: visible !important;
 }

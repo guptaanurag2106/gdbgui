@@ -109,7 +109,7 @@ const initial_store_data = {
   queuedGdbCommands: [],
 
   show_filesystem: false,
-  middle_panes_split_obj: {},
+  middle_sizes: [30, 40, 29] as number[],
   gdbguiPty: null
 };
 
