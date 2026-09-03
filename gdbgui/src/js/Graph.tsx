@@ -87,7 +87,7 @@ class Graph extends React.Component<Props, State> {
       width: this.initial_width,
       show_reset: false
     };
-    store.connectComponentState(this, ["current_theme"]);
+    store.connectComponentState(this, ["theme"]);
   }
 
   componentDidMount() {
@@ -128,7 +128,7 @@ class Graph extends React.Component<Props, State> {
   componentDidUpdate(prev_props: Props, prev_state: any) {
     if (
       prev_props.data_version !== this.props.data_version ||
-      prev_state.current_theme !== this.state.current_theme
+      prev_state.theme !== this.state.theme
     ) {
       this._apply_font();
       this._render_static();
@@ -151,7 +151,7 @@ class Graph extends React.Component<Props, State> {
   }
 
   private _colors() {
-    return THEME_COLORS[this.state.current_theme] || THEME_COLORS.monokai;
+    return THEME_COLORS[this.state.theme] || THEME_COLORS.monokai;
   }
 
   private _sync_canvas_size(w: number, h: number) {
@@ -548,10 +548,10 @@ class Graph extends React.Component<Props, State> {
   };
 
   render() {
-    const is_dark = this.state.current_theme === "monokai";
+    const is_dark = this.state.theme === "monokai";
 
     return (
-      <div className={this.state.current_theme}>
+      <div className={this.state.theme}>
         {this.props.title ? (
           <div className="lighttext" style={{ marginBottom: "4px", fontSize: "0.9em" }}>
             {this.props.title}

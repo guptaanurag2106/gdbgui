@@ -1,5 +1,4 @@
 import React from "react";
-import Util from "./Util";
 import { store } from "statorgfc";
 
 type State = any;
@@ -23,9 +22,8 @@ class ToolTipTourguide extends React.Component<{}, State> {
     store.set("num_tour_guide_steps", store.get("num_tour_guide_steps") + 1);
   }
   static dismiss() {
-    store.set("show_tour_guide", false);
     store.set("tour_guide_step", 0);
-    Util.persist_value_for_key("show_tour_guide");
+    store.set("show_tour_guide", false);
   }
   static next() {
     store.set("tour_guide_step", store.get("tour_guide_step") + 1);
@@ -34,9 +32,7 @@ class ToolTipTourguide extends React.Component<{}, State> {
     store.set("tour_guide_step", 0);
   }
   static start_guide() {
-    store.set("tour_guide_step", 0);
     store.set("show_tour_guide", true);
-    Util.persist_value_for_key("show_tour_guide");
   }
   componentDidUpdate() {
     // @ts-expect-error ts-migrate(2551) FIXME: Property 'ref' does not exist on type 'ToolTipTour... Remove this comment to see the full error message

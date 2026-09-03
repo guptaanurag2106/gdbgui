@@ -2,6 +2,7 @@ import { store } from "statorgfc";
 import Actions from "./Actions";
 import ToolTip from "./ToolTip";
 import React from "react";
+import { toggle_config_key, update_config_key } from "./Config";
 
 /**
  * Settings modal when clicking the gear icon
@@ -15,7 +16,7 @@ class Settings extends React.Component {
     super();
     store.connectComponentState(this, [
       "debug",
-      "current_theme",
+      "theme",
       "themes",
       "gdb_version",
       "gdb_pid",
@@ -30,10 +31,6 @@ class Settings extends React.Component {
       this
     );
   }
-  static toggle_key(key: any) {
-    store.set(key, !store.get(key));
-    localStorage.setItem(key, JSON.stringify(store.get(key)));
-  }
   static get_checkbox_row(store_key: any, text: any) {
     return (
       <tr>
@@ -43,7 +40,7 @@ class Settings extends React.Component {
               <input
                 type="checkbox"
                 checked={store.get(store_key)}
-                onChange={() => Settings.toggle_key(store_key)}
+                onChange={() => toggle_config_key(store_key)}
               />
               {text}
             </label>
@@ -107,10 +104,10 @@ class Settings extends React.Component {
             <td>
               Theme:{" "}
               <select
-                value={store.get("current_theme")}
+                value={store.get("theme")}
                 onChange={function(e) {
-                  store.set("current_theme", e.currentTarget.value);
-                  localStorage.setItem("theme", e.currentTarget.value);
+                  store.set("theme", e.currentTarget.value);
+                  update_config_key("theme", e.currentTarget.value);
                 }}
               >
                 {store.get("themes").map((t: any) => (
@@ -131,12 +128,12 @@ class Settings extends React.Component {
         ref={el => (this.settings_node = el)}
         onClick={e => {
           if (e.target === this.settings_node) {
-            Settings.toggle_key("show_settings");
+            store.set("show_settings", !store.get("show_settings"));
           }
         }}
       >
         <div id="gdb_settings_modal">
-          <button className="close" onClick={() => Settings.toggle_key("show_settings")}>
+          <button className="close" onClick={() => store.set("show_settings", false)}>
             ×
           </button>
           <h4>Settings</h4>
@@ -144,7 +141,7 @@ class Settings extends React.Component {
           <div className="modal-footer" style={{ marginTop: "20px" }}>
             <button
               className="btn btn-success"
-              onClick={() => Settings.toggle_key("show_settings")}
+              onClick={() => store.set("show_settings", false)}
             >
               Close
             </button>

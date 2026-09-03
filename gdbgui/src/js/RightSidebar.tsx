@@ -166,7 +166,7 @@ class RightSidebar extends React.Component {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    store.connectComponentState(this, ["current_theme"]);
+    store.connectComponentState(this, ["theme"]);
   }
   render() {
     let input_style = {
@@ -188,8 +188,8 @@ class RightSidebar extends React.Component {
 
     return (
       <div
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'current_theme' does not exist on type 'Readonly<... Remove this comment to see the full error message
-        className={`content ${this.state.current_theme}`}
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'theme' does not exist on type 'Readonly<... Remove this comment to see the full error message
+        className={`content ${this.state.theme}`}
         style={{ overflow: "auto" }}
         onMouseUp={onmouseup_in_parent_callback}
         onMouseMove={onmousemove_in_parent_callback}

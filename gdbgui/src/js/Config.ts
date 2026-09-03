@@ -1,6 +1,8 @@
 /* global initial_data */
 /* global debug */
+import { store } from "statorgfc";
 import constants from "./constants";
+import Util from "./Util";
 
 /**
  * The initial store data. Keys cannot be added after initialization.
@@ -27,7 +29,7 @@ const initial_store_data = {
   modal_header: null,
   modal_body: null,
 
-  show_tour_guide: true,
+  show_tour_guide: false,
   tour_guide_step: 0,
   num_tour_guide_steps: 0,
   tooltip: { hidden: false, content: "placeholder", node: null, show_for_n_sec: null },
@@ -35,7 +37,7 @@ const initial_store_data = {
 
   // preferences
   themes: initial_data.themes,
-  current_theme: localStorage.getItem("theme") || initial_data.themes[0],
+  theme: initial_data.themes[0],
   highlight_source_code: true, // get saved boolean to highlight source code
   max_lines_of_code_to_fetch: constants.default_max_lines_of_code_to_fetch,
   auto_add_breakpoint_to_main: true,
@@ -108,42 +110,38 @@ const initial_store_data = {
   // if we try to write something before the websocket is connected, store it here
   queuedGdbCommands: [],
 
-  show_filesystem: false,
+  show_filesystem: true,
   middle_sizes: [30, 40, 29] as number[],
-  gdbguiPty: null
+  gdbguiPty: null,
+
+  past_binaries: new Set()
 };
 
-function get_stored(key: any, default_val: any) {
-  try {
-    if (localStorage.hasOwnProperty(key)) {
-      // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-      let cached = JSON.parse(localStorage.getItem(key));
-      if (typeof cached === typeof default_val) {
-        return cached;
+export async function load_config() {
+  await Util.get_json<Record<any, unknown>>("/config")
+    .then(data => {
+      for (const [key, value] of Object.entries(data)) {
+        // @ts-expect-error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ debug: boolean; gdbgui_version: string; latest_gdbgui_version: string; gdb_version: string; gdb_version_array: never[]; gdb_pid: undefined; gdb_command: string; can_fetch_register_values: boolean; ... 65 more ...; past_binaries: Set<...>; }'.
+        initial_store_data[key as any] = value;
       }
-      return default_val;
-    }
-  } catch (err) {
-    console.error(err);
-  }
-  localStorage.removeItem(key);
-  return default_val;
+    })
+    .catch(err => console.log("Error fetching /config endpoint, using defaults", err));
 }
 
-// restore saved localStorage data
-for (let key in initial_store_data) {
-  // @ts-expect-error ts-migrate(7053) FIXME: No index signature with a parameter of type 'strin... Remove this comment to see the full error message
-  let default_val = initial_store_data[key];
-  // @ts-expect-error ts-migrate(7053) FIXME: No index signature with a parameter of type 'strin... Remove this comment to see the full error message
-  initial_store_data[key] = get_stored(key, default_val);
+export function update_config_key(key: string, value: unknown) {
+  Util.post_json("/config", { key, value })
+    .then(data => {
+      console.log(data);
+    })
+    .catch(err =>
+      console.log("Error updating /config endpoint for ", key, ":", value, " ", err)
+    );
 }
 
-if (localStorage.hasOwnProperty("max_lines_of_code_to_fetch")) {
-  // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-  let savedval = JSON.parse(localStorage.getItem("max_lines_of_code_to_fetch"));
-  if (Number.isInteger(savedval) && savedval > 0) {
-    initial_store_data["max_lines_of_code_to_fetch"] = savedval;
-  }
+export function toggle_config_key(key: string) {
+  const val = store.get(key);
+  store.set(key, !val);
+  update_config_key(key, !val);
 }
 
 export default initial_store_data;

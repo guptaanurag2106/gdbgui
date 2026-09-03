@@ -16,7 +16,7 @@ from pygments.lexers import get_lexer_for_filename  # type: ignore
 
 from gdbgui import htmllistformatter, __version__
 
-from .constants import TEMPLATE_DIR, USING_WINDOWS, SIGNAL_NAME_TO_OBJ
+from .constants import TEMPLATE_DIR, USING_WINDOWS, SIGNAL_NAME_TO_OBJ, THEMES
 from .http_util import (
     add_csrf_token_to_session,
     authenticate,
@@ -24,8 +24,21 @@ from .http_util import (
     csrf_protect,
 )
 
+from .config import Config
+
 logger = logging.getLogger(__file__)
 blueprint = Blueprint("http_routes", __name__, template_folder=str(TEMPLATE_DIR))
+
+
+@blueprint.route("/config", methods=["GET", "POST"])
+@csrf_protect
+def edit_config():
+    if request.method == "GET":
+        return jsonify(Config.read())
+    elif request.method == "POST":
+        req = request.get_json()
+        success = Config.update_key(req["key"], req["value"])
+        return (jsonify("OK"), 200) if success else (jsonify("Failed"), 400)
 
 
 @blueprint.route("/read_file", methods=["GET"])
@@ -154,7 +167,6 @@ def gdbgui():
     gdb_command = request.args.get("gdb_command", current_app.config["gdb_command"])
     add_csrf_token_to_session()
 
-    THEMES = ["monokai", "light"]
     initial_data = {
         "csrf_token": session["csrf_token"],
         "gdbgui_version": __version__,
@@ -173,7 +185,7 @@ def gdbgui():
         version=__version__,
         debug=current_app.debug,
         initial_data=initial_data,
-        themes=THEMES,
+        themes=THEMES,  # FIX:themes already in initial_data
     )
 
 

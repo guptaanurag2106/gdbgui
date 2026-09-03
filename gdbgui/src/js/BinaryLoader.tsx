@@ -4,6 +4,7 @@ import Actions from "./Actions";
 import Util from "./Util";
 import ToolTipTourguide from "./ToolTipTourguide";
 import CompletionDropdown from "./CompletionDropdown";
+import { update_config_key } from "./Config";
 
 const TARGET_TYPES = {
   file: "file",
@@ -36,7 +37,7 @@ class BinaryLoader extends React.Component<{}, State> {
       // @ts-expect-error ts-migrate(2542) FIXME: Index signature in type 'Readonly<any>' only permi... Remove this comment to see the full error message
       this.state.past_binaries = [
         // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-        ...new Set(JSON.parse(localStorage.getItem("past_binaries")))
+        ...new Set(store.get("past_binaries"))
       ];
       if (!this.state.user_input) {
         let most_recent_binary = this.state.past_binaries[0];
@@ -219,14 +220,7 @@ class BinaryLoader extends React.Component<{}, State> {
     }
     this.state.past_binaries.unshift(binary_and_args); // add to beginning
     this.setState({ past_binaries: this.state.past_binaries });
-    // @ts-expect-error ts-migrate(2345) FIXME: Type 'never[]' is not assignable to type 'string'.
-    localStorage.setItem("past_binaries", JSON.stringify(this.state.past_binaries) || []);
-
-    // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-    let num_gdbgui_sessions = parseInt(localStorage.getItem("num_gdbgui_sessions"));
-    if (isNaN(num_gdbgui_sessions)) {
-      num_gdbgui_sessions = 0;
-    }
+    update_config_key("past_binaries", this.state.past_binaries || []);
   }
   /**
    * parse tokens with awareness of double quotes

@@ -52,7 +52,7 @@ class HoverVar extends React.Component {
     }
     this.obj = obj;
     if (obj) {
-      let is_dark = store.get("current_theme") === "monokai";
+      let is_dark = store.get("theme") === "monokai";
       let style: React.CSSProperties = {
         position: "absolute",
         left: HoverVar.left + "px",

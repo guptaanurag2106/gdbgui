@@ -1,5 +1,3 @@
-import { store } from "statorgfc";
-
 /**
  * Some general utility methods
  */
@@ -53,14 +51,6 @@ const Util = {
     }
 
     return response.json();
-  },
-  persist_value_for_key: function(key: any) {
-    try {
-      let value = store.get(key);
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (err) {
-      console.error(err);
-    }
   },
   /**
    * Get html table
@@ -165,10 +155,10 @@ const Util = {
     return output;
   },
   /* Return true is latest is > current
-            1.0.0, 0.9.9 -> true
-            0.1.0, 0.0.9 -> true
-            0.0.9, 0.0.8 -> false
-          */
+              1.0.0, 0.9.9 -> true
+              0.1.0, 0.0.9 -> true
+              0.0.9, 0.0.8 -> false
+            */
   is_newer(latest: any, current: any) {
     latest = latest.split(".");
     current = current.split(".");

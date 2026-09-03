@@ -34,7 +34,7 @@ class SourceCode extends React.Component<{}, State> {
       "source_code_state",
       "make_current_line_visible",
       "source_code_selection_state",
-      "current_theme",
+      "theme",
       "inferior_binary_path",
       "source_linenum_to_display_start",
       "source_linenum_to_display_end",
@@ -53,12 +53,8 @@ class SourceCode extends React.Component<{}, State> {
 
   render() {
     return (
-      <div className={this.state.current_theme} style={{ height: "100%" }}>
-        <table
-          id="code_table"
-          className={this.state.current_theme}
-          style={{ width: "100%" }}
-        >
+      <div className={this.state.theme} style={{ height: "100%" }}>
+        <table id="code_table" className={this.state.theme} style={{ width: "100%" }}>
           <tbody id="code_body">{this.get_body()}</tbody>
         </table>
       </div>

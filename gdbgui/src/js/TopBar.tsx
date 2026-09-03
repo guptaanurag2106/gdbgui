@@ -3,7 +3,6 @@ import React from "react";
 import { store } from "statorgfc";
 import BinaryLoader from "./BinaryLoader";
 import ControlButtons from "./ControlButtons";
-import Settings from "./Settings";
 import SourceCodeHeading from "./SourceCodeHeading";
 import ToolTipTourguide from "./ToolTipTourguide";
 import FileOps from "./FileOps";
@@ -11,6 +10,7 @@ import GdbApi from "./GdbApi";
 import Actions from "./Actions";
 import constants from "./constants";
 import Util from "./Util";
+import { update_config_key } from "./Config";
 
 let onkeyup_jump_to_line = (e: any) => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
@@ -197,7 +197,7 @@ class TopBar extends React.Component<{}, State> {
         "gdbgui_version",
         "cached_source_files",
         "fullname_to_render",
-        "current_theme"
+        "theme"
       ],
       this.store_update_callback.bind(this)
     );
@@ -372,9 +372,9 @@ class TopBar extends React.Component<{}, State> {
     return (
       <div
         id="top"
-        className={this.state.current_theme}
+        className={this.state.theme}
         style={{
-          background: this.state.current_theme === "monokai" ? "#2d2d2d" : "#f5f6f7",
+          background: this.state.theme === "monokai" ? "#2d2d2d" : "#f5f6f7",
           position: "absolute",
           width: "100%"
         }}
@@ -388,7 +388,7 @@ class TopBar extends React.Component<{}, State> {
           {this.get_controls()}
 
           <span
-            onClick={() => Settings.toggle_key("show_settings")}
+            onClick={() => store.set("show_settings", !store.get("show_settings"))}
             title="settings"
             className="pointer glyphicon glyphicon-cog"
             style={{ marginRight: "10px", fontSize: "1.3em" }}
@@ -439,7 +439,7 @@ class TopBar extends React.Component<{}, State> {
                   new_sidebar_size
                 ];
                 store.set("middle_sizes", new_sizes);
-                localStorage.setItem("middle_sizes", JSON.stringify(new_sizes));
+                update_config_key("middle_sizes", new_sizes);
               }}
             >
               {store.get("show_filesystem") ? "Hide filesystem" : "Show filesystem"}

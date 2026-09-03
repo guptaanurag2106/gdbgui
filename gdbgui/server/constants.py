@@ -20,6 +20,8 @@ else:
 TEMPLATE_DIR = BASE_PATH / "templates"
 STATIC_DIR = BASE_PATH / "static"
 
+THEMES = ["monokai", "light"]
+
 
 def colorize(text):
     if IS_A_TTY and not USING_WINDOWS:

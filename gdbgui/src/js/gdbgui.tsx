@@ -20,7 +20,7 @@ import FileOps from "./FileOps";
 import FoldersView from "./FoldersView";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
-import initial_store_data from "./InitialStoreData";
+import initial_store_data, { load_config, update_config_key } from "./Config";
 import MiddleLeft from "./MiddleLeft";
 import Modal from "./GdbguiModal";
 import RightSidebar from "./RightSidebar";
@@ -32,41 +32,21 @@ import ToolTipTourguide from "./ToolTipTourguide";
 import "../css/gdbgui.css";
 import { Terminals } from "./Terminals";
 
-const store_options = {
-  immutable: false,
-  debounce_ms: 10
-};
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'initialize' does not exist on type '{ ge... Remove this comment to see the full error message
-store.initialize(initial_store_data, store_options);
-if (debug) {
-  // log call store changes in console except if changed key was in
-  // constants.keys_to_not_log_changes_in_console
-  // @ts-expect-error ts-migrate(2339) FIXME: Property 'use' does not exist on type '{ get(key: ... Remove this comment to see the full error message
-  store.use(function(key: any, oldval: any, newval: any) {
-    if (constants.keys_to_not_log_changes_in_console.indexOf(key) === -1) {
-      middleware.logChanges(key, oldval, newval);
-    }
-    return true;
-  });
-}
-// make this visible in the console
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'store' does not exist on type 'Window & ... Remove this comment to see the full error message
-window.store = store;
-
 class Gdbgui extends React.PureComponent<{}, any> {
   componentWillMount() {
     GdbApi.init();
     GlobalEvents.init();
+    //TODO: why is this needed
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'
   }
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    store.connectComponentState(this, ["current_theme", "middle_sizes"]);
+    store.connectComponentState(this, ["theme", "middle_sizes"]);
   }
   render() {
     return (
-      <div className={`splitjs_container ${this.state.current_theme || ""}`}>
+      <div className={`splitjs_container ${this.state.theme || ""}`}>
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message */}
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
@@ -100,7 +80,7 @@ class Gdbgui extends React.PureComponent<{}, any> {
               onDrag={() => window.dispatchEvent(new Event("resize"))}
               onDragEnd={(sizes: number[]) => {
                 store.set("middle_sizes", sizes);
-                localStorage.setItem("middle_sizes", JSON.stringify(sizes));
+                update_config_key("middle_sizes", sizes);
               }}
               style={{
                 flex: 1,
@@ -185,4 +165,29 @@ class Gdbgui extends React.PureComponent<{}, any> {
   }
 }
 
-ReactDOM.render(<Gdbgui />, document.getElementById("gdbgui"));
+async function main() {
+  await load_config(); // fetch GET /config, merge into initial_store_data
+
+  const store_options = {
+    immutable: false,
+    debounce_ms: 10
+  };
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'initialize' does not exist on type '{ ge... Remove this comment to see the full error message
+  store.initialize(initial_store_data, store_options);
+  if (debug) {
+    // log call store changes in console except if changed key was in
+    // constants.keys_to_not_log_changes_in_console
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'use' does not exist on type '{ get(key: ... Remove this comment to see the full error message
+    store.use(function(key: any, oldval: any, newval: any) {
+      if (constants.keys_to_not_log_changes_in_console.indexOf(key) === -1) {
+        middleware.logChanges(key, oldval, newval);
+      }
+      return true;
+    });
+  }
+  // make this visible in the console
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'store' does not exist on type 'Window & ... Remove this comment to see the full error message
+  window.store = store;
+  ReactDOM.render(<Gdbgui />, document.getElementById("gdbgui"));
+}
+main();

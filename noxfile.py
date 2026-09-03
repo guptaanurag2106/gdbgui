@@ -122,11 +122,12 @@ def docs(session):
 @nox.session(reuse_venv=True)
 def develop(session):
     session.install("-e", ".")
-    session.install("watchfiles")
+    # session.install("watchfiles")
     session.run("yarn", "install", external=True)
     print("Watching JavaScript file and Python files for changes")
     with subprocess.Popen(["yarn", "start"]):
-        session.run("watchfiles", "python -m gdbgui --debug")
+        # session.run("watchfiles", "--ignore-paths","./gdbgui/src", "python -m gdbgui --debug")
+        session.run("python", "-m", "gdbgui", "--debug")
 
 
 @nox.session(reuse_venv=True)

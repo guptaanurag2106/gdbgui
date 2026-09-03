@@ -17,7 +17,7 @@ type CompletionDropdownState = {
   term: string;
   results: string[];
   currentIndex: number;
-  current_theme: string;
+  theme: string;
   isFocused: boolean;
 };
 
@@ -49,14 +49,14 @@ class CompletionDropdown extends React.Component<
       term: this.props.initialValue || "",
       results: [],
       currentIndex: -1,
-      current_theme: store.get("current_theme"),
+      theme: store.get("theme"),
       isFocused: false
     };
     this.items = this.make_dropdown_items(props.list);
   }
 
   componentDidMount() {
-    store.connectComponentState(this, ["current_theme"]);
+    store.connectComponentState(this, ["theme"]);
   }
 
   componentDidUpdate(
@@ -429,10 +429,10 @@ class CompletionDropdown extends React.Component<
   }
 
   render() {
-    const { term, results, currentIndex, current_theme } = this.state;
+    const { term, results, currentIndex, theme } = this.state;
     const show = results.length > 0;
     return (
-      <div className={`completionDropdown ${current_theme || ""}`}>
+      <div className={`completionDropdown ${theme || ""}`}>
         <input
           className="form-control"
           autoComplete="off"

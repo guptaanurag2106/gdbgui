@@ -6,6 +6,7 @@ import Memory from "./Memory";
 import constants from "./constants";
 import React from "react";
 import Util from "./Util";
+import { update_config_key } from "./Config";
 void React; // using jsx implicity uses React
 
 const Actions = {
@@ -220,7 +221,7 @@ const Actions = {
       new_value = constants.default_max_lines_of_code_to_fetch;
     }
     store.set("max_lines_of_code_to_fetch", new_value);
-    localStorage.setItem("max_lines_of_code_to_fetch", JSON.stringify(new_value));
+    update_config_key("max_lines_of_code_to_fetch", new_value);
   },
   send_signal(signal_name: any, pid: any) {
     Util.post_json("/send_signal_to_pid", { signal_name: signal_name, pid: pid })
