@@ -20,8 +20,6 @@ const copyIcon = (
 
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'gdbgui_sessions' does not exist on type ... Remove this comment to see the full error message
 const data: GdbguiSession[] = window.gdbgui_sessions;
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'csrf_token' does not exist on type 'Wind... Remove this comment to see the full error message
-const csrf_token: string = window.csrf_token;
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'default_command' does not exist on type ... Remove this comment to see the full error message
 const default_command: string = window.default_command;
 function GdbguiSession(props: { session: GdbguiSession; updateData: Function }) {
@@ -74,7 +72,7 @@ function GdbguiSession(props: { session: GdbguiSession; updateData: Function }) 
                 headers: {
                   "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ gdbpid: session.pid, csrf_token })
+                body: JSON.stringify({ gdbpid: session.pid})
               });
               await props.updateData();
             } else {

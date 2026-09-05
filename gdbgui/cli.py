@@ -8,7 +8,6 @@ https://github.com/cs01/gdbgui
 import argparse
 import json
 import logging
-import os
 import platform
 import re
 import shlex
@@ -20,34 +19,7 @@ from gdbgui.server.constants import DEFAULT_GDB_EXECUTABLE, DEFAULT_HOST, DEFAUL
 from gdbgui.server.server import run_server
 
 logger = logging.getLogger(__name__)
-logging.getLogger("werkzeug").setLevel(logging.ERROR)
-
-
-def get_gdbgui_auth_user_credentials(auth_file, user, password):
-    if auth_file and (user or password):
-        print("Cannot supply auth file and username/password")
-        exit(1)
-    if auth_file:
-        if os.path.isfile(auth_file):
-            with open(auth_file, "r") as authFile:
-                data = authFile.read()
-                split_file_contents = data.split("\n")
-                if len(split_file_contents) < 2:
-                    print(
-                        'Auth file "%s" requires username on first line and password on second line'
-                        % auth_file
-                    )
-                    exit(1)
-                return split_file_contents
-
-        else:
-            print('Auth file "%s" for HTTP Basic auth not found' % auth_file)
-            exit(1)
-    elif user and password:
-        return [user, password]
-
-    else:
-        return None
+logging.getLogger("gdbgui.server").setLevel(logging.ERROR)
 
 
 def warn_startup_with_shell_off(platform: str, gdb_args: str):
@@ -72,7 +44,6 @@ def get_parser():
     gdb_group = parser.add_argument_group(title="gdb settings")
     args_group = parser.add_mutually_exclusive_group()
     network = parser.add_argument_group(title="gdbgui network settings")
-    security = parser.add_argument_group(title="security settings")
     other = parser.add_argument_group(title="other settings")
 
     gdb_group.add_argument(
@@ -105,31 +76,6 @@ def get_parser():
         "browser, or let someone else debug your application remotely.",
         action="store_true",
     )
-
-    security.add_argument(
-        "--auth-file",
-        help="Require authentication before accessing gdbgui in the browser. "
-        "Specify a file that contains the HTTP Basic auth username and password separate by newline. ",
-    )
-
-    security.add_argument("--user", help="Username when authenticating")
-    security.add_argument("--password", help="Password when authenticating")
-    security.add_argument(
-        "--key",
-        default=None,
-        help="SSL private key. "
-        "Generate with:"
-        "openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert",
-    )
-    # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
-    security.add_argument(
-        "--cert",
-        default=None,
-        help="SSL certificate. "
-        "Generate with:"
-        "openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert",
-    )
-    # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
     other.add_argument(
         "--remap-sources",
@@ -212,9 +158,6 @@ def main():
     app.config["initial_binary_and_args"] = get_initial_binary_and_args(
         args.args, args.debug_program
     )
-    app.config["gdbgui_auth_user_credentials"] = get_gdbgui_auth_user_credentials(
-        args.auth_file, args.user, args.password
-    )
     app.config["project_home"] = args.project
     if args.remap_sources:
         try:
@@ -253,8 +196,6 @@ def main():
         debug=bool(args.debug),
         open_browser=(not args.no_browser),
         browsername=args.browser,
-        private_key=args.key,
-        certificate=args.cert,
     )
 
 

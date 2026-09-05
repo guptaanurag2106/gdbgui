@@ -44,7 +44,6 @@ const GdbApi = {
     socket = io.connect(`/gdb_listener`, {
       timeout: TIMEOUT_MIN * 60 * 1000,
       query: {
-        csrf_token: initial_data.csrf_token,
         gdbpid: initial_data.gdbpid,
         gdb_command: initial_data.gdb_command
       }

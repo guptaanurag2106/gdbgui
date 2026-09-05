@@ -33,23 +33,11 @@ socketio = SocketIO(manage_session=False)
 
 
 @app.before_request
-def csrf_protect_all_post_and_cross_origin_requests():
+def cross_origin_requests():
     """returns None upon success"""
-    success = None
     if is_cross_origin(request):
         logger.warning("Received cross origin request. Aborting")
         abort(403)
-    if request.method in ["POST", "PUT"]:
-        server_token = session.get("csrf_token")
-        if server_token == request.form.get("csrf_token"):
-            return success
-        elif server_token == request.environ.get("HTTP_X_CSRFTOKEN"):
-            return success
-        elif request.json and server_token == request.json.get("csrf_token"):
-            return success
-        else:
-            logger.warning("Received invalid csrf token. Aborting")
-            abort(403)
 
 
 @socketio.on("connect", namespace="/gdb_listener")
@@ -66,23 +54,6 @@ def client_connected():
     if is_cross_origin(request):
         logger.warning("Received cross origin request. Aborting")
         abort(403)
-
-    csrf_token = request.args.get("csrf_token")
-    if csrf_token is None:
-        logger.warning("Recieved invalid csrf token")
-        emit("server_error", {"message": "Recieved invalid csrf token"})
-        return
-
-    elif csrf_token != session.get("csrf_token"):
-        # this can happen fairly often, so log debug message, not warning
-        logger.debug(
-            "Recieved invalid csrf token %s (expected %s)"
-            % (csrf_token, str(session.get("csrf_token")))
-        )
-        emit(
-            "server_error", {"message": "Session expired. Please refresh this webpage."}
-        )
-        return
 
     desired_gdbpid = int(request.args.get("gdbpid", 0))
     try:

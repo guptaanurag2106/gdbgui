@@ -15,9 +15,6 @@ const Util = {
     }
     const response = await fetch(`${url}?${params}`, {
       method: "GET",
-      headers: {
-        "x-csrftoken": initial_data.csrf_token
-      }
     });
     if (!response.ok) {
       const err: any = new Error(response.statusText);
@@ -36,7 +33,6 @@ const Util = {
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "x-csrftoken": initial_data.csrf_token,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(data)

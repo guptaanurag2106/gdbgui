@@ -9,7 +9,6 @@ from flask import (
     redirect,
     render_template,
     request,
-    session,
     Response,
 )
 from pygments.lexers import get_lexer_for_filename  # type: ignore
@@ -18,10 +17,7 @@ from gdbgui import htmllistformatter, __version__
 
 from .constants import TEMPLATE_DIR, USING_WINDOWS, SIGNAL_NAME_TO_OBJ, THEMES
 from .http_util import (
-    add_csrf_token_to_session,
-    authenticate,
     client_error,
-    csrf_protect,
 )
 
 from .config import Config
@@ -31,7 +27,6 @@ blueprint = Blueprint("http_routes", __name__, template_folder=str(TEMPLATE_DIR)
 
 
 @blueprint.route("/config", methods=["GET", "POST"])
-@csrf_protect
 def edit_config():
     if request.method == "GET":
         return jsonify(Config.read())
@@ -42,7 +37,6 @@ def edit_config():
 
 
 @blueprint.route("/read_file", methods=["GET"])
-@csrf_protect
 def read_file():
     """Read a file and return its contents as an array"""
 
@@ -120,7 +114,6 @@ def read_file():
 
 
 @blueprint.route("/get_last_modified_unix_sec", methods=["GET"])
-@csrf_protect
 def get_last_modified_unix_sec():
     """Get last modified unix time for a given file"""
     path = request.args.get("path")
@@ -142,11 +135,8 @@ def help_route():
 
 
 @blueprint.route("/dashboard", methods=["GET"])
-@authenticate
 def dashboard():
     manager = current_app.config.get("_manager")
-
-    add_csrf_token_to_session()
 
     """display a dashboard with a list of all running gdb processes
     and ability to kill them, or open a new tab to work with that
@@ -154,21 +144,17 @@ def dashboard():
     return render_template(
         "dashboard.html",
         gdbgui_sessions=manager.get_dashboard_data(),
-        csrf_token=session["csrf_token"],
         default_command=current_app.config["gdb_command"],
     )
 
 
 @blueprint.route("/", methods=["GET"])
-@authenticate
 def gdbgui():
     """Render the main gdbgui interface"""
     gdbpid = request.args.get("gdbpid", 0)
     gdb_command = request.args.get("gdb_command", current_app.config["gdb_command"])
-    add_csrf_token_to_session()
 
     initial_data = {
-        "csrf_token": session["csrf_token"],
         "gdbgui_version": __version__,
         "gdbpid": gdbpid,
         "gdb_command": gdb_command,
@@ -190,7 +176,6 @@ def gdbgui():
 
 
 @blueprint.route("/dashboard_data", methods=["GET"])
-@authenticate
 def dashboard_data():
     manager = current_app.config.get("_manager")
 
@@ -198,7 +183,6 @@ def dashboard_data():
 
 
 @blueprint.route("/kill_session", methods=["PUT"])
-@authenticate
 def kill_session():
     from .app import manager
 

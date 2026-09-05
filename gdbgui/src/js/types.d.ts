@@ -16,7 +16,6 @@ declare module "statorgfc" {
 }
 
 declare var initial_data: {
-  csrf_token: string;
   gdbgui_version: string;
   gdbpid: number;
   gdb_command: string;
