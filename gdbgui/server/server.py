@@ -1,28 +1,12 @@
-import os
 import socket
 import threading
 import time
+import uvicorn
 import webbrowser
+from typing import Any
 
 from .constants import DEFAULT_HOST, DEFAULT_PORT, colorize
-
-def get_extra_files():
-    """returns a list of files that should be watched by the Flask server
-    when in debug mode to trigger a reload of the server
-    """
-    FILES_TO_SKIP = ["src/gdbgui.js"]
-    THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-    extra_dirs = [THIS_DIR]
-    extra_files = []
-    for extra_dir in extra_dirs:
-        for dirname, _, files in os.walk(extra_dir):
-            for filename in files:
-                filepath = os.path.join(dirname, filename)
-                if os.path.isfile(filepath) and filepath not in extra_files:
-                    for skipfile in FILES_TO_SKIP:
-                        if skipfile not in filepath:
-                            extra_files.append(filepath)
-    return extra_files
+from .app import app
 
 
 def wait_and_open_browser(browsername, url, host, port):
@@ -39,36 +23,23 @@ def wait_and_open_browser(browsername, url, host, port):
 
 
 def run_server(
-    app=None,
-    socketio=None,
+    config: dict[str, Any],
     host=DEFAULT_HOST,
     port=DEFAULT_PORT,
     debug=False,
     open_browser=True,
     browsername=None,
 ):
-    """Run the server of the gdb gui"""
-
-    kwargs = {}
+    """Run the server of the gdbgui"""
 
     url = "%s:%s" % (host, port)
-    if kwargs.get("ssl_context"):
-        protocol = "https://"
-        url_with_prefix = "https://" + url
-    else:
-        protocol = "http://"
-        url_with_prefix = "http://" + url
+    protocol = "http://"
+    url_with_prefix = "http://" + url
 
-    socketio.server_options["allow_upgrades"] = True
-    socketio.init_app(app)
-
-    if host == DEFAULT_HOST:
-        url = (DEFAULT_HOST, port)
-    else:
-        try:
-            url = (socket.gethostbyname(socket.gethostname()), port)
-        except Exception:
-            url = (host, port)
+    try:
+        url = (socket.gethostbyname(socket.gethostname()), port)
+    except Exception:
+        url = (host, port)
 
     if open_browser is True and debug is False:
         browsertext = repr(browsername) if browsername else "default browser"
@@ -82,19 +53,17 @@ def run_server(
         ).start()
     else:
         print(colorize(f"View gdbgui at {protocol}{url[0]}:{url[1]}"))
-    print(
-        colorize(f"View gdbgui dashboard at {protocol}{url[0]}:{url[1]}/dashboard")
-    )
 
     print("exit gdbgui by pressing CTRL+C")
     try:
-        socketio.run(
+        # TODO: see other run options
+        app.debug = debug
+        app.state.config = config
+        uvicorn.run(
             app,
-            debug=debug,
-            port=int(port),
             host=host,
-            extra_files=get_extra_files(),
-            **kwargs,
+            port=int(port),
+            log_level="debug" if debug else "warning",
         )
     except KeyboardInterrupt:
         # Process was interrupted by ctrl+c on keyboard, show message

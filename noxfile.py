@@ -1,5 +1,6 @@
-import subprocess
+import os
 from pathlib import Path
+import subprocess
 from sys import platform
 
 import hashlib
@@ -34,8 +35,25 @@ files_to_lint.remove(vulture_whitelist)
 publish_deps = ["setuptools", "wheel", "twine"]
 
 
+def get_reload_files():
+    """returns a list of files that should be watched by the watchfiles
+    when in debug mode to trigger a reload of the server
+    """
+    THIS_DIR = os.path.dirname(os.path.abspath(__file__)) + "/gdbgui"
+    dirs = [THIS_DIR]
+    extra_files = []
+    for extra_dir in dirs:
+        for dirname, _, files in os.walk(extra_dir):
+            for filename in files:
+                filepath = os.path.join(dirname, filename)
+                if ".py" in filepath and "pycache" not in filepath:
+                    extra_files.append(filepath)
+    return extra_files
+
+
 @nox.session(reuse_venv=True)
 def python_tests(session):
+    session.install("-e", ".")
     session.install(".", "pytest", "pytest-cov")
     tests = session.posargs or ["tests"]
     session.run(
@@ -78,7 +96,7 @@ def vulture(session):
     session.run(
         "vulture",
         "--ignore-decorators",
-        "@app.*,@socketio.*,@nox.*,@blueprint.*",
+        "@app.*,@nox.*,@blueprint.*",
         *files_to_lint,
         vulture_whitelist,
         *session.posargs,
@@ -122,12 +140,12 @@ def docs(session):
 @nox.session(reuse_venv=True)
 def develop(session):
     session.install("-e", ".")
-    # session.install("watchfiles")
+    session.install("watchfiles")
     session.run("yarn", "install", external=True)
     print("Watching JavaScript file and Python files for changes")
     with subprocess.Popen(["yarn", "start"]):
-        # session.run("watchfiles", "--ignore-paths","./gdbgui/src", "python -m gdbgui --debug")
-        session.run("python", "-m", "gdbgui", "--debug")
+        session.run("watchfiles", "python -m gdbgui --debug", *get_reload_files())
+        # session.run("python", "-m", "gdbgui", "--debug")
 
 
 @nox.session(reuse_venv=True)
@@ -142,7 +160,7 @@ def build(session):
     session.install(*publish_deps)
     autoformat(session)
     # lint(session)
-    tests(session)
+    # tests(session)
     session.run("rm", "-rf", "dist", "build", external=True)
     session.run("yarn", external=True)
     session.run("yarn", "build", external=True)

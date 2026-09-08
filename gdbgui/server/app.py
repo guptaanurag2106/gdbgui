@@ -1,298 +1,246 @@
-import binascii
+import asyncio
+import json
 import logging
-import os
-import time
-from typing import Dict, List
 import traceback
-from flask import Flask, abort, request, session
-from flask_compress import Compress  # type: ignore
-from flask_socketio import SocketIO, emit  # type: ignore
 
-from .constants import DEFAULT_GDB_EXECUTABLE, STATIC_DIR, TEMPLATE_DIR
-from .http_routes import blueprint
-from .http_util import is_cross_origin
-from .sessionmanager import DebugSession, SessionManager
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.routing import WebSocketRoute
+from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.websockets import WebSocket, WebSocketDisconnect
+
+from .constants import DEFAULT_GDB_EXECUTABLE
+from .debugsession import DebugSession
+from .http_routes import routes
 
 logger = logging.getLogger(__file__)
-# Create flask application and add some configuration keys to be used in various callbacks
-app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
-Compress(
-    app
-)  # add gzip compression to Flask. see https://github.com/libwilliam/flask-compress
-app.register_blueprint(blueprint)
-app.config["initial_binary_and_args"] = []
-app.config["gdb_path"] = DEFAULT_GDB_EXECUTABLE
-app.config["gdb_command"] = None
-app.config["TEMPLATES_AUTO_RELOAD"] = True
-app.config["project_home"] = None
-app.config["remap_sources"] = {}
-manager = SessionManager()
-app.config["_manager"] = manager
-app.secret_key = binascii.hexlify(os.urandom(24)).decode("utf-8")
-socketio = SocketIO(manage_session=False)
+
+app = Starlette(routes=routes)
+# we need to ensure only one client is connected, since each client will have a socket we can
+# ensure that there is only 1 active socket
+app.state.socket = None  # current connected socket
+app.state.single_user_lock = asyncio.Lock()
 
 
-@app.before_request
-def cross_origin_requests():
-    """returns None upon success"""
-    if is_cross_origin(request):
-        logger.warning("Received cross origin request. Aborting")
-        abort(403)
+class CrossOriginCheckMiddleware:
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Compare headers HOST and ORIGIN. Remove protocol prefix from ORIGIN, then
+        compare. Return true if they are not equal
+        example HTTP_HOST: '127.0.0.1:5000'
+        example HTTP_ORIGIN: 'http://127.0.0.1:5000'
+        """
+        if scope["type"] == "http":
+            request = Request(scope, receive)
+            origin = request.headers.get("origin")
+            host = request.headers.get("host")
+            if origin is None:
+                # origin is sometimes omitted by the browser when origin and host are equal
+                await self.app(scope, receive, send)
+                return
+
+            if origin.startswith("http://"):
+                origin = origin.replace("http://", "")
+            elif origin.startswith("https://"):
+                origin = origin.replace("https://", "")
+            if host != origin:
+                response = Response("Forbidden", status_code=403)
+                await response(scope, receive, send)
+                return
+
+        elif scope["type"] == "websocket":
+            socket = WebSocket(scope, receive, send)
+            origin = socket.headers.get("origin")
+            host = socket.headers.get("host")
+            if origin is None:
+                # origin is sometimes omitted by the browser when origin and host are equal
+                await self.app(scope, receive, send)
+                return
+
+            if origin.startswith("http://"):
+                origin = origin.replace("http://", "")
+            elif origin.startswith("https://"):
+                origin = origin.replace("https://", "")
+
+            if host != origin:
+                await send({"type": "websocket.close", "code": 4401})
+                return
+
+        await self.app(scope, receive, send)
 
 
-@socketio.on("connect", namespace="/gdb_listener")
-def client_connected():
-    """Connect a websocket client to a debug session
+app.add_middleware(CrossOriginCheckMiddleware)
 
-    This is the main intial connection.
 
-    Depending on the arguments passed, the client will connect
-    to an existing debug session, or create a new one.
-    A message is a emitted back to the client with details on
-    the debug session that was created or connected to.
-    """
-    if is_cross_origin(request):
-        logger.warning("Received cross origin request. Aborting")
-        abort(403)
+async def socket(socket: WebSocket):
+    if socket.app.state.socket is not None:
+        await socket.close(reason="existing_connection")
+        return
 
-    desired_gdbpid = int(request.args.get("gdbpid", 0))
+    await socket.accept()
+
+    print("connected")
+    logger.info("socket connected")
     try:
-        if desired_gdbpid:
-            # connect to exiting debug session
-            debug_session = manager.connect_client_to_debug_session(
-                desired_gdbpid=desired_gdbpid, client_id=request.sid
-            )
-            emit(
-                "debug_session_connection_event",
-                {
-                    "ok": True,
-                    "started_new_gdb_process": False,
-                    "pid": debug_session.pid,
-                    "message": f"Connected to existing gdb process {desired_gdbpid}",
-                },
-            )
-        else:
-            # start new debug session
-            gdb_command = request.args.get("gdb_command", app.config["gdb_command"])
-            mi_version = request.args.get("mi_version", "mi2")
-            debug_session = manager.add_new_debug_session(
-                gdb_command=gdb_command, mi_version=mi_version, client_id=request.sid
-            )
-            emit(
-                "debug_session_connection_event",
-                {
+        gdb_command = socket.app.state.config.get("gdb_command", DEFAULT_GDB_EXECUTABLE)
+        mi_version = socket.app.state.config.get("mi_version", "mi2")
+        debug_session = DebugSession(gdb_command=gdb_command, mi_version=mi_version)
+        await socket.send_json(
+            {
+                "type": "debug_session_connection_event",
+                "payload": {
                     "ok": True,
                     "started_new_gdb_process": True,
                     "message": f"Started new gdb process, pid {debug_session.pid}",
                     "pid": debug_session.pid,
                 },
-            )
+            },
+            mode="text",
+        )
+        debug_session.background_task = asyncio.create_task(
+            debug_session.read_and_forward_gdb_and_pty_output(socket)
+        )
     except Exception as e:
-        emit(
-            "debug_session_connection_event",
-            {"message": f"Failed to establish gdb session: {e}", "ok": False},
+        await socket.send_json(
+            {
+                "type": "debug_session_connection_event",
+                "payload": {
+                    "message": f"Failed to establish gdb session: {e}",
+                    "ok": False,
+                },
+            },
+            mode="text",
         )
+        print(e)
+        await socket.close(reason=f"failed to create debug session {e}")
 
-    # Make sure there is a reader thread reading. One thread reads all instances.
-    if manager.gdb_reader_thread is None:
-        manager.gdb_reader_thread = socketio.start_background_task(
-            target=read_and_forward_gdb_and_pty_output
-        )
-        logger.info("Created background thread to read gdb responses")
+    async with socket.app.state.single_user_lock:
+        socket.app.state.socket = socket
+        socket.app.state.debug_session = debug_session
 
-
-@socketio.on("pty_interaction", namespace="/gdb_listener")
-def pty_interaction(message):
-    """Write a character to the user facing pty"""
-    debug_session = manager.debug_session_from_client_id(request.sid)
-    if not debug_session:
-        emit(
-            "error_running_gdb_command",
-            {"message": f"no gdb session available for client id {request.sid}"},
-        )
-        return
-
+    logger.info("Created background thread to read gdb responses")
     try:
-        data = message.get("data")
-        pty_name = data.get("pty_name")
-        if pty_name == "user_pty":
-            pty = debug_session.pty_for_gdb
-        elif pty_name == "program_pty":
-            pty = debug_session.pty_for_debugged_program
-        else:
-            raise ValueError(f"Unknown pty: {pty_name}")
-
-        action = data.get("action")
-        if action == "write":
-            key = data["key"]
-            pty.write(key)
-        elif action == "set_winsize":
-            pty.set_winsize(data["rows"], data["cols"])
-        else:
-            raise ValueError(f"Unknown action {action}")
-    except Exception:
-        err = traceback.format_exc()
-        logger.error(err)
-        emit("error_running_gdb_command", {"message": err})
-
-
-@socketio.on("run_gdb_command", namespace="/gdb_listener")
-def run_gdb_command(message: Dict[str, str]):
-    """Write commands to gdbgui's gdb mi pty"""
-    client_id = request.sid  # type: ignore
-    debug_session = manager.debug_session_from_client_id(client_id)
-    if not debug_session:
-        emit("error_running_gdb_command", {"message": "no session"})
-        return
-    pty_mi = debug_session.pygdbmi_controller
-    if pty_mi is not None:
-        try:
-            # the command (string) or commands (list) to run
-            cmds = message["cmd"]
-            for cmd in cmds:
-                pty_mi.write(
-                    cmd + "\n",
-                    timeout_sec=0,
-                    raise_error_on_timeout=False,
-                    read_response=False,
-                )
-
-        except Exception:
-            err = traceback.format_exc()
-            logger.error(err)
-            emit("error_running_gdb_command", {"message": err})
-    else:
-        emit("error_running_gdb_command", {"message": "gdb is not running"})
-
-
-def send_msg_to_clients(client_ids, msg, error=False):
-    """Send message to all clients"""
-    if error:
-        stream = "stderr"
-    else:
-        stream = "stdout"
-
-    response = [{"message": None, "type": "console", "payload": msg, "stream": stream}]
-
-    for client_id in client_ids:
-        logger.info("emiting message to websocket client id " + client_id)
-        socketio.emit(
-            "gdb_response", response, namespace="/gdb_listener", room=client_id
-        )
-
-
-@socketio.on("disconnect", namespace="/gdb_listener")
-def client_disconnected():
-    """do nothing if client disconnects"""
-    manager.disconnect_client(request.sid)
-    logger.info("Client websocket disconnected, id %s" % (request.sid))
-
-
-@socketio.on("Client disconnected")
-def test_disconnect():
-    print("Client websocket disconnected", request.sid)
-
-
-def read_and_forward_gdb_and_pty_output():
-    """A task that runs on a different thread, and emits websocket messages
-    of gdb responses"""
-
-    while True:
-        socketio.sleep(0.05)
-        debug_sessions_to_remove = []
-        for debug_session, client_ids in list(
-            manager.debug_session_to_client_ids.items()
-        ):
+        while True:
             try:
-                try:
-                    response = debug_session.pygdbmi_controller.get_gdb_response(
-                        timeout_sec=0, raise_error_on_timeout=False
-                    )
+                message = await socket.receive_json(mode="text")
+                match message["type"]:
+                    case "pty_interaction":
+                        """Write a character to the user facing pty"""
+                        if not debug_session or debug_session.terminated:
+                            await socket.send_json(
+                                {
+                                    "type": "error_running_gdb_command",
+                                    "payload": {"message": "no gdb session available"},
+                                },
+                                mode="text",
+                            )
+                            await socket.close(reason="no gdb session available")
+                            async with socket.app.state.single_user_lock:
+                                socket.app.state.socket = None
+                                socket.app.state.debug_session = None
+                            return
 
-                    for resp in response:
-                        if (
-                            resp.get("payload") in ("^exit\r", "^exit")
-                            or resp.get("message") == "exit"
-                        ):
-                            debug_session.clean()
-                            debug_sessions_to_remove.append(debug_session)
+                        try:
+                            payload = message["payload"]
+                            pty_name = payload["pty_name"]
+                            if pty_name == "user_pty":
+                                pty = debug_session.pty_for_gdb
+                            elif pty_name == "program_pty":
+                                pty = debug_session.pty_for_debugged_program
+                            else:
+                                raise ValueError(f"Unknown pty: {pty_name}")
 
-                except Exception:
-                    response = None
-                    send_msg_to_clients(
-                        client_ids,
-                        "The underlying gdb process has been killed. This tab will no longer function as expected.",
-                        error=True,
-                    )
-                    debug_sessions_to_remove.append(debug_session)
+                            action = payload["action"]
+                            if action == "write":
+                                key = payload["key"]
+                                pty.write(key)
+                            elif action == "set_winsize":
+                                pty.set_winsize(payload["rows"], payload["cols"])
+                            else:
+                                raise ValueError(f"Unknown action {action}")
+                        except Exception:
+                            err = traceback.format_exc()
+                            logger.error(err)
+                            await socket.send_json(
+                                {
+                                    "type": "error_running_gdb_command",
+                                    "payload": {"message": err},
+                                },
+                                mode="text",
+                            )
+                    case "run_gdb_command":
+                        """Write commands to gdbgui's gdb mi pty"""
+                        if not debug_session:
+                            await socket.send_json(
+                                {
+                                    "type": "error_running_gdb_command",
+                                    "payload": {"message": "no gdb session available"},
+                                },
+                                mode="text",
+                            )
+                        pty_mi = debug_session.pygdbmi_controller
+                        if pty_mi is not None:
+                            try:
+                                # the command (string) or commands (list) to run
+                                cmds = message["payload"]["cmd"]
+                                for cmd in cmds:
+                                    pty_mi.write(
+                                        cmd + "\n",
+                                        timeout_sec=0,
+                                        raise_error_on_timeout=False,
+                                        read_response=False,
+                                    )
 
-                if response:
-                    for client_id in client_ids:
-                        logger.info(
-                            "emiting message to websocket client id " + client_id
+                            except Exception:
+                                err = traceback.format_exc()
+                                logger.error(err)
+                                await socket.send_json(
+                                    {
+                                        "type": "error_running_gdb_command",
+                                        "payload": {"message": err},
+                                    },
+                                    mode="text",
+                                )
+                        else:
+                            await socket.send_json(
+                                {
+                                    "type": "error_running_gdb_command",
+                                    "payload": {"message": "gdb is not running"},
+                                },
+                                mode="text",
+                            )
+                    case _:
+                        await socket.send_json(
+                            {
+                                "type": "server_error",
+                                "payload": {
+                                    "message": f"server receieved unknown message type {message['type']}"
+                                },
+                            },
+                            mode="text",
                         )
-                        socketio.emit(
-                            "gdb_response",
-                            response,
-                            namespace="/gdb_listener",
-                            room=client_id,
-                        )
-                else:
-                    # there was no queued response from gdb, not a problem
-                    pass
+                        continue
 
-            except Exception:
-                logger.error("caught exception, continuing:" + traceback.format_exc())
-
-        time_now = None
-        for debug_session in list(manager.debug_session_to_client_ids):
-            # force kill terminating gdb if they dont send exit resp
-            if debug_session.terminating:
-                if time_now is None:
-                    time_now = time.monotonic()
-                if (
-                    debug_session.terminate_on is not None
-                    and debug_session.terminate_on <= time_now
-                ):
-                    debug_session.clean()
-                    debug_sessions_to_remove.append(debug_session)
-
-        debug_sessions_to_remove += check_and_forward_pty_output()
-        for debug_session in set(debug_sessions_to_remove):
-            manager.remove_debug_session(debug_session)
-
-
-def check_and_forward_pty_output() -> List[DebugSession]:
-    debug_sessions_to_remove = []
-    for debug_session, client_ids in list(manager.debug_session_to_client_ids.items()):
-        try:
-            response = debug_session.pty_for_gdb.read()
-            if response is not None:
-                for client_id in client_ids:
-                    socketio.emit(
-                        "user_pty_response",
-                        response,
-                        namespace="/gdb_listener",
-                        room=client_id,
-                    )
-
-            response = debug_session.pty_for_debugged_program.read()
-            if response is not None:
-                for client_id in client_ids:
-                    socketio.emit(
-                        "program_pty_response",
-                        response,
-                        namespace="/gdb_listener",
-                        room=client_id,
-                    )
-        except Exception as e:
-            debug_sessions_to_remove.append(debug_session)
-            for client_id in client_ids:
-                socketio.emit(
-                    "fatal_server_error",
-                    {"message": str(e)},
-                    namespace="/gdb_listener",
-                    room=client_id,
+            except json.JSONDecodeError as e:
+                logger.error(f"Cannot decode websocket message {message}: {e}")
+                await socket.send_json(
+                    {
+                        "type": "server_error",
+                        "payload": {"message": "server received malformed data"},
+                    },
+                    mode="text",
                 )
-            logger.error(e, exc_info=True)
-    return debug_sessions_to_remove
+
+    except WebSocketDisconnect:
+        """do nothing if client disconnects"""
+        async with socket.app.state.single_user_lock:
+            socket.app.state.socket = None
+            socket.app.state.debug_session = None
+        debug_session.terminate()
+        logger.info("Client websocket disconnected")
+
+
+app.router.routes.append(WebSocketRoute("/ws", socket))

@@ -14,7 +14,7 @@ const Util = {
       }
     }
     const response = await fetch(`${url}?${params}`, {
-      method: "GET",
+      method: "GET"
     });
     if (!response.ok) {
       const err: any = new Error(response.statusText);

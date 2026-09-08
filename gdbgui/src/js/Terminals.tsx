@@ -30,9 +30,16 @@ function customKeyEventHandler(config: {
         }
         const toPaste = await navigator.clipboard.readText();
 
-        GdbApi.getSocket().emit("pty_interaction", {
-          data: { pty_name: config.pty_name, key: toPaste, action: "write" }
-        });
+        GdbApi.get_socket()?.send(
+          JSON.stringify({
+            type: "pty_interaction",
+            payload: {
+              pty_name: config.pty_name,
+              key: toPaste,
+              action: "write"
+            }
+          })
+        );
         return false;
       }
     }
@@ -43,12 +50,36 @@ export class Terminals extends React.Component {
   userPtyRef: React.RefObject<any>;
   programPtyRef: React.RefObject<any>;
   gdbguiPtyRef: React.RefObject<any>;
+  userPty: Terminal;
+  programPty: Terminal;
+  gdbguiPty: Terminal;
+  ptyListener:
+    | ((type: "user_pty_response" | "program_pty_response", payload: string) => void)
+    | null = null;
   constructor(props: any) {
     super(props);
     this.userPtyRef = React.createRef();
     this.programPtyRef = React.createRef();
     this.gdbguiPtyRef = React.createRef();
     this.terminal = this.terminal.bind(this);
+
+    this.userPty = new Terminal({
+      cursorBlink: true,
+      macOptionIsMeta: true,
+      scrollback: 9999
+    });
+    this.programPty = new Terminal({
+      cursorBlink: true,
+      macOptionIsMeta: true,
+      scrollback: 9999
+    });
+    this.gdbguiPty = new Terminal({
+      cursorBlink: false,
+      macOptionIsMeta: true,
+      scrollback: 9999,
+      disableStdin: true
+      // theme: { background: "#888" }
+    });
   }
 
   terminal(ref: React.RefObject<any>) {
@@ -75,117 +106,116 @@ export class Terminals extends React.Component {
     const programFitAddon = new FitAddon();
     const gdbguiFitAddon = new FitAddon();
 
-    const userPty = new Terminal({
-      cursorBlink: true,
-      macOptionIsMeta: true,
-      scrollback: 9999
-    });
-    userPty.loadAddon(fitAddon);
-    userPty.open(this.userPtyRef.current);
-    userPty.writeln(`running command: ${store.get("gdb_command")}`);
-    userPty.writeln("");
-    userPty.attachCustomKeyEventHandler(
+    this.userPty.loadAddon(fitAddon);
+    this.userPty.open(this.userPtyRef.current);
+    this.userPty.writeln(`running command: ${store.get("gdb_command")}`);
+    this.userPty.writeln("");
+    this.userPty.attachCustomKeyEventHandler(
       // @ts-expect-error
       customKeyEventHandler({
         pty_name: "user_pty",
-        pty: userPty,
+        pty: this.userPty,
         canPaste: true,
         pidStoreKey: "gdb_pid"
       })
     );
-    GdbApi.getSocket().on("user_pty_response", function(data: string) {
-      userPty.write(data);
-    });
-    userPty.onKey((data, ev) => {
-      GdbApi.getSocket().emit("pty_interaction", {
-        data: { pty_name: "user_pty", key: data.key, action: "write" }
-      });
+    this.userPty.onKey((data, ev) => {
+      GdbApi.get_socket()?.send(
+        JSON.stringify({
+          type: "pty_interaction",
+          payload: {
+            pty_name: "user_pty",
+            key: data.key,
+            action: "write"
+          }
+        })
+      );
       if (data.domEvent.code === "Enter") {
         Actions.onConsoleCommandRun();
       }
     });
 
-    const programPty = new Terminal({
-      cursorBlink: true,
-      macOptionIsMeta: true,
-      scrollback: 9999
-    });
-    programPty.loadAddon(programFitAddon);
-    programPty.open(this.programPtyRef.current);
-    programPty.attachCustomKeyEventHandler(
+    this.programPty.loadAddon(programFitAddon);
+    this.programPty.open(this.programPtyRef.current);
+    this.programPty.attachCustomKeyEventHandler(
       // @ts-expect-error
       customKeyEventHandler({
         pty_name: "program_pty",
-        pty: programPty,
+        pty: this.programPty,
         canPaste: true,
         pidStoreKey: "inferior_pid"
       })
     );
-    programPty.write(constants.xtermColors.grey);
-    programPty.write(
+    this.programPty.write(constants.xtermColors.grey);
+    this.programPty.write(
       "Program output -- Programs being debugged are connected to this terminal. " +
         "You can read output and send input to the program from here."
     );
-    programPty.writeln(constants.xtermColors.reset);
-    GdbApi.getSocket().on("program_pty_response", function(pty_response: string) {
-      programPty.write(pty_response);
-    });
-    programPty.onKey((data, ev) => {
-      GdbApi.getSocket().emit("pty_interaction", {
-        data: { pty_name: "program_pty", key: data.key, action: "write" }
-      });
+    this.programPty.writeln(constants.xtermColors.reset);
+    this.programPty.onKey((data, ev) => {
+      GdbApi.get_socket()?.send(
+        JSON.stringify({
+          type: "pty_interaction",
+          payload: {
+            pty_name: "program_pty",
+            key: data.key,
+            action: "write"
+          }
+        })
+      );
     });
 
-    const gdbguiPty = new Terminal({
-      cursorBlink: false,
-      macOptionIsMeta: true,
-      scrollback: 9999,
-      disableStdin: true
-      // theme: { background: "#888" }
-    });
-    gdbguiPty.write(constants.xtermColors.grey);
-    gdbguiPty.writeln("gdbgui output (read-only)");
-    gdbguiPty.writeln(
+    this.gdbguiPty.write(constants.xtermColors.grey);
+    this.gdbguiPty.writeln("gdbgui output (read-only)");
+    this.gdbguiPty.writeln(
       "Copy/Paste available in all terminals with ctrl+shift+c, ctrl+shift+v"
     );
-    gdbguiPty.write(constants.xtermColors.reset);
+    this.gdbguiPty.write(constants.xtermColors.reset);
 
-    gdbguiPty.attachCustomKeyEventHandler(
+    this.gdbguiPty.attachCustomKeyEventHandler(
       // @ts-expect-error
-      customKeyEventHandler({ pty_name: "unused", pty: gdbguiPty, canPaste: false })
+      customKeyEventHandler({ pty_name: "unused", pty: this.gdbguiPty, canPaste: false })
     );
 
-    gdbguiPty.loadAddon(gdbguiFitAddon);
-    gdbguiPty.open(this.gdbguiPtyRef.current);
+    this.gdbguiPty.loadAddon(gdbguiFitAddon);
+    this.gdbguiPty.open(this.gdbguiPtyRef.current);
     // gdbguiPty is written to elsewhere
-    store.set("gdbguiPty", gdbguiPty);
+    store.set("gdbguiPty", this.gdbguiPty);
 
+    //TODO:is this setInterval needed
     setInterval(() => {
       fitAddon.fit();
       programFitAddon.fit();
       gdbguiFitAddon.fit();
-      const socket = GdbApi.getSocket();
+      const socket = GdbApi.get_socket();
+      if (socket === null) return;
 
-      if (socket.disconnected) {
+      if (socket.readyState === WebSocket.CLOSED) {
         return;
       }
-      socket.emit("pty_interaction", {
-        data: {
-          pty_name: "user_pty",
-          rows: userPty.rows,
-          cols: userPty.cols,
-          action: "set_winsize"
-        }
-      });
+      socket.send(
+        JSON.stringify({
+          type: "pty_interaction",
+          payload: {
+            pty_name: "user_pty",
+            rows: this.userPty.rows,
+            cols: this.userPty.cols,
+            action: "set_winsize"
+          }
+        })
+      );
 
-      socket.emit("pty_interaction", {
-        data: {
-          pty_name: "program_pty",
-          rows: programPty.rows,
-          cols: programPty.cols,
-          action: "set_winsize"
-        }
-      });
+      socket.send(
+        JSON.stringify({
+          type: "pty_interaction",
+          payload: {
+            pty_name: "program_pty",
+            rows: this.programPty.rows,
+            cols: this.programPty.cols,
+            action: "set_winsize"
+          }
+        })
+      );
     }, 2000);
 
     const handleResize = () => {
@@ -198,5 +228,20 @@ export class Terminals extends React.Component {
     setTimeout(() => {
       handleResize();
     }, 0);
+
+    this.ptyListener = (type, payload) => {
+      if (type === "user_pty_response") {
+        this.userPty.write(payload);
+      } else if (type === "program_pty_response") {
+        this.programPty.write(payload);
+      }
+    };
+    GdbApi.add_pty_listener(this.ptyListener);
+  }
+
+  componentWillUnmount() {
+    if (this.ptyListener) {
+      GdbApi.remove_pty_listener(this.ptyListener);
+    }
   }
 }

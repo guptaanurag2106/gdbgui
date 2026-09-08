@@ -10,7 +10,6 @@ module.exports = (env, argv) => {
     context: __dirname,
     entry: {
       main: "./gdbgui/src/js/gdbgui.tsx",
-      dashboard: "./gdbgui/src/js/dashboard.tsx"
     },
     devtool: is_dev ? "source-map" : false,
     output: {

@@ -2,62 +2,102 @@ import json
 import logging
 import os
 
-from flask import (
-    Blueprint,
-    current_app,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    Response,
-)
-from pygments.lexers import get_lexer_for_filename  # type: ignore
+from pygments.lexers import get_lexer_for_filename
+from starlette.requests import Request
+from starlette.responses import JSONResponse, RedirectResponse
+from starlette.routing import Route, Mount
+from starlette.staticfiles import StaticFiles
+from starlette.templating import Jinja2Templates
+from typing import cast
 
 from gdbgui import htmllistformatter, __version__
-
-from .constants import TEMPLATE_DIR, USING_WINDOWS, SIGNAL_NAME_TO_OBJ, THEMES
-from .http_util import (
-    client_error,
+from .constants import (
+    TEMPLATE_DIR,
+    STATIC_DIR,
+    USING_WINDOWS,
+    SIGNAL_NAME_TO_OBJ,
+    THEMES,
 )
-
 from .config import Config
 
 logger = logging.getLogger(__file__)
-blueprint = Blueprint("http_routes", __name__, template_folder=str(TEMPLATE_DIR))
+
+templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 
-@blueprint.route("/config", methods=["GET", "POST"])
-def edit_config():
+async def gdbgui(request: Request):
+    """Render the main gdbgui interface"""
+    gdb_command = (
+        request.query_params["gdb_command"]
+        if ("gdb_command" in request.query_params)
+        else request.app.state.config["gdb_command"]
+    )
+
+    initial_data = {
+        "gdbgui_version": __version__,
+        "gdb_command": gdb_command,
+        "initial_binary_and_args": request.app.state.config["initial_binary_and_args"],
+        "project_home": request.app.state.config["project_home"],
+        "remap_sources": request.app.state.config["remap_sources"],
+        "themes": THEMES,
+        "signals": SIGNAL_NAME_TO_OBJ,
+        "using_windows": USING_WINDOWS,
+    }
+
+    return templates.TemplateResponse(
+        request,
+        "gdbgui.html",
+        context={
+            "version": __version__,
+            "debug": request.app.debug,
+            "initial_data": initial_data,
+            "themes": THEMES,
+        },
+    )
+
+
+async def help_route(request: Request):
+    return RedirectResponse("https://github.com/cs01/gdbgui/blob/master/HELP.md")
+
+
+async def get_and_edit_config(request: Request):
+    """Return or Edit the gdbgui/config.json file"""
+
     if request.method == "GET":
-        return jsonify(Config.read())
+        return JSONResponse(content=Config.read(), status_code=200)
     elif request.method == "POST":
-        req = request.get_json()
+        req = await request.json()
         success = Config.update_key(req["key"], req["value"])
-        return (jsonify("OK"), 200) if success else (jsonify("Failed"), 400)
+        if success:
+            return JSONResponse(content={"message": "OK"}, status_code=200)
+        else:
+            return JSONResponse(content={"message": "Failed"}, status_code=500)
 
 
-@blueprint.route("/read_file", methods=["GET"])
-def read_file():
+# TODO:stream response?
+async def read_file(request: Request):
     """Read a file and return its contents as an array"""
 
     def should_highlight():
         try:
-            return json.loads(request.args.get("highlight", "true"))
+            return json.loads(request.query_params["highlight"])
         except Exception as e:
-            if current_app.debug:
+            if request.app.debug:
                 print("Raising exception since debug is on")
                 raise e
 
             else:
                 return True  # highlight argument was invalid for some reason, default to true
 
-    path = request.args.get("path")
-    start_line = int(request.args.get("start_line"))
+    path = request.query_params["path"]
+    start_line = int(request.query_params["start_line"])
     start_line = max(1, start_line)  # make sure it's not negative
-    end_line = int(request.args.get("end_line"))
+    end_line = int(request.query_params["end_line"])
 
     # Fix for when you use '~' in paths
     path = os.path.expanduser(path)
+
+    # TODO:can we do this parsing/colouring async?
     if path and os.path.isfile(path):
         try:
             last_modified = os.path.getmtime(path)
@@ -94,8 +134,8 @@ def read_file():
                 highlighted = False
                 source_code = raw_source_code_lines_of_interest
 
-            return jsonify(
-                {
+            return JSONResponse(
+                content={
                     "source_code_array": source_code,
                     "path": path,
                     "last_modified_unix_sec": last_modified,
@@ -103,137 +143,89 @@ def read_file():
                     "start_line": start_line,
                     "end_line": end_line,
                     "num_lines_in_file": num_lines_in_file,
-                }
+                },
+                status_code=200,
             )
 
         except Exception as e:
-            return client_error({"message": "%s" % e})
+            return JSONResponse(content={"message": "%s" % e}, status_code=500)
 
     else:
-        return client_error({"message": "File not found: %s" % path})
-
-
-@blueprint.route("/get_last_modified_unix_sec", methods=["GET"])
-def get_last_modified_unix_sec():
-    """Get last modified unix time for a given file"""
-    path = request.args.get("path")
-    if path and os.path.isfile(path):
-        try:
-            last_modified = os.path.getmtime(path)
-            return jsonify({"path": path, "last_modified_unix_sec": last_modified})
-
-        except Exception as e:
-            return client_error({"message": "%s" % e, "path": path})
-
-    else:
-        return client_error({"message": "File not found: %s" % path, "path": path})
-
-
-@blueprint.route("/help")
-def help_route():
-    return redirect("https://github.com/cs01/gdbgui/blob/master/HELP.md")
-
-
-@blueprint.route("/dashboard", methods=["GET"])
-def dashboard():
-    manager = current_app.config.get("_manager")
-
-    """display a dashboard with a list of all running gdb processes
-    and ability to kill them, or open a new tab to work with that
-    GdbController instance"""
-    return render_template(
-        "dashboard.html",
-        gdbgui_sessions=manager.get_dashboard_data(),
-        default_command=current_app.config["gdb_command"],
-    )
-
-
-@blueprint.route("/", methods=["GET"])
-def gdbgui():
-    """Render the main gdbgui interface"""
-    gdbpid = request.args.get("gdbpid", 0)
-    gdb_command = request.args.get("gdb_command", current_app.config["gdb_command"])
-
-    initial_data = {
-        "gdbgui_version": __version__,
-        "gdbpid": gdbpid,
-        "gdb_command": gdb_command,
-        "initial_binary_and_args": current_app.config["initial_binary_and_args"],
-        "project_home": current_app.config["project_home"],
-        "remap_sources": current_app.config["remap_sources"],
-        "themes": THEMES,
-        "signals": SIGNAL_NAME_TO_OBJ,
-        "using_windows": USING_WINDOWS,
-    }
-
-    return render_template(
-        "gdbgui.html",
-        version=__version__,
-        debug=current_app.debug,
-        initial_data=initial_data,
-        themes=THEMES,  # FIX:themes already in initial_data
-    )
-
-
-@blueprint.route("/dashboard_data", methods=["GET"])
-def dashboard_data():
-    manager = current_app.config.get("_manager")
-
-    return jsonify(manager.get_dashboard_data())
-
-
-@blueprint.route("/kill_session", methods=["PUT"])
-def kill_session():
-    from .app import manager
-
-    pid = request.json.get("gdbpid")
-    if pid:
-        manager.remove_debug_session_by_pid(pid)
-        return jsonify({"success": True})
-    else:
-        return Response(
-            "Missing required parameter: gdbpid",
-            401,
+        return JSONResponse(
+            content={"message": "File not found: %s" % path}, status_code=400
         )
 
 
-@blueprint.route("/send_signal_to_pid", methods=["POST"])
-def send_signal_to_pid():
-    data = request.get_json()
+async def get_last_modified_unix_sec(request: Request):
+    """Get last modified unix time for a given file"""
+    path = request.query_params.get("path")
+    path = cast(str, os.path.expanduser(path))
+    if path and os.path.isfile(path):
+        try:
+            last_modified = os.path.getmtime(path)
+            return JSONResponse(
+                content={"path": path, "last_modified_unix_sec": last_modified},
+                status_code=200,
+            )
+
+        except Exception as e:
+            return JSONResponse(
+                content={"message": "%s" % e, "path": path}, status_code=500
+            )
+
+    else:
+        return JSONResponse(
+            content={"message": "File not found: %s" % path, "path": path},
+            status_code=400,
+        )
+
+
+async def send_signal_to_pid(request: Request):
+    data = await request.json()
     signal_name = data.get("signal_name", "").upper()
     pid_str = str(data.get("pid"))
     try:
         pid_int = int(pid_str)
     except ValueError:
-        return (
-            jsonify(
-                {
-                    "message": "The pid %s cannot be converted to an integer. Signal %s was not sent."
-                    % (pid_str, signal_name)
-                }
-            ),
-            400,
+        return JSONResponse(
+            content={
+                "message": "The pid %s cannot be converted to an integer. Signal %s was not sent."
+                % (pid_str, signal_name)
+            },
+            status_code=400,
         )
 
     if signal_name not in SIGNAL_NAME_TO_OBJ:
-        raise ValueError("no such signal %s" % signal_name)
+        return JSONResponse(
+            content={"message": "No such signal %s" % signal_name},
+            status_code=400,
+        )
     signal_value = int(SIGNAL_NAME_TO_OBJ[signal_name])
 
     try:
         os.kill(pid_int, signal_value)
     except Exception:
-        return (
-            jsonify(
-                {
-                    "message": "Process could not be killed. Is %s an active PID?"
-                    % pid_int
-                }
-            ),
-            400,
+        return JSONResponse(
+            content={
+                "message": "Process could not be killed. Is %s an active PID?" % pid_int
+            },
+            status_code=500,
         )
-    return jsonify(
-        {
+    return JSONResponse(
+        content={
             "message": "sent signal %s (%s) to process id %s"
             % (signal_name, signal_value, pid_str)
-        }
+        },
+        status_code=200,
     )
+
+
+routes = [
+    Route("/", gdbgui, methods=["GET"]),
+    Route("/help", help_route, methods=["GET"]),
+    Route("/config", get_and_edit_config, methods=["GET", "POST"]),
+    Route("/read_file", read_file, methods=["GET"]),
+    Route("/get_last_modified_unix_sec", get_last_modified_unix_sec, methods=["GET"]),
+    Route("/send_signal_to_pid", send_signal_to_pid, methods=["POST"]),
+    Mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static"),
+]

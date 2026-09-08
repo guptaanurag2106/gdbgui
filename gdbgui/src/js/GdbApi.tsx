@@ -9,12 +9,11 @@ import Actions from "./Actions";
 import constants from "./constants";
 import process_gdb_response from "./process_gdb_response";
 import React from "react";
-import io from "socket.io-client";
 import Util from "./Util";
-void React; // needed when using JSX, but not marked as used
 /* global debug */
 
 // print to console if debug is true
+//TODO: somewhat better log
 let log: {
   (arg0: string): void;
   (...data: any[]): void;
@@ -29,121 +28,219 @@ if (debug) {
   };
 }
 
+type SocketMessage = {
+  type:
+    | "gdb_response"
+    | "fatal_server_error"
+    | "error_running_gdb_command"
+    | "server_error"
+    | "debug_session_connection_event"
+    | "user_pty_response"
+    | "program_pty_response";
+  payload: any;
+};
+
+export type PtyListener = (
+  type: "user_pty_response" | "program_pty_response",
+  payload: string
+) => void;
+let pty_listeners: PtyListener[] = [];
+
 /**
  * This object contains methods to interact with
  * gdb, but does not directly render anything in the DOM.
  */
 const initial_data = window.initial_data;
-let socket: SocketIOClient.Socket;
+let socket: WebSocket | null = null;
 const GdbApi = {
-  getSocket: function() {
+  get_socket: function() {
     return socket;
   },
-  init: function() {
-    const TIMEOUT_MIN = 5;
-    socket = io.connect(`/gdb_listener`, {
-      timeout: TIMEOUT_MIN * 60 * 1000,
-      query: {
-        gdbpid: initial_data.gdbpid,
-        gdb_command: initial_data.gdb_command
-      }
-    });
+  add_pty_listener: function(listener: PtyListener) {
+    pty_listeners.push(listener);
+  },
+  remove_pty_listener: function(listener: PtyListener) {
+    pty_listeners = pty_listeners.filter(l => l !== listener);
+  },
+  _connect_with_timeout: function(url: string, timeout_ms = 5000): Promise<WebSocket> {
+    return new Promise((resolve, reject) => {
+      const socket_new = new WebSocket(url);
+      socket = null;
 
-    socket.on("connect", function() {
-      log("connected");
-      const queuedGdbCommands = store.get("queuedGdbCommands");
-      if (queuedGdbCommands) {
-        GdbApi.run_gdb_command(queuedGdbCommands);
-        store.set("queuedGdbCommands", []);
-      }
-    });
+      const timer = setTimeout(() => {
+        socket_new.onopen = null;
+        socket_new.onerror = null;
+        socket_new.close();
+        reject(new Error(`Socket connection timed out after ${timeout_ms}ms`));
+      }, timeout_ms);
 
-    socket.on("gdb_response", function(response_array: any) {
-      // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-      clearTimeout(GdbApi._waiting_for_response_timeout);
-      store.set("waiting_for_response", false);
-      process_gdb_response(response_array);
+      socket_new.addEventListener("open", () => {
+        clearTimeout(timer);
+        resolve(socket_new);
+      });
+      socket_new.addEventListener("error", event => {
+        clearTimeout(timer);
+        reject(event);
+      });
     });
-    socket.on("fatal_server_error", function(data: { message: null | string }) {
-      Actions.add_console_entries(
-        `Message from server: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
-      socket.close();
-    });
-    socket.on("error_running_gdb_command", function(data: { message: any }) {
-      Actions.add_console_entries(
-        `Error occurred on server when running gdb command: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
-      socket.close();
-    });
-
-    socket.on("server_error", function(data: { message: any }) {
-      Actions.add_console_entries(
-        `Server message: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
-    });
-
-    socket.on("debug_session_connection_event", function(gdb_pid_obj: {
-      pid: number;
-      message: string | void;
-      ok: boolean;
-      started_new_gdb_process: boolean;
-    }) {
-      const gdb_pid = gdb_pid_obj.pid;
-      const message = gdb_pid_obj.message;
-      const error = !gdb_pid_obj.ok;
-      const started_new_gdb_process = gdb_pid_obj.started_new_gdb_process;
-
-      if (message) {
-        Actions.add_console_entries(
-          message,
-          error
-            ? constants.console_entry_type.STD_ERR
-            : constants.console_entry_type.GDBGUI_OUTPUT
-        );
-      }
-      if (error) {
-        socket.close();
-        return;
-      }
-      store.set("gdb_pid", gdb_pid);
-
-      if (started_new_gdb_process) {
-        GdbApi.run_initial_commands();
-      } else {
-        Actions.refresh_state_for_gdb_pause();
-      }
-    });
-
-    socket.on("disconnect", function() {
-      // we no longer need to warn the user before they exit the page since the gdb process
-      // on the server is already gone
-      window.onbeforeunload = () => null;
+  },
+  init: async function() {
+    const TIMEOUT_SEC = 5;
+    const ws_protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const ws_url = `${ws_protocol}//${window.location.host}/ws`;
+    console.log("Connecting to websocket at url, ", ws_url);
+    try {
+      socket = await GdbApi._connect_with_timeout(ws_url, TIMEOUT_SEC * 1000);
+      GdbApi._init_handlers();
+    } catch (error) {
+      console.log("Error connecting to backend socket", error);
+      socket = null;
 
       Actions.show_modal(
         "",
         <>
           <p>
-            The connection to the gdb session has been closed. This tab will no longer
-            function as expected.
-          </p>
-          <p className="font-bold">
-            To start a new session or connect to a different session, go to the{" "}
-            <a href="/dashboard">dashboard</a>.
+            Could not connect to the backend session. Ensure the backend is running and
+            refresh the page
           </p>
         </>
       );
       Actions.add_console_entries(
-        `The connection to the gdb session has been closed. To start a new session, go to ${window.location.origin}/dashboard`,
+        "Could not connect to the backend session",
         constants.console_entry_type.STD_ERR
       );
+    }
+  },
+  _init_handlers: function() {
+    console.assert(socket != null);
+    if (socket === null) return;
 
-      // if (debug) {
-      //   window.location.reload(true);
-      // }
+    socket.addEventListener("message", event => {
+      try {
+        const data: SocketMessage = JSON.parse(event.data);
+        switch (data.type) {
+          case "gdb_response":
+            {
+              // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
+              clearTimeout(GdbApi._waiting_for_response_timeout);
+              store.set("waiting_for_response", false);
+              process_gdb_response(data.payload);
+            }
+            break;
+          case "debug_session_connection_event":
+            {
+              const gdb_pid_obj = data.payload;
+              const gdb_pid = gdb_pid_obj.pid;
+              const message = gdb_pid_obj.message;
+              const error = !gdb_pid_obj.ok;
+              const started_new_gdb_process = gdb_pid_obj.started_new_gdb_process;
+
+              if (message) {
+                Actions.add_console_entries(
+                  message,
+                  error
+                    ? constants.console_entry_type.STD_ERR
+                    : constants.console_entry_type.GDBGUI_OUTPUT
+                );
+              }
+              if (error) {
+                socket?.close();
+                return;
+              }
+              store.set("gdb_pid", gdb_pid);
+
+              if (started_new_gdb_process) {
+                GdbApi.run_initial_commands();
+              } else {
+                Actions.refresh_state_for_gdb_pause();
+              }
+            }
+            break;
+          case "error_running_gdb_command":
+            {
+              Actions.add_console_entries(
+                `Error occurred on server when running gdb command: ${data.payload.message}`,
+                constants.console_entry_type.STD_ERR
+              );
+              socket?.close();
+            }
+            break;
+          case "fatal_server_error":
+            {
+              Actions.add_console_entries(
+                `Message from server: ${data.payload.message}`,
+                constants.console_entry_type.STD_ERR
+              );
+              socket?.close();
+            }
+            break;
+          case "server_error":
+            {
+              Actions.add_console_entries(
+                `Server message: ${data.payload.message}`,
+                constants.console_entry_type.STD_ERR
+              );
+            }
+            break;
+          case "user_pty_response":
+          case "program_pty_response":
+            pty_listeners.forEach(cb =>
+              cb(data.type as "user_pty_response" | "program_pty_response", data.payload)
+            );
+            break;
+          default:
+            Actions.add_console_entries(
+              `Unknown data.type recieved ${data}`,
+              constants.console_entry_type.STD_ERR
+            );
+        }
+      } catch (e) {
+        Actions.add_console_entries(
+          `Last socket message was malformed ${e}`,
+          constants.console_entry_type.STD_ERR
+        );
+      }
+    });
+
+    socket.addEventListener("error", event => {
+      log("socket encountered an error", event);
+      Actions.add_console_entries(
+        `Last socket message encountered an err ${event}. Some actions may not have been executed`,
+        constants.console_entry_type.STD_ERR
+      );
+    });
+
+    socket.addEventListener("close", event => {
+      log("socket closed", event);
+      socket = null;
+      // we no longer need to warn the user before they exit the page since the gdb process
+      // on the server is already gone
+      window.onbeforeunload = () => null;
+      if (event.reason === "existing_connection") {
+        Actions.show_modal(
+          "",
+          <>
+            <p>
+              The connection to the gdb session has been closed, as there was an already
+              existing connection.
+            </p>
+          </>
+        );
+      } else {
+        Actions.show_modal(
+          "",
+          <>
+            <p>
+              The connection to the gdb session has been closed. This tab will no longer
+              function as expected.
+            </p>
+          </>
+        );
+      }
+      Actions.add_console_entries(
+        "The connection to the gdb session has been closed",
+        constants.console_entry_type.STD_ERR
+      );
     });
   },
   _waiting_for_response_timeout: null,
@@ -265,7 +362,7 @@ const GdbApi = {
     GdbApi._waiting_for_response_timeout = setTimeout(() => {
       Actions.clear_program_state();
       store.set("waiting_for_response", false);
-      if (GdbApi.getSocket().disconnected) {
+      if (socket?.readyState === WebSocket.CLOSED) {
         return;
       }
 
@@ -310,8 +407,8 @@ const GdbApi = {
       cmds = [cmds];
     }
 
-    if (socket.connected) {
-      socket.emit("run_gdb_command", { cmd: cmds });
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket?.send(JSON.stringify({ type: "run_gdb_command", payload: { cmd: cmds } }));
       GdbApi.waiting_for_response();
       // add the send command to the console to show commands that are
       // automatically run by gdb

@@ -5,16 +5,15 @@ A server that provides a graphical user interface to the gnu debugger (gdb).
 https://github.com/cs01/gdbgui
 """
 
+from typing import List, Optional
 import argparse
 import json
 import logging
 import platform
 import re
 import shlex
-from typing import List, Optional
 
 from gdbgui import __version__
-from gdbgui.server.app import app, socketio
 from gdbgui.server.constants import DEFAULT_GDB_EXECUTABLE, DEFAULT_HOST, DEFAULT_PORT
 from gdbgui.server.server import run_server
 
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger("gdbgui.server").setLevel(logging.ERROR)
 
 
-def warn_startup_with_shell_off(platform: str, gdb_args: str):
+def warn_startup_with_shell_off(platform: str, gdb_args: str) -> bool:
     """return True if user may need to turn shell off
     if mac OS version is 16 (sierra) or higher, may need to set shell off due
     to os's security requirements
@@ -36,7 +35,7 @@ def warn_startup_with_shell_off(platform: str, gdb_args: str):
     return False
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -58,6 +57,15 @@ def get_parser():
 
         """,
         default=DEFAULT_GDB_EXECUTABLE,
+    )
+    gdb_group.add_argument(
+        "-mi",
+        "--mi-version",
+        help="""
+        Specify which version of gdb/mi to use
+        Examples: mi2, mi3
+        """,
+        default="mi2",
     )
     network.add_argument(
         "-p",
@@ -142,7 +150,7 @@ def get_initial_binary_and_args(
         return user_supplied_args
 
 
-def main():
+def main() -> None:
     """Entry point from command line"""
     parser = get_parser()
     args = parser.parse_args()
@@ -154,14 +162,18 @@ def main():
         print("Cannot specify no-browser and browser. Must specify one or the other.")
         exit(1)
 
-    app.config["gdb_command"] = args.gdb_cmd
-    app.config["initial_binary_and_args"] = get_initial_binary_and_args(
-        args.args, args.debug_program
-    )
-    app.config["project_home"] = args.project
+    config = {
+        "gdb_command": args.gdb_cmd,
+        "mi_version": args.mi_version,
+        "initial_binary_and_args": get_initial_binary_and_args(
+            args.args, args.debug_program
+        ),
+        "project_home": args.project,
+        "remap_sources": {},
+    }
     if args.remap_sources:
         try:
-            app.config["remap_sources"] = json.loads(args.remap_sources)
+            config["remap_sources"] = json.loads(args.remap_sources)
         except json.decoder.JSONDecodeError as e:
             print(
                 "The '--remap-sources' argument must be valid JSON. See gdbgui --help."
@@ -172,11 +184,6 @@ def main():
     if args.remote:
         args.host = "0.0.0.0"
         args.no_browser = True
-        if app.config["gdbgui_auth_user_credentials"] is None:
-            print(
-                "Warning: authentication is recommended when serving on a publicly "
-                "accessible IP address. See gdbgui --help."
-            )
 
     if warn_startup_with_shell_off(platform.platform().lower(), args.gdb_cmd):
         logger.warning(
@@ -189,8 +196,7 @@ def main():
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
     run_server(
-        app=app,
-        socketio=socketio,
+        config,
         host=args.host,
         port=int(args.port),
         debug=bool(args.debug),

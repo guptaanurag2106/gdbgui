@@ -98,11 +98,6 @@ let get_menu = function(open: boolean, on_toggle: () => void) {
         </a>
         <ul className="dropdown-menu" onClick={() => on_toggle()}>
           <li>
-            <a title="dashboard" className="pointer" href="/dashboard">
-              Dashboard
-            </a>
-          </li>
-          <li>
             <a
               title="show guide"
               className="pointer"

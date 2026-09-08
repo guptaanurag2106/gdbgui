@@ -17,7 +17,6 @@ declare module "statorgfc" {
 
 declare var initial_data: {
   gdbgui_version: string;
-  gdbpid: number;
   gdb_command: string;
   initial_binary_and_args: string[];
   project_home: string | null;
