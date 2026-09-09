@@ -82,7 +82,6 @@ async def socket(socket: WebSocket):
 
     await socket.accept()
 
-    print("connected")
     logger.info("socket connected")
     try:
         gdb_command = socket.app.state.config.get("gdb_command", DEFAULT_GDB_EXECUTABLE)

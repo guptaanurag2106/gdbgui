@@ -70,7 +70,8 @@ def get_parser() -> argparse.ArgumentParser:
     network.add_argument(
         "-p",
         "--port",
-        help="The port on which gdbgui will be hosted",
+        help="The port on which gdbgui will be hosted. (If it is not available it will find the first available port"
+        " starting from it. Setting port=0 means a random port)",
         default=DEFAULT_PORT,
     )
     network.add_argument(

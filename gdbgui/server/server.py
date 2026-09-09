@@ -1,4 +1,5 @@
 import socket
+import sys
 import threading
 import time
 import uvicorn
@@ -7,6 +8,19 @@ from typing import Any
 
 from .constants import DEFAULT_HOST, DEFAULT_PORT, colorize
 from .app import app
+
+
+def find_available_port(host: str, start_port: int, max_attempts=50) -> int:
+    for port in range(start_port, start_port + max_attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind((host, port))
+                return port
+            except OSError:
+                continue
+    raise OSError(
+        f"Could not find an open port between {start_port} and {start_port + max_attempts}"
+    )
 
 
 def wait_and_open_browser(browsername, url, host, port):
@@ -32,14 +46,22 @@ def run_server(
 ):
     """Run the server of the gdbgui"""
 
+    if port == DEFAULT_PORT:
+        try:
+            port = find_available_port(host, port)
+        except OSError as e:
+            print(str(e))
+            sys.exit(1)
+    elif port == 0:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind((host, 0))
+            port = s.getsockname()[1]
+
     url = "%s:%s" % (host, port)
     protocol = "http://"
     url_with_prefix = "http://" + url
 
-    try:
-        url = (socket.gethostbyname(socket.gethostname()), port)
-    except Exception:
-        url = (host, port)
+    url = (host, port)
 
     if open_browser is True and debug is False:
         browsertext = repr(browsername) if browsername else "default browser"
