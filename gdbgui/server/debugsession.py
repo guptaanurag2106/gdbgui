@@ -1,13 +1,10 @@
-from typing import Optional
 import asyncio
 import datetime
 import logging
 import os
 import signal
-import time
-import traceback
 
-from starlette.websockets import WebSocket, WebSocketState
+from starlette.websockets import WebSocket
 
 from .iomanager import IoManager
 from .ptylib import Pty
@@ -19,12 +16,9 @@ TERMINATED_GDB_TEARDOWN_TIMEOUT = 2.0  # sec
 
 # TODO:add some alive method?
 class DebugSession:
-    def __init__(
-        self,
-        gdb_command: str,
-        mi_version: str,
-    ):
+    def __init__(self, gdb_command: str, mi_version: str, socket: WebSocket):
 
+        self.socket = socket
         self.command = gdb_command
         self.pty_for_debugged_program = Pty()
         self.pty_for_gdbgui = Pty(echo=False)
@@ -45,29 +39,25 @@ class DebugSession:
         self.pygdbmi_controller = IoManager(
             os.fdopen(os.dup(self.pty_for_gdbgui.stdin), mode="wb", buffering=0),  # type: ignore
             os.fdopen(os.dup(self.pty_for_gdbgui.stdout), mode="rb", buffering=0),  # type: ignore
-            None,
         )
 
         self.mi_version = mi_version
         self.start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.terminating = False
-        self.terminate_on: Optional[float] = None
         self.terminated = False
 
-        self.background_task: asyncio.Task = None
+        self.start_readers()
 
     def terminate(self):
         if self.terminating:
             return
         self.terminating = True
-        self.terminate_on = time.monotonic() + TERMINATED_GDB_TEARDOWN_TIMEOUT
         if self.pygdbmi_controller:
             try:
-                self.pygdbmi_controller.write(
-                    "-gdb-exit\n",
-                    timeout_sec=0,
-                    raise_error_on_timeout=False,
-                    read_response=False,
+                self.pygdbmi_controller.write("-gdb-exit\n")
+                # force kill terminating gdb if they dont send exit resp
+                asyncio.get_running_loop().call_later(
+                    TERMINATED_GDB_TEARDOWN_TIMEOUT, self.clean
                 )
             except Exception as e:
                 logger.error(
@@ -75,17 +65,11 @@ class DebugSession:
                 )
                 self.clean()
 
-    def to_dict(self):
-        return {
-            "pid": self.pid,
-            "start_time": self.start_time,
-            "command": self.command,
-        }
-
     def clean(self):
+        if self.terminated:
+            return
         self.terminating = False
         self.terminated = True
-        self.background_task.cancel()
         if self.pid:
             try:
                 try:
@@ -100,6 +84,11 @@ class DebugSession:
                     pass
                 logger.error(f"Failed to clean up pid {self.pid}: {str(e)}")
 
+        loop = asyncio.get_event_loop()
+        loop.remove_reader(self.pty_for_debugged_program.stdout)
+        loop.remove_reader(self.pty_for_gdb.stdout)
+        loop.remove_reader(self.pty_for_gdbgui.stdout)
+
         if self.pty_for_gdbgui:
             self.pty_for_gdbgui.close()
         if self.pty_for_gdb:
@@ -110,78 +99,84 @@ class DebugSession:
         self.pygdbmi_controller = None
         self.pid = None
 
-    async def read_and_forward_gdb_and_pty_output(self, socket: WebSocket):
+    def start_readers(self):
+        loop = asyncio.get_event_loop()
+        loop.add_reader(
+            self.pty_for_debugged_program.stdout,
+            self._on_pty_for_debugged_program_readable,
+        )
+        loop.add_reader(self.pty_for_gdb.stdout, self._on_pty_for_gdb_readable)
+        loop.add_reader(self.pty_for_gdbgui.stdout, self._on_pty_for_gdbgui_readable)
+
+    def _on_pty_for_gdbgui_readable(self):
         """A task that runs on a different thread, and emits websocket messages
         of gdb responses"""
-        # TODO:some alive method
-        while True:
-            await asyncio.sleep(0.05)
-            if socket.client_state == WebSocketState.CONNECTING:
-                pass
-            if self.terminated or socket.client_state == WebSocketState.DISCONNECTED:
-                return
-            try:
-                try:
-                    response = self.pygdbmi_controller.get_gdb_response(
-                        timeout_sec=0, raise_error_on_timeout=False
-                    )
+        try:
+            response = self.pygdbmi_controller.get_gdb_response()
 
-                    for resp in response:
-                        if (
-                            resp.get("payload") in ("^exit\r", "^exit")
-                            or resp.get("message") == "exit"
-                        ):
-                            self.terminate()
+            for resp in response:
+                if (
+                    resp.get("payload") in ("^exit\r", "^exit")
+                    or resp.get("message") == "exit"
+                ):
+                    self.terminate()
 
-                    if response:
-                        logger.info("emiting 'gdb_response' to socket")
-                        await socket.send_json(
-                            {"type": "gdb_response", "payload": response}, mode="text"
-                        )
-                except Exception:
-                    response = [
-                        {
-                            "message": None,
-                            "type": "console",
-                            "payload": "The underlying gdb process has been killed. This tab will no longer function as expected.",
-                            "stream": "stderr",
-                        }
-                    ]
-                    await socket.send_json(
+            if response:
+                logger.info("emiting 'gdb_response' to socket")
+                asyncio.create_task(
+                    self.socket.send_json(
                         {"type": "gdb_response", "payload": response}, mode="text"
                     )
+                )
+        except Exception as e:
+            print("Exception while `get_gdb_response`", e)
+            response = [
+                {
+                    "message": None,
+                    "type": "console",
+                    "payload": "The underlying gdb process has been killed. This tab will no longer function as expected.",
+                    "stream": "stderr",
+                }
+            ]
+            asyncio.create_task(
+                self.socket.send_json(
+                    {"type": "gdb_response", "payload": response}, mode="text"
+                )
+            )
 
-            except Exception:
-                logger.error("caught exception, continuing:" + traceback.format_exc())
+    def _on_pty_for_debugged_program_readable(self):
+        try:
+            response = self.pty_for_debugged_program.read()
+            if response is not None:
+                asyncio.create_task(
+                    self.socket.send_json(
+                        {"type": "program_pty_response", "payload": response},
+                        mode="text",
+                    )
+                )
+        except Exception as e:
+            asyncio.create_task(
+                self.socket.send_json(
+                    {"type": "fatal_server_error", "payload": {"message": str(e)}},
+                    mode="text",
+                )
+            )
+            logger.error(e, exc_info=True)
 
-            time_now = time.monotonic()
-            # force kill terminating gdb if they dont send exit resp
-            if (
-                self.terminating
-                and self.terminate_on is not None
-                and self.terminate_on <= time_now
-            ):
-                self.clean()
-
-            await self.check_and_forward_pty_output(socket)
-
-    async def check_and_forward_pty_output(self, socket: WebSocket):
+    def _on_pty_for_gdb_readable(self):
         try:
             response = self.pty_for_gdb.read()
             if response is not None:
-                await socket.send_json(
-                    {"type": "user_pty_response", "payload": response}, mode="text"
-                )
-
-            response = self.pty_for_debugged_program.read()
-            if response is not None:
-                await socket.send_json(
-                    {"type": "program_pty_response", "payload": response}, mode="text"
+                asyncio.create_task(
+                    self.socket.send_json(
+                        {"type": "user_pty_response", "payload": response}, mode="text"
+                    )
                 )
         except Exception as e:
-            await socket.send_json(
-                {"type": "fatal_server_error", "payload": {"message": str(e)}},
-                mode="text",
+            asyncio.create_task(
+                self.socket.send_json(
+                    {"type": "fatal_server_error", "payload": {"message": str(e)}},
+                    mode="text",
+                )
             )
-            self.terminate()
             logger.error(e, exc_info=True)

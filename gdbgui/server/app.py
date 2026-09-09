@@ -86,7 +86,9 @@ async def socket(socket: WebSocket):
     try:
         gdb_command = socket.app.state.config.get("gdb_command", DEFAULT_GDB_EXECUTABLE)
         mi_version = socket.app.state.config.get("mi_version", "mi2")
-        debug_session = DebugSession(gdb_command=gdb_command, mi_version=mi_version)
+        debug_session = DebugSession(
+            gdb_command=gdb_command, mi_version=mi_version, socket=socket
+        )
         await socket.send_json(
             {
                 "type": "debug_session_connection_event",
@@ -98,9 +100,6 @@ async def socket(socket: WebSocket):
                 },
             },
             mode="text",
-        )
-        debug_session.background_task = asyncio.create_task(
-            debug_session.read_and_forward_gdb_and_pty_output(socket)
         )
     except Exception as e:
         await socket.send_json(
@@ -186,12 +185,7 @@ async def socket(socket: WebSocket):
                                 # the command (string) or commands (list) to run
                                 cmds = message["payload"]["cmd"]
                                 for cmd in cmds:
-                                    pty_mi.write(
-                                        cmd + "\n",
-                                        timeout_sec=0,
-                                        raise_error_on_timeout=False,
-                                        read_response=False,
-                                    )
+                                    pty_mi.write(cmd)
 
                             except Exception:
                                 err = traceback.format_exc()
@@ -204,6 +198,7 @@ async def socket(socket: WebSocket):
                                     mode="text",
                                 )
                         else:
+                            # TODO:seems like a big issue if this happens
                             await socket.send_json(
                                 {
                                     "type": "error_running_gdb_command",
@@ -238,7 +233,8 @@ async def socket(socket: WebSocket):
         async with socket.app.state.single_user_lock:
             socket.app.state.socket = None
             socket.app.state.debug_session = None
-        debug_session.terminate()
+        # no point in terminating first to drain responses as socket is already closed
+        debug_session.clean()
         logger.info("Client websocket disconnected")
 
 
