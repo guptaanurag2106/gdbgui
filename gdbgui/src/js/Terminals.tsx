@@ -6,6 +6,7 @@ import { store } from "statorgfc";
 import "xterm/css/xterm.css";
 import constants from "./constants";
 import Actions from "./Actions";
+import Util from "./Util";
 
 function customKeyEventHandler(config: {
   pty_name: string;
@@ -48,12 +49,15 @@ function customKeyEventHandler(config: {
 }
 export class Terminals extends React.Component {
   userPtyRef: React.RefObject<any>;
-  programPtyRef: React.RefObject<any>;
-  gdbguiPtyRef: React.RefObject<any>;
   userPty: Terminal;
+
+  programPtyRef: React.RefObject<any>;
   programPty: Terminal;
+
+  gdbguiPtyRef: React.RefObject<any>;
   gdbguiPty: Terminal;
-  ptyListener:
+
+  pty_listener:
     | ((type: "user_pty_response" | "program_pty_response", payload: string) => void)
     | null = null;
   constructor(props: any) {
@@ -182,46 +186,16 @@ export class Terminals extends React.Component {
     // gdbguiPty is written to elsewhere
     store.set("gdbguiPty", this.gdbguiPty);
 
-    //TODO:is this setInterval needed
-    setInterval(() => {
-      fitAddon.fit();
-      programFitAddon.fit();
-      gdbguiFitAddon.fit();
-      const socket = GdbApi.get_socket();
-      if (socket === null) return;
-
-      if (socket.readyState === WebSocket.CLOSED) {
-        return;
-      }
-      socket.send(
-        JSON.stringify({
-          type: "pty_interaction",
-          payload: {
-            pty_name: "user_pty",
-            rows: this.userPty.rows,
-            cols: this.userPty.cols,
-            action: "set_winsize"
-          }
-        })
-      );
-
-      socket.send(
-        JSON.stringify({
-          type: "pty_interaction",
-          payload: {
-            pty_name: "program_pty",
-            rows: this.programPty.rows,
-            cols: this.programPty.cols,
-            action: "set_winsize"
-          }
-        })
-      );
-    }, 2000);
+    let debounced_send_updated_terminal_size = Util.debounce(
+      this.send_updated_terminal_size,
+      300
+    );
 
     const handleResize = () => {
       fitAddon.fit();
       programFitAddon.fit();
       gdbguiFitAddon.fit();
+      debounced_send_updated_terminal_size();
     };
     window.addEventListener("resize", handleResize);
 
@@ -229,19 +203,51 @@ export class Terminals extends React.Component {
       handleResize();
     }, 0);
 
-    this.ptyListener = (type, payload) => {
+    this.pty_listener = (type, payload) => {
       if (type === "user_pty_response") {
         this.userPty.write(payload);
       } else if (type === "program_pty_response") {
         this.programPty.write(payload);
       }
     };
-    GdbApi.add_pty_listener(this.ptyListener);
+    GdbApi.add_pty_listener(this.pty_listener);
   }
 
+  send_updated_terminal_size = () => {
+    const socket = GdbApi.get_socket();
+    if (socket === null) return;
+
+    if (socket.readyState === WebSocket.CLOSED) {
+      return;
+    }
+    socket.send(
+      JSON.stringify({
+        type: "pty_interaction",
+        payload: {
+          pty_name: "user_pty",
+          rows: this.userPty.rows,
+          cols: this.userPty.cols,
+          action: "set_winsize"
+        }
+      })
+    );
+
+    socket.send(
+      JSON.stringify({
+        type: "pty_interaction",
+        payload: {
+          pty_name: "program_pty",
+          rows: this.programPty.rows,
+          cols: this.programPty.cols,
+          action: "set_winsize"
+        }
+      })
+    );
+  };
+
   componentWillUnmount() {
-    if (this.ptyListener) {
-      GdbApi.remove_pty_listener(this.ptyListener);
+    if (this.pty_listener) {
+      GdbApi.remove_pty_listener(this.pty_listener);
     }
   }
 }

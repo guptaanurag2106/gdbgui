@@ -405,7 +405,7 @@ const GdbApi = {
         return;
       }
       cmds = [cmds];
-    }
+    } else if (cmds.length == 0) return;
 
     if (socket?.readyState === WebSocket.OPEN) {
       socket?.send(JSON.stringify({ type: "run_gdb_command", payload: { cmd: cmds } }));

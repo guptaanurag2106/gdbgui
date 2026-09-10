@@ -24,7 +24,7 @@ def find_available_port(host: str, start_port: int, max_attempts=50) -> int:
 
 
 def wait_and_open_browser(browsername, url, host, port):
-    # to not just race against flask starting we can try to connect to the host,port
+    # to not just race against backend starting we can try to connect to the host,port
     # with small sleep until it connects
     while True:
         try:

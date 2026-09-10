@@ -115,7 +115,7 @@ def get_parser() -> argparse.ArgumentParser:
     )
     other.add_argument(
         "--debug",
-        help="The debug flag of this Flask application. "
+        help="The debug flag of this uvicorn application. "
         "Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected",
         action="store_true",
     )
