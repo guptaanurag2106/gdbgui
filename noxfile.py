@@ -32,7 +32,7 @@ lint_dependencies = [
 vulture_whitelist = ".vulture_whitelist.py"
 files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
 files_to_lint.remove(vulture_whitelist)
-publish_deps = ["setuptools", "wheel", "twine"]
+publish_deps = ["build", "twine"]
 
 
 def get_reload_files():
@@ -110,17 +110,6 @@ def lint(session):
     session.run("flake8", *files_to_lint)
     session.run("mypy", *files_to_lint)
     vulture(session)
-    # TODO: fix this sometime or don't
-    # session.run(
-    #     "check-manifest",
-    #     "--ignore",
-    #     "gdbgui/static/js/*",
-    #     "--ignore",
-    #     "gdbgui/static/css/*",
-    #     "--ignore",
-    #     "*pycache*",
-    # )
-    session.run("python", "setup.py", "check", "--metadata", "--strict")
     session.run(*prettier_command, "--check", external=True)
 
 
@@ -164,7 +153,7 @@ def build(session):
     session.run("rm", "-rf", "dist", "build", external=True)
     session.run("yarn", external=True)
     session.run("yarn", "build", external=True)
-    session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
+    session.run("python", "-m", "build", "--sdist", "--wheel")
     session.run("twine", "check", "dist/*")
     for built_package in glob.glob("dist/*"):
         # ensure we can install the built distributions

@@ -1,43 +1,14 @@
 include README.md
 include LICENSE
-include requirements.txt
+include COPYRIGHT
 
 graft gdbgui
-# these files are built and must be included in distribution
-# but shouldn't be included in git repository since they
-# are generated
+# Built frontend assets are gitignored but must ship in sdist/wheel.
 graft gdbgui/static/js
 graft gdbgui/static/css
 
-prune examples
-prune .vscode
-prune downloads
-prune screenshots
 prune tests
 prune docs
-prune docker
-prune images
 prune gdbgui/__pycache__
 prune gdbgui/server/__pycache__
 prune gdbgui/src
-
-exclude mypy.ini
-exclude .eslintrc.json
-exclude .coveragerc
-exclude .flake8
-exclude .vulture_whitelist.py
-exclude .prettierrc.js
-exclude jest.config.js
-exclude make_executable.py
-exclude mkdocs.yml
-exclude package.json
-exclude requirements.in
-exclude tsconfig.json
-exclude tslint.json
-exclude webpack.config.js
-exclude yarn.lock
-exclude noxfile.py
-exclude CHANGELOG.md
-exclude CONTRIBUTING.md
-exclude postcss.config.js
-exclude tailwind.config.js

@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gdbgui"
+dynamic = ["version"]
+description = "Browser-based frontend to gdb. Debug C, C++, Go, or Rust."
+readme = "README.md"
+requires-python = ">=3.13"
+license = "GPL-3.0-only"
+license-files = ["LICENSE", "COPYRIGHT"]
+authors = [
+    {name = "Anurag Gupta", email = "guptaanurag2106@gmail.com"},
+]
+dependencies = [
+    "uvicorn[standard]>=0.50",
+    "starlette>=1.6.0",
+    "jinja2>=3.1.0",
+    "Pygments>=2.2.0,<3.0",
+]
+keywords = [
+    "gdb",
+    "debug",
+    "c",
+    "c++",
+    "go",
+    "rust",
+    "machine-interface",
+    "frontend",
+    "browser",
+    "gui",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+    "Operating System :: POSIX",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+
+[project.scripts]
+gdbgui = "gdbgui.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/guptaanurag2106/gdbgui"
+Documentation = "https://github.com/guptaanurag2106/gdbgui/tree/master/docs"
+Repository = "https://github.com/guptaanurag2106/gdbgui"
+Changelog = "https://github.com/guptaanurag2106/gdbgui/blob/master/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/guptaanurag2106/gdbgui/issues"
+
+[tool.setuptools.dynamic]
+version = {file = "gdbgui/VERSION.txt"}
+
+[tool.setuptools.packages.find]
+include = ["gdbgui*"]
+exclude = ["gdbgui.tests*"]
+
+[tool.setuptools.package-data]
+gdbgui = [
+    "VERSION.txt",
+    "templates/*",
+    "static/**/*",
+]

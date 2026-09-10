@@ -1,0 +1,11 @@
+This project is a modified fork of gdbgui
+(https://github.com/cs01/gdbgui), originally created by cs01.
+
+Original gdbgui code:
+Copyright (C) Chad Smith (Grass Fed Code)
+
+This fork contains substantial modifications and new contributions.
+Copyright (C) 2026 Anurag Gupta.
+
+This project is distributed under the GNU General Public License,
+version 3.

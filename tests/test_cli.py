@@ -34,8 +34,9 @@ def run_gdbgui_cli(gdbgui_args: List[str]):
 )
 def test_cli_fails(monkeypatch, argv):
     mock_exit = mock.Mock(side_effect=ValueError("raised in test to exit early"))
-    with mock.patch.object(sys, "exit", mock_exit), pytest.raises(
-        ValueError, match="raised in test to exit early"
+    with (
+        mock.patch.object(sys, "exit", mock_exit),
+        pytest.raises(ValueError, match="raised in test to exit early"),
     ):
         run_gdbgui_cli(argv)
     mock_exit.assert_called_once_with(2)
@@ -44,8 +45,9 @@ def test_cli_fails(monkeypatch, argv):
 @mock.patch("gdbgui.server.server.run_server")
 def test_cli_help(monkeypatch):
     mock_exit = mock.Mock(side_effect=ValueError("raised in test to exit early"))
-    with mock.patch.object(sys, "exit", mock_exit), pytest.raises(
-        ValueError, match="raised in test to exit early"
+    with (
+        mock.patch.object(sys, "exit", mock_exit),
+        pytest.raises(ValueError, match="raised in test to exit early"),
     ):
         run_gdbgui_cli(["--help"])
     mock_exit.assert_called_once_with(0)
