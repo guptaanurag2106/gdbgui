@@ -212,8 +212,10 @@ class RightSidebar extends React.Component {
               </p>
               <p>
                 Something missing? Found a bug?{" "}
-                <a href="https://github.com/cs01/gdbgui/issues/">Create an issue</a> on
-                github.
+                <a href="https://github.com/guptaanurag2106/gdbgui/issues/">
+                  Create an issue
+                </a>{" "}
+                on github.
               </p>
 
               <p>Happy debugging!</p>

@@ -57,7 +57,10 @@ async def gdbgui(request: Request):
 
 
 async def help_route(request: Request):
-    return RedirectResponse("https://github.com/cs01/gdbgui/blob/master/HELP.md")
+    # TODO: well the help doesn't exist
+    return RedirectResponse(
+        "https://github.com/guptaanurag2106/gdbgui/blob/master/HELP.md"
+    )
 
 
 async def get_and_edit_config(request: Request):

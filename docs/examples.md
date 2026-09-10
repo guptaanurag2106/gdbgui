@@ -1,7 +1,7 @@
 
 # Examples
 ## Code Examples
-View code examples on [GitHub](https://github.com/cs01/gdbgui/tree/master/examples).
+View code examples on [GitHub](https://github.com/guptaanurag2106/gdbgui/tree/master/examples).
 
 ## gdbgui Invocation Examples
 
@@ -46,20 +46,6 @@ run on a server and host on 0.0.0.0. Accessible to the outside world as long as 
 
 ```
 gdbgui -r
-```
-
-Same as previous but will prompt for a username and password
-
-```
-gdbgui -r --auth
-```
-
-Same as previous but with encrypted https connection.
-```
-openssl req -newkey rsa:2048 -nodes -keyout private.key -x509 -days 365 -out host.cert
-```
-```
-gdbgui -r --auth --key private.key --cert host.cert
 ```
 
 Use Mozilla's [record and replay](https://rr-project.org) (rr) debugging supplement to gdb. rr lets your record a program (usually with a hard-to-reproduce bug in it), then deterministically replay it as many times as you want. You can even step forwards and backwards.

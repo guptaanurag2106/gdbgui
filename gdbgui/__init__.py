@@ -11,5 +11,5 @@ _version = (
 
 __title__ = "gdbgui"
 __version__ = _version
-__author__ = "Chad Smith"
-__copyright__ = "Copyright Chad Smith"
+__author__ = "Anurag Gupta"
+__copyright__ = "Copyright Chad Smith (original); Anurag Gupta (fork)"

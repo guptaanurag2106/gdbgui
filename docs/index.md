@@ -1,5 +1,5 @@
 <p align="center">
-<a href="http://gdbgui.com"><img src="https://github.com/cs01/gdbgui/raw/master/images/gdbgui_banner.png"></a>
+<a href="http://gdbgui.com"><img src="https://github.com/guptaanurag2106/gdbgui/raw/master/images/gdbgui_banner.png"></a>
 </p>
 
 <h3 align="center">
@@ -8,8 +8,8 @@ A browser-based frontend to gdb (gnu debugger)
 
 <p align="center">
 
-<a href="https://github.com/cs01/gdbgui/actions">
-<img src="https://github.com/cs01/gdbgui/workflows/Tests/badge.svg?branch=master" alt="CI Tests" /></a>
+<a href="https://github.com/guptaanurag2106/gdbgui/actions">
+<img src="https://github.com/guptaanurag2106/gdbgui/workflows/Tests/badge.svg?branch=master" alt="CI Tests" /></a>
 
 <a href="https://badge.fury.io/py/gdbgui">
 <img src="https://badge.fury.io/py/gdbgui.svg" alt="PyPI version" >
@@ -22,8 +22,8 @@ A browser-based frontend to gdb (gnu debugger)
 ---
 
 <p align="center">
-<a href="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
-<img src="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
+<a href="https://github.com/guptaanurag2106/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
+<img src="https://github.com/guptaanurag2106/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
 </a>
 
 </p>
@@ -70,20 +70,21 @@ gdbgui's license is GNU GPLv3. To summarize it, you
 
 gdbgui is distributed through
 
-- github ([https://github.com/cs01/gdbgui](https://github.com/cs01/gdbgui))
-- [PyPI](https://pypi.python.org/pypi/gdbgui/)
+- github ([https://github.com/guptaanurag2106/gdbgui](https://github.com/guptaanurag2106/gdbgui))
+
+## Origin
+
+This project is a fork of [gdbgui](https://github.com/cs01/gdbgui),
+originally created by cs01.
+
+It retains the GPLv3 license and contains substantial modifications
+and new contributions by Anurag Gupta.
 
 ## Authors
 
-- Chad Smith, creator/maintainer
-- @bobthekingofegypt, contibutor
-- [Community contributions](https://github.com/cs01/gdbgui/graphs/contributors)
+- Anurag Gupta
 
-## Donate
-
-[Paypal](https://www.paypal.me/grassfedcode/20)
-
-## Contact
-
-https://chadsmith.dev
-chadsmith.software@gmail.com
+- Original creators/maintainers/contributors
+    - Chad Smith, creator/maintainer
+    - @bobthekingofegypt, contibutor
+    - [Community contributions](https://github.com/guptaanurag2106/gdbgui/graphs/contributors)

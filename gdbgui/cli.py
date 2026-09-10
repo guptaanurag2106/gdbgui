@@ -2,7 +2,7 @@
 
 """
 A server that provides a graphical user interface to the gnu debugger (gdb).
-https://github.com/cs01/gdbgui
+https://github.com/guptaanurag2106/gdbgui
 """
 
 from typing import List, Optional

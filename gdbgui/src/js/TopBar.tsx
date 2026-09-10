@@ -22,7 +22,7 @@ let show_license = function() {
   Actions.show_modal(
     "gdbgui license",
     <React.Fragment>
-      <a href="https://github.com/cs01/gdbgui/blob/master/LICENSE">
+      <a href="https://github.com/guptaanurag2106/gdbgui/blob/master/LICENSE">
         GNU General Public License v3.0
       </a>
       <p>Copyright © Chad Smith</p>
@@ -114,7 +114,7 @@ let get_menu = function(open: boolean, on_toggle: () => void) {
 
           <li role="separator" className="divider" />
           <li>
-            <a href="https://github.com/cs01/gdbgui" className="pointer">
+            <a href="https://github.com/guptaanurag2106/gdbgui" className="pointer">
               GitHub
             </a>
           </li>

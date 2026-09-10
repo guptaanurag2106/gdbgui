@@ -18,8 +18,8 @@ gdbgui --help
 
 If you have a question about something
 
-* Read documentation on the [homepage](https://github.com/cs01/gdbgui/)
-* [Ask question in an issue on github](https://github.com/cs01/gdbgui/issues)
+* Read documentation on the [homepage](https://github.com/guptaanurag2106/gdbgui/)
+* [Ask question in an issue on github](https://github.com/guptaanurag2106/gdbgui/issues)
 
 
 ## Settings

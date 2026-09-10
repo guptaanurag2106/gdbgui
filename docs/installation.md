@@ -69,7 +69,7 @@ pip uninstall gdbgui
 
 ## Method 3: Download and Run Binary Executable
 
-Download and run the binary executable for your system from [GitHub Releases](https://github.com/cs01/gdbgui/releases).
+Download and run the binary executable for your system from [GitHub Releases](https://github.com/guptaanurag2106/gdbgui/releases).
 
 ## System Dependencies for Python Package
 
