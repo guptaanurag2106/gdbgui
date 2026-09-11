@@ -1,5 +1,5 @@
-_.secret_key  # unused attribute (gdbgui/backend.py:104)
-on_connect  # unused function (tests/test_backend.py:14)
 monkeypatch  # unused variable (tests/test_cli.py:23)
 monkeypatch  # unused variable (tests/test_cli.py:33)
 monkeypatch  # unused variable (tests/test_cli.py:43)
+argtypes  # unused variable (server/iomanager.py:192)
+restype  # unused variable (server/iomanager.py:192)

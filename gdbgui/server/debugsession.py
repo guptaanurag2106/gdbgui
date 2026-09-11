@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import logging
 import os
 import signal
@@ -19,7 +18,6 @@ class DebugSession:
     def __init__(self, gdb_command: str, mi_version: str, socket: WebSocket):
 
         self.socket = socket
-        self.command = gdb_command
         self.pty_for_debugged_program = Pty()
         self.pty_for_gdbgui = Pty(echo=False)
         gdbgui_startup_cmds = [
@@ -42,7 +40,6 @@ class DebugSession:
         )
 
         self.mi_version = mi_version
-        self.start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.terminating = False
         self.terminated = False
 

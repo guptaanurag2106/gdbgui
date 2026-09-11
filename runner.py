@@ -72,29 +72,35 @@ running: set[subprocess.Popen] = set()
 
 
 def run_command(command: list[str]) -> bool:
-    process = subprocess.Popen(
-        command,
-        stdout=sys.stdout,
-        stderr=sys.stderr,
-        text=True,
-        bufsize=1,
-        env=custom_env,
-    )
-    running.add(process)
+    print(f"Running {' '.join(command)}")
     try:
-        returncode = process.wait()
-    except KeyboardInterrupt:
-        process.terminate()
+        process = subprocess.Popen(
+            command,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+            text=True,
+            bufsize=1,
+            env=custom_env,
+        )
+        running.add(process)
         try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
+            returncode = process.wait()
+        except KeyboardInterrupt:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+            return False
+        finally:
+            running.discard(process)
+        if returncode != 0:
+            print(f"Exited with code {returncode}")
+        return returncode == 0
+    except FileNotFoundError as e:
+        print(e.strerror, e.filename)
         return False
-    finally:
-        running.discard(process)
-    if returncode != 0:
-        print(f"Exited with code {returncode}")
-    return returncode == 0
+
 
 
 def test_python(*extra: str) -> bool:

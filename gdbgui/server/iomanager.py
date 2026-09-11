@@ -42,9 +42,6 @@ class IoManager:
         self.stdin = stdin
         self.stdout = stdout
 
-        self.stdin_fileno = self.stdin.fileno()
-        self.stdout_fileno = self.stdout.fileno()
-
         self._incomplete_stdout_output: Any = None
         _make_non_blocking(self.stdout)
 
