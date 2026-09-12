@@ -9,25 +9,13 @@ import shlex
 import subprocess
 import sys
 import threading
-from pathlib import Path
 
 custom_env = os.environ.copy()
 custom_env["FORCE_COLOR"] = "1"
 custom_env["PY_COLORS"] = "1"
 
-files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
+files_to_lint = ["gdbgui", "tests"]
 vulture_whitelist = ".vulture_whitelist.py"
-files_to_lint.remove(vulture_whitelist)
-
-prettier_command = [
-    "npx",
-    "prettier@1.19.1",
-    "--parser",
-    "typescript",
-    "--config",
-    ".prettierrc.js",
-    "gdbgui/src/js/**/*",
-]
 
 
 def help():
@@ -135,7 +123,7 @@ def tests(*extra: str) -> bool:
 
 def format(*extra: str) -> bool:
     success = run_command(["black", "--color", *files_to_lint, *extra])
-    success &= run_command([*prettier_command, "--write", *extra])
+    success &= run_command(["yarn", "format", *extra])
     return success
 
 
@@ -154,6 +142,7 @@ def vulture(*extra: str) -> bool:
 
 
 def lint(*extra: str) -> bool:
+    success = run_command(["yarn", "lint", *extra])
     if not run_command(["black", "--check", *files_to_lint, *extra]):
         return False
     if not run_command(["flake8", *files_to_lint, *extra]):
@@ -162,10 +151,7 @@ def lint(*extra: str) -> bool:
         return False
     if not vulture(*extra):
         return False
-    # TODO: better ts lint?
-    if not run_command([*prettier_command, "--check", *extra]):
-        return False
-    return True
+    return success
 
 
 def develop(*extra: str) -> bool:

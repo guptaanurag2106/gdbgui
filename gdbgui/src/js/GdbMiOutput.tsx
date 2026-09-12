@@ -13,61 +13,65 @@ import Util from "./Util";
 type State = any;
 
 class GdbMiOutput extends React.Component<{}, State> {
-  static MAX_OUTPUT_ENTRIES = 500;
-  _debounced_scroll_to_bottom: any;
-  el: any;
-  constructor(props: {}) {
-    super(props);
-    store.connectComponentState(this, ["gdb_mi_output"]);
-    this._debounced_scroll_to_bottom = Util.debounce(
-      this._scroll_to_bottom.bind(this),
-      300,
-      {
-        leading: true
-      }
-    );
-  }
-  render() {
-    return (
-      <div>
-        <button
-          title="clear all mi output"
-          className="pointer btn btn-default btn-xs"
-          onClick={() => store.set("gdb_mi_output", [])}
-        >
-          clear output
-          <span className="glyphicon glyphicon-ban-circle pointer" />
-        </button>
-        <div id="gdb_mi_output" className="otpt" style={{ fontSize: "0.8em" }}>
-          {this.state.gdb_mi_output}
-        </div>
-      </div>
-    );
-  }
-  componentDidMount() {
-    this.el = document.getElementById("gdb_mi_output");
-  }
-  componentDidUpdate() {
-    this._debounced_scroll_to_bottom();
-  }
-  _scroll_to_bottom() {
-    this.el.scrollTop = this.el.scrollHeight;
-  }
-  static add_mi_output(mi_obj: any) {
-    let new_str = JSON.stringify(mi_obj, null, 4)
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-        .replace(/[^(\\)]\\n/g)
-        .replace("<", "&lt;")
-        .replace(">", "&gt;"),
-      gdb_mi_output = store.get("gdb_mi_output");
-
-    while (gdb_mi_output.length > GdbMiOutput.MAX_OUTPUT_ENTRIES) {
-      gdb_mi_output.shift();
+    static MAX_OUTPUT_ENTRIES = 500;
+    _debounced_scroll_to_bottom: any;
+    el: any;
+    constructor(props: {}) {
+        super(props);
+        store.connectComponentState(this, ["gdb_mi_output"]);
+        this._debounced_scroll_to_bottom = Util.debounce(
+            this._scroll_to_bottom.bind(this),
+            300,
+            {
+                leading: true,
+            },
+        );
     }
-    gdb_mi_output.push(new_str);
+    render() {
+        return (
+            <div>
+                <button
+                    title="clear all mi output"
+                    className="pointer btn btn-default btn-xs"
+                    onClick={() => store.set("gdb_mi_output", [])}
+                >
+                    clear output
+                    <span className="glyphicon glyphicon-ban-circle pointer" />
+                </button>
+                <div
+                    id="gdb_mi_output"
+                    className="otpt"
+                    style={{ fontSize: "0.8em" }}
+                >
+                    {this.state.gdb_mi_output}
+                </div>
+            </div>
+        );
+    }
+    componentDidMount() {
+        this.el = document.getElementById("gdb_mi_output");
+    }
+    componentDidUpdate() {
+        this._debounced_scroll_to_bottom();
+    }
+    _scroll_to_bottom() {
+        this.el.scrollTop = this.el.scrollHeight;
+    }
+    static add_mi_output(mi_obj: any) {
+        let new_str = JSON.stringify(mi_obj, null, 4)
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
+                .replace(/[^(\\)]\\n/g)
+                .replace("<", "&lt;")
+                .replace(">", "&gt;"),
+            gdb_mi_output = store.get("gdb_mi_output");
 
-    store.set("gdb_mi_output", gdb_mi_output);
-  }
+        while (gdb_mi_output.length > GdbMiOutput.MAX_OUTPUT_ENTRIES) {
+            gdb_mi_output.shift();
+        }
+        gdb_mi_output.push(new_str);
+
+        store.set("gdb_mi_output", gdb_mi_output);
+    }
 }
 
 export default GdbMiOutput;

@@ -2,219 +2,225 @@
  * Some general utility methods
  */
 const Util = {
-  get_json: async function<T>(
-    url: string,
-    data: Record<string, unknown> = {}
-  ): Promise<T> {
-    const params = new URLSearchParams();
+    get_json: async function <T>(
+        url: string,
+        data: Record<string, unknown> = {},
+    ): Promise<T> {
+        const params = new URLSearchParams();
 
-    for (const [key, value] of Object.entries(data)) {
-      if (value) {
-        params.append(key, String(value));
-      }
-    }
-    const response = await fetch(`${url}?${params}`, {
-      method: "GET"
-    });
-    if (!response.ok) {
-      const err: any = new Error(response.statusText);
-      err.status = response.status;
-
-      try {
-        err.responseJSON = await response.json();
-      } catch {
-        err.statusText = await response.text();
-      }
-      throw err;
-    }
-    return response.json();
-  },
-  post_json: async function<T>(url: string, data: Record<any, unknown> = {}): Promise<T> {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) {
-      const err: any = new Error(response.statusText);
-      err.status = response.status;
-      try {
-        err.responseJSON = await response.json();
-      } catch {}
-      throw err;
-    }
-
-    return response.json();
-  },
-  /**
-   * Get html table
-   * @param columns: array of strings
-   * @param data: array of arrays of data
-   */
-  get_table: function(columns: any, data: any, style = "") {
-    var result = [
-      `<table class='table table-bordered table-condensed' style="${style}">`
-    ];
-    if (columns) {
-      result.push("<thead>");
-      result.push("<tr>");
-      for (let h of columns) {
-        result.push(`<th>${h}</th>`);
-      }
-      result.push("</tr>");
-      result.push("</thead>");
-    }
-
-    if (data) {
-      result.push("<tbody>");
-      for (let row of data) {
-        result.push("<tr>");
-        for (let cell of row) {
-          result.push(`<td>${cell}</td>`);
+        for (const [key, value] of Object.entries(data)) {
+            if (value) {
+                params.append(key, String(value));
+            }
         }
-        result.push("</tr>");
-      }
-    }
-    result.push("</tbody>");
-    result.push("</table>");
-    return result.join("\n");
-  },
-  /**
-   * Escape gdb's output to be browser compatible
-   * @param s: string to mutate
-   */
-  escape: function(s: any) {
-    return s
-      .replace(/>/g, "&gt;")
-      .replace(/</g, "&lt;")
-      .replace(/\\n/g, "<br>")
-      .replace(/\\r/g, "")
-      .replace(/\\"/g, '"')
-      .replace(/\\t/g, "&nbsp");
-  },
-  /**
-   * take a string of html in JavaScript and strip out the html
-   * http://stackoverflow.com/a/822486/2893090
-   */
-  get_text_from_html: function(html: any) {
-    var tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
-  },
-  /**
-   * @param fullname_and_line: i.e. /path/to/file.c:78
-   * @param default_line_if_not_found: i.e. 0
-   * @return: Array, with 0'th element == path, 1st element == line
-   */
-  parse_fullname_and_line: function(
-    fullname_and_line: any,
-    default_line_if_not_found = undefined
-  ) {
-    let user_input_array = fullname_and_line.split(":"),
-      fullname = user_input_array[0],
-      line = default_line_if_not_found;
-    if (user_input_array.length === 2) {
-      line = user_input_array[1];
-    }
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
-    return [fullname, parseInt(line)];
-  },
-  string_to_array_safe_quotes(str: any) {
-    let output = [],
-      cur_str = "",
-      in_quotes = false;
+        const response = await fetch(`${url}?${params}`, {
+            method: "GET",
+        });
+        if (!response.ok) {
+            const err: any = new Error(response.statusText);
+            err.status = response.status;
 
-    for (let i = 0; i < str.length; i++) {
-      let char = str[i];
-
-      if (char === '"') {
-        in_quotes = !in_quotes;
-        cur_str += char;
-      } else if (char !== " " || (char === " " && in_quotes)) {
-        cur_str += char;
-      } else if (char === " ") {
-        // got a space outside of quotes
-        if (cur_str === "") {
-          // a consecutive space. do nothing.
-        } else {
-          // save this argument, and reset cur_str
-          output.push(cur_str);
-          cur_str = "";
+            try {
+                err.responseJSON = await response.json();
+            } catch {
+                err.statusText = await response.text();
+            }
+            throw err;
         }
-      }
-    }
-    if (cur_str !== "") {
-      output.push(cur_str);
-    }
-    return output;
-  },
-  /* Return true is latest is > current
+        return response.json();
+    },
+    post_json: async function <T>(
+        url: string,
+        data: Record<any, unknown> = {},
+    ): Promise<T> {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const err: any = new Error(response.statusText);
+            err.status = response.status;
+            try {
+                err.responseJSON = await response.json();
+            } catch {}
+            throw err;
+        }
+
+        return response.json();
+    },
+    /**
+     * Get html table
+     * @param columns: array of strings
+     * @param data: array of arrays of data
+     */
+    get_table: function (columns: any, data: any, style = "") {
+        var result = [
+            `<table class='table table-bordered table-condensed' style="${style}">`,
+        ];
+        if (columns) {
+            result.push("<thead>");
+            result.push("<tr>");
+            for (let h of columns) {
+                result.push(`<th>${h}</th>`);
+            }
+            result.push("</tr>");
+            result.push("</thead>");
+        }
+
+        if (data) {
+            result.push("<tbody>");
+            for (let row of data) {
+                result.push("<tr>");
+                for (let cell of row) {
+                    result.push(`<td>${cell}</td>`);
+                }
+                result.push("</tr>");
+            }
+        }
+        result.push("</tbody>");
+        result.push("</table>");
+        return result.join("\n");
+    },
+    /**
+     * Escape gdb's output to be browser compatible
+     * @param s: string to mutate
+     */
+    escape: function (s: any) {
+        return s
+            .replace(/>/g, "&gt;")
+            .replace(/</g, "&lt;")
+            .replace(/\\n/g, "<br>")
+            .replace(/\\r/g, "")
+            .replace(/\\"/g, '"')
+            .replace(/\\t/g, "&nbsp");
+    },
+    /**
+     * take a string of html in JavaScript and strip out the html
+     * http://stackoverflow.com/a/822486/2893090
+     */
+    get_text_from_html: function (html: any) {
+        var tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+    },
+    /**
+     * @param fullname_and_line: i.e. /path/to/file.c:78
+     * @param default_line_if_not_found: i.e. 0
+     * @return: Array, with 0'th element == path, 1st element == line
+     */
+    parse_fullname_and_line: function (
+        fullname_and_line: any,
+        default_line_if_not_found = undefined,
+    ) {
+        let user_input_array = fullname_and_line.split(":"),
+            fullname = user_input_array[0],
+            line = default_line_if_not_found;
+        if (user_input_array.length === 2) {
+            line = user_input_array[1];
+        }
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
+        return [fullname, parseInt(line)];
+    },
+    string_to_array_safe_quotes(str: any) {
+        let output = [],
+            cur_str = "",
+            in_quotes = false;
+
+        for (let i = 0; i < str.length; i++) {
+            let char = str[i];
+
+            if (char === '"') {
+                in_quotes = !in_quotes;
+                cur_str += char;
+            } else if (char !== " " || (char === " " && in_quotes)) {
+                cur_str += char;
+            } else if (char === " ") {
+                // got a space outside of quotes
+                if (cur_str === "") {
+                    // a consecutive space. do nothing.
+                } else {
+                    // save this argument, and reset cur_str
+                    output.push(cur_str);
+                    cur_str = "";
+                }
+            }
+        }
+        if (cur_str !== "") {
+            output.push(cur_str);
+        }
+        return output;
+    },
+    /* Return true is latest is > current
               1.0.0, 0.9.9 -> true
               0.1.0, 0.0.9 -> true
               0.0.9, 0.0.8 -> false
             */
-  is_newer(latest: any, current: any) {
-    latest = latest.split(".");
-    current = current.split(".");
-    if (latest.length !== current.length) {
-      return true;
-    }
-    for (let i in latest) {
-      if (latest[i] > current[i]) {
-        return true;
-      }
-    }
-    return false;
-  },
-  escape_HTML(str: string) {
-    const htmlEntities: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    };
-
-    return str.replace(/[&<>"']/g, match => htmlEntities[match]);
-  },
-  debounce<T extends (...args: any[]) => any>(
-    func: T,
-    delay: number,
-    { leading = false, trailing = true }: { leading?: boolean; trailing?: true } = {}
-  ) {
-    let timerId: ReturnType<typeof setTimeout> | undefined;
-
-    return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
-      const callNow: boolean = leading && timerId === undefined;
-
-      clearTimeout(timerId);
-
-      timerId = setTimeout(() => {
-        timerId = undefined;
-
-        if (trailing && !callNow) {
-          func.apply(this, args);
+    is_newer(latest: any, current: any) {
+        latest = latest.split(".");
+        current = current.split(".");
+        if (latest.length !== current.length) {
+            return true;
         }
-      }, delay);
+        for (let i in latest) {
+            if (latest[i] > current[i]) {
+                return true;
+            }
+        }
+        return false;
+    },
+    escape_HTML(str: string) {
+        const htmlEntities: Record<string, string> = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+        };
 
-      if (callNow) {
-        func.apply(this, args);
-      }
-    };
-  },
-  format_timestamp(seconds: number): string {
-    if (!seconds) return "Unknown";
-    return new Date(seconds * 1000).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-  }
+        return str.replace(/[&<>"']/g, (match) => htmlEntities[match]);
+    },
+    debounce<T extends (...args: any[]) => any>(
+        func: T,
+        delay: number,
+        {
+            leading = false,
+            trailing = true,
+        }: { leading?: boolean; trailing?: true } = {},
+    ) {
+        let timerId: ReturnType<typeof setTimeout> | undefined;
+
+        return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
+            const callNow: boolean = leading && timerId === undefined;
+
+            clearTimeout(timerId);
+
+            timerId = setTimeout(() => {
+                timerId = undefined;
+
+                if (trailing && !callNow) {
+                    func.apply(this, args);
+                }
+            }, delay);
+
+            if (callNow) {
+                func.apply(this, args);
+            }
+        };
+    },
+    format_timestamp(seconds: number): string {
+        if (!seconds) return "Unknown";
+        return new Date(seconds * 1000).toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    },
 };
 
 export default Util;

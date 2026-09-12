@@ -8,146 +8,161 @@ import { toggle_config_key, update_config_key } from "./Config";
  * Settings modal when clicking the gear icon
  */
 class Settings extends React.Component {
-  max_source_file_lines_input: any;
-  save_button: any;
-  settings_node: any;
-  constructor(props: {}) {
-    super(props);
-    store.connectComponentState(this, [
-      "debug",
-      "theme",
-      "themes",
-      "gdb_version",
-      "gdb_pid",
-      "show_settings",
-      "auto_add_breakpoint_to_main",
-      "pretty_print",
-      "refresh_state_after_sending_console_command",
-      "show_all_sent_commands_in_console",
-      "highlight_source_code"
-    ]);
-    this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(
-      this
-    );
-  }
-  static get_checkbox_row(store_key: any, text: any) {
-    return (
-      <tr>
-        <td>
-          <div className="checkbox">
-            <label>
-              <input
-                type="checkbox"
-                checked={store.get(store_key)}
-                onChange={() => toggle_config_key(store_key)}
-              />
-              {text}
-            </label>
-          </div>
-        </td>
-      </tr>
-    );
-  }
-  get_update_max_lines_of_code_to_fetch() {
-    return (
-      <tr>
-        <td>
-          Maximum number of source file lines to display:
-          <input
-            style={{ width: "100px", marginLeft: "10px" }}
-            defaultValue={store.get("max_lines_of_code_to_fetch")}
-            ref={el => (this.max_source_file_lines_input = el)}
-          />
-          <button
-            ref={n => (this.save_button = n)}
-            onClick={() => {
-              let new_value = parseInt(this.max_source_file_lines_input.value);
-              Actions.update_max_lines_of_code_to_fetch(new_value);
-              ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
-            }}
-          >
-            save
-          </button>
-        </td>
-      </tr>
-    );
-  }
-  get_table() {
-    return (
-      <table className="table table-condensed">
-        <tbody>
-          {Settings.get_checkbox_row(
+    max_source_file_lines_input: any;
+    save_button: any;
+    settings_node: any;
+    constructor(props: {}) {
+        super(props);
+        store.connectComponentState(this, [
+            "debug",
+            "theme",
+            "themes",
+            "gdb_version",
+            "gdb_pid",
+            "show_settings",
             "auto_add_breakpoint_to_main",
-            "Add breakpoint to main after loading executable"
-          )}
-          {this.get_update_max_lines_of_code_to_fetch()}
-          {Settings.get_checkbox_row(
             "pretty_print",
-            "Pretty print dynamic variables (requires restart)"
-          )}
-          {Settings.get_checkbox_row(
             "refresh_state_after_sending_console_command",
-            "Refresh all components when a command is sent from the console"
-          )}
-          {Settings.get_checkbox_row(
             "show_all_sent_commands_in_console",
-            "Print all sent commands in console, including those sent automatically by gdbgui"
-          )}
-          {Settings.get_checkbox_row(
             "highlight_source_code",
-            "Add syntax highlighting to source files"
-          )}
+        ]);
+        this.get_update_max_lines_of_code_to_fetch =
+            this.get_update_max_lines_of_code_to_fetch.bind(this);
+    }
+    static get_checkbox_row(store_key: any, text: any) {
+        return (
+            <tr>
+                <td>
+                    <div className="checkbox">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={store.get(store_key)}
+                                onChange={() => toggle_config_key(store_key)}
+                            />
+                            {text}
+                        </label>
+                    </div>
+                </td>
+            </tr>
+        );
+    }
+    get_update_max_lines_of_code_to_fetch() {
+        return (
+            <tr>
+                <td>
+                    Maximum number of source file lines to display:
+                    <input
+                        style={{ width: "100px", marginLeft: "10px" }}
+                        defaultValue={store.get("max_lines_of_code_to_fetch")}
+                        ref={(el) => (this.max_source_file_lines_input = el)}
+                    />
+                    <button
+                        ref={(n) => (this.save_button = n)}
+                        onClick={() => {
+                            let new_value = parseInt(
+                                this.max_source_file_lines_input.value,
+                            );
+                            Actions.update_max_lines_of_code_to_fetch(
+                                new_value,
+                            );
+                            ToolTip.show_tooltip_on_node(
+                                "saved!",
+                                this.save_button,
+                                1,
+                            );
+                        }}
+                    >
+                        save
+                    </button>
+                </td>
+            </tr>
+        );
+    }
+    get_table() {
+        return (
+            <table className="table table-condensed">
+                <tbody>
+                    {Settings.get_checkbox_row(
+                        "auto_add_breakpoint_to_main",
+                        "Add breakpoint to main after loading executable",
+                    )}
+                    {this.get_update_max_lines_of_code_to_fetch()}
+                    {Settings.get_checkbox_row(
+                        "pretty_print",
+                        "Pretty print dynamic variables (requires restart)",
+                    )}
+                    {Settings.get_checkbox_row(
+                        "refresh_state_after_sending_console_command",
+                        "Refresh all components when a command is sent from the console",
+                    )}
+                    {Settings.get_checkbox_row(
+                        "show_all_sent_commands_in_console",
+                        "Print all sent commands in console, including those sent automatically by gdbgui",
+                    )}
+                    {Settings.get_checkbox_row(
+                        "highlight_source_code",
+                        "Add syntax highlighting to source files",
+                    )}
 
-          <tr>
-            <td>
-              Theme:{" "}
-              <select
-                value={store.get("theme")}
-                onChange={function(e) {
-                  store.set("theme", e.currentTarget.value);
-                  update_config_key("theme", e.currentTarget.value);
+                    <tr>
+                        <td>
+                            Theme:{" "}
+                            <select
+                                value={store.get("theme")}
+                                onChange={function (e) {
+                                    store.set("theme", e.currentTarget.value);
+                                    update_config_key(
+                                        "theme",
+                                        e.currentTarget.value,
+                                    );
+                                }}
+                            >
+                                {store.get("themes").map((t: any) => (
+                                    <option key={t}>{t}</option>
+                                ))}
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        );
+    }
+
+    render() {
+        return (
+            <div
+                className={
+                    store.get("show_settings") ? "fullscreen_modal" : "hidden"
+                }
+                ref={(el) => (this.settings_node = el)}
+                onClick={(e) => {
+                    if (e.target === this.settings_node) {
+                        store.set("show_settings", !store.get("show_settings"));
+                    }
                 }}
-              >
-                {store.get("themes").map((t: any) => (
-                  <option key={t}>{t}</option>
-                ))}
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    );
-  }
-
-  render() {
-    return (
-      <div
-        className={store.get("show_settings") ? "fullscreen_modal" : "hidden"}
-        ref={el => (this.settings_node = el)}
-        onClick={e => {
-          if (e.target === this.settings_node) {
-            store.set("show_settings", !store.get("show_settings"));
-          }
-        }}
-      >
-        <div id="gdb_settings_modal">
-          <button className="close" onClick={() => store.set("show_settings", false)}>
-            ×
-          </button>
-          <h4>Settings</h4>
-          {this.get_table()}
-          <div className="modal-footer" style={{ marginTop: "20px" }}>
-            <button
-              className="btn btn-success"
-              onClick={() => store.set("show_settings", false)}
             >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+                <div id="gdb_settings_modal">
+                    <button
+                        className="close"
+                        onClick={() => store.set("show_settings", false)}
+                    >
+                        ×
+                    </button>
+                    <h4>Settings</h4>
+                    {this.get_table()}
+                    <div className="modal-footer" style={{ marginTop: "20px" }}>
+                        <button
+                            className="btn btn-success"
+                            onClick={() => store.set("show_settings", false)}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 }
 
 export default Settings;
