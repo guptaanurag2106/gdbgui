@@ -36,18 +36,15 @@ class Gdbgui extends React.PureComponent<{}, any> {
   componentWillMount() {
     GdbApi.init();
     GlobalEvents.init();
-    //TODO: why is this needed
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'
   }
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, ["theme", "middle_sizes"]);
   }
   render() {
     return (
       <div className={`splitjs_container ${this.state.theme || ""}`}>
-        {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message */}
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
         <Split

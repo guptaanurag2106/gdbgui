@@ -19,9 +19,8 @@ class SourceCode extends React.Component<{}, State> {
   static view_more_bottom_node = React.createRef<HTMLTableRowElement>();
   static scroll_to_line = React.createRef<HTMLTableRowElement>();
 
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, [
       "fullname_to_render",
       "cached_source_files",
@@ -507,6 +506,7 @@ class SourceCode extends React.Component<{}, State> {
    * returns true on success
    */
   static _make_selector_visible(selector: React.RefObject<HTMLTableRowElement>) {
+    if (!SourceCode.el_code_container.current) return;
     if (selector.current) {
       // make sure something is selected before trying to scroll to it
       const {
@@ -519,7 +519,6 @@ class SourceCode extends React.Component<{}, State> {
       if (!is_visible) {
         // line is out of view, scroll so it's in the middle of the table
         let scroll_top = top_of_line - (top_of_table + height_of_container / 2);
-        // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
         SourceCode.el_code_container.current.scrollTo({
           top: scroll_top,
           behavior: "smooth"

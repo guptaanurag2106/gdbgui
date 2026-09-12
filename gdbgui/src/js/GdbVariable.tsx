@@ -54,20 +54,19 @@ let ChildVarFetcher = {
  * to fetch, and fetches them in serial.
  */
 let VarCreator = {
-  _queue: [], // list of objs with keys expr_being_created, expr_type
+  _queue: [] as { expression: any; expr_type: string }[], // list of objs with keys expr_being_created, expr_type
   _is_fetching: false,
   expr_being_created: null,
-  expr_type: null,
+  expr_type: "",
 
   _fetch_next_in_queue: function() {
     if (VarCreator._is_fetching) {
       return;
     }
     if (VarCreator._queue.length) {
-      let obj = VarCreator._queue.shift(),
-        // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-        expression = obj.expression,
-        // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
+      let obj = VarCreator._queue.shift();
+      if (obj == undefined) return;
+      let expression = obj.expression,
         expr_type = obj.expr_type;
 
       VarCreator._is_fetching = true;
@@ -98,8 +97,7 @@ let VarCreator = {
    * Create a new variable in gdb. gdb automatically chooses and assigns
    * a unique variable name.
    */
-  create_variable: function(expression: any, expr_type: any) {
-    // @ts-expect-error ts-migrate(2322) FIXME: Type 'any' is not assignable to type 'never'.
+  create_variable: function(expression: any, expr_type: string) {
     VarCreator._queue.push({ expression: expression, expr_type: expr_type });
     VarCreator._fetch_next_in_queue();
   },
@@ -442,7 +440,7 @@ class GdbVariable extends React.Component {
     }
     return path;
   }
-  static create_variable(expression: any, expr_type: any) {
+  static create_variable(expression: any, expr_type: string) {
     VarCreator.create_variable(expression, expr_type);
   }
   static gdb_created_root_variable(r: any) {

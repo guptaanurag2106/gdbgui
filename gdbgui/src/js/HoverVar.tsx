@@ -16,9 +16,8 @@ class HoverVar extends React.Component {
 
   obj: any;
 
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
 
     // when hovering over a potential variable in the source code table
     document.body.addEventListener("mouseover", e => {
@@ -95,9 +94,7 @@ class HoverVar extends React.Component {
     // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
     HoverVar.enter_timeout = setTimeout(() => {
       if (store.get("inferior_program") === constants.inferior_states.paused) {
-        let ignore_errors = true;
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 3.
-        GdbVariable.create_variable(var_name, "hover", ignore_errors);
+        GdbVariable.create_variable(var_name, "hover");
       }
     }, WAIT_TIME_SEC * 1000);
   }

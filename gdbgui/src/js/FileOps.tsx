@@ -127,7 +127,6 @@ const FileOps = {
   unfetchable_disassembly_addresses: {},
   disassembly_addr_being_fetched: null,
   init: function() {
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'subscribeToKeys' does not exist on type ... Remove this comment to see the full error message
     store.subscribeToKeys(
       [
         "inferior_program",
@@ -236,8 +235,9 @@ const FileOps = {
       end_line = Math.ceil(start_line + store.get("max_lines_of_code_to_fetch"));
 
       if (source_file_obj) {
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-        end_line = Math.ceil(Math.min(end_line, FileOps.get_num_lines_in_file(fullname))); // don't go past the end of the line
+        end_line = Math.ceil(
+          Math.min(end_line, FileOps.get_num_lines_in_file(fullname, null))
+        ); // don't go past the end of the line
       }
       if (start_line > end_line) {
         start_line = Math.floor(
@@ -260,8 +260,7 @@ const FileOps = {
     paused_addr: any
   ) {
     const states = constants.source_code_states,
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
-      line_is_cached = FileOps.line_is_cached(fullname, require_cached_line_num);
+      line_is_cached = FileOps.line_is_cached(fullname, require_cached_line_num, null);
 
     if (fullname && line_is_cached) {
       // we have file cached. We may have assembly cached too.
@@ -270,8 +269,7 @@ const FileOps = {
         assembly_is_cached ? states.ASSM_AND_SOURCE_CACHED : states.SOURCE_CACHED
       );
       store.set("source_linenum_to_display_start", start_line);
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-      end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname));
+      end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname, null));
       store.set("source_linenum_to_display_end", end_line);
     } else if (fullname && !file_is_missing) {
       // we don't have file cached, and it is not known to be missing on the file system, so try to get it

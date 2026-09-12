@@ -7,9 +7,8 @@ import { store } from "statorgfc";
 type State = any;
 
 class ControlButtons extends React.Component<{}, State> {
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, ["gdb_pid", "reverse_supported"]);
   }
   render() {

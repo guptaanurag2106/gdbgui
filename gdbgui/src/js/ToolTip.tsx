@@ -3,9 +3,8 @@ import { store } from "statorgfc";
 
 class ToolTip extends React.Component {
   timeout: any;
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, ["tooltip"]);
     this.timeout = null;
   }
@@ -17,7 +16,11 @@ class ToolTip extends React.Component {
       content: null
     });
   }
-  static show_tooltip_on_node(content: any, node: any, show_for_n_sec = null) {
+  static show_tooltip_on_node(
+    content: any,
+    node: any,
+    show_for_n_sec: null | number = null
+  ) {
     store.set("tooltip", {
       hidden: false,
       show_for_n_sec: show_for_n_sec,
@@ -26,7 +29,6 @@ class ToolTip extends React.Component {
     });
   }
   static show_copied_tooltip_on_node(node: any) {
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '1' is not assignable to paramete... Remove this comment to see the full error message
     ToolTip.show_tooltip_on_node("copied!", node, 1);
   }
   render() {

@@ -8,11 +8,9 @@ import { FileLink } from "./Links";
 import constants from "./constants";
 
 const BreakpointSourceLineCache = {
-  _cache: {},
+  _cache: {} as Record<string, Record<number, string>>,
   get_line: function(fullname: any, linenum: any) {
-    //FIX:"fullname" the string or fullname the param
-    // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
-    const fileCache = BreakpointSourceLineCache._cache["fullname"];
+    const fileCache = BreakpointSourceLineCache._cache[fullname];
     if (fileCache && typeof fileCache[linenum] === "string") {
       return fileCache[linenum];
     }
@@ -20,17 +18,12 @@ const BreakpointSourceLineCache = {
   },
   add_line: function(fullname: any, linenum: any, escaped_text: any) {
     if (
-      //FIX:"fullname" the string or fullname the param
-      // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
-      BreakpointSourceLineCache._cache["fullname"] === undefined ||
-      // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
-      typeof BreakpointSourceLineCache._cache["fullname"] !== "object"
+      BreakpointSourceLineCache._cache[fullname] === undefined ||
+      typeof BreakpointSourceLineCache._cache[fullname] !== "object"
     ) {
-      // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
-      BreakpointSourceLineCache._cache["fullname"] = {};
+      BreakpointSourceLineCache._cache[fullname] = {};
     }
-    // @ts-expect-error ts-migrate(7053) FIXME: Property 'fullname' does not exist on type '{}'.
-    BreakpointSourceLineCache._cache["fullname"][linenum] = escaped_text;
+    BreakpointSourceLineCache._cache[fullname][linenum] = escaped_text;
   }
 };
 
@@ -50,8 +43,7 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
     let line = null;
     if (BreakpointSourceLineCache.get_line(fullname, linenum)) {
       line = BreakpointSourceLineCache.get_line(fullname, linenum);
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
-    } else if (FileOps.line_is_cached(fullname, linenum)) {
+    } else if (FileOps.line_is_cached(fullname, linenum, null)) {
       let syntax_highlighted_line = FileOps.get_line_from_file(fullname, linenum);
       line = Util.get_text_from_html(syntax_highlighted_line).trim();
 
@@ -263,9 +255,8 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
 }
 
 class Breakpoints extends React.Component {
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, ["breakpoints"]);
   }
   render() {

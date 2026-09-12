@@ -11,7 +11,6 @@ const Tree = {
   width_input: null,
   height_input: null,
   init: function() {
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'subscribeToKeys' does not exist on type ... Remove this comment to see the full error message
     store.subscribeToKeys(
       ["root_gdb_tree_var", "expressions", "root_gdb_tree_var"],
       Tree._render
@@ -221,8 +220,7 @@ const Tree = {
     Tree.nodes = new vis.DataSet();
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'edges' does not exist on type '{ el: nul... Remove this comment to see the full error message
     Tree.edges = new vis.DataSet();
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-    Tree._add_nodes_and_edges(root_gdb_var_obj);
+    Tree._add_nodes_and_edges(root_gdb_var_obj, null);
 
     // create the network
     var data = {

@@ -9,6 +9,8 @@ declare module "statorgfc" {
       keys_to_watch_for_change: string[],
       addition_callback?: (...args: any[]) => any
     ): void;
+
+    subscribeToKeys(keys: string[], callback: () => void);
   };
   export let middleware: {
     logChanges(key: string, oldval: any, newval: any): bool;

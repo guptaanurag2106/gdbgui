@@ -16,9 +16,8 @@ class GdbMiOutput extends React.Component<{}, State> {
   static MAX_OUTPUT_ENTRIES = 500;
   _debounced_scroll_to_bottom: any;
   el: any;
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, ["gdb_mi_output"]);
     this._debounced_scroll_to_bottom = Util.debounce(
       this._scroll_to_bottom.bind(this),

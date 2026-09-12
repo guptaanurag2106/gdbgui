@@ -4,14 +4,14 @@ import { store } from "statorgfc";
 type State = any;
 
 class ToolTipTourguide extends React.Component<{}, State> {
+  ref: React.RefObject<HTMLDivElement>;
   constructor(props: {}) {
     super(props);
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'position' does not exist on type '{}'.
     if (!props.position && !(props.top && props.left)) {
       console.warn("did not receive position");
     }
-    // @ts-expect-error ts-migrate(2551) FIXME: Property 'ref' does not exist on type 'ToolTipTour... Remove this comment to see the full error message
-    this.ref = React.createRef();
+    this.ref = React.createRef<HTMLDivElement>();
     store.connectComponentState(this, [
       "tour_guide_step",
       "num_tour_guide_steps",
@@ -35,7 +35,6 @@ class ToolTipTourguide extends React.Component<{}, State> {
     store.set("show_tour_guide", true);
   }
   componentDidUpdate() {
-    // @ts-expect-error ts-migrate(2551) FIXME: Property 'ref' does not exist on type 'ToolTipTour... Remove this comment to see the full error message
     if (this.state.show_tour_guide && this.ref.current) {
       // need to ensure absolute position is respected  by setting parent to
       // relative
@@ -109,7 +108,6 @@ class ToolTipTourguide extends React.Component<{}, State> {
       );
     return (
       <div
-        // @ts-expect-error ts-migrate(2551) FIXME: Property 'ref' does not exist on type 'ToolTipTour... Remove this comment to see the full error message
         ref={this.ref}
         style={{
           minWidth: "200px",

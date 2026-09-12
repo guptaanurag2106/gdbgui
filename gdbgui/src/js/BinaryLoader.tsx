@@ -19,16 +19,16 @@ type State = any;
  * The BinaryLoader component allows the user to select their binary
  * and specify inputs
  */
-class BinaryLoader extends React.Component<{}, State> {
-  constructor(props: {}) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+interface BinaryLoaderProps {
+  initial_user_input: string[];
+}
+class BinaryLoader extends React.Component<BinaryLoaderProps, State> {
+  constructor(props: BinaryLoaderProps) {
+    super(props);
 
     this.state = {
       past_binaries: [],
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message
       user_input: props.initial_user_input.join(" "),
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message
       initial_set_target_app: props.initial_user_input.length, // if user supplied initial binary, load it immediately
       target_type: TARGET_TYPES.file,
       dropdown_open: false

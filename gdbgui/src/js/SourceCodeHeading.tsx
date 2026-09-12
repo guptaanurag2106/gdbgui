@@ -7,9 +7,8 @@ import FileOps from "./FileOps";
 type State = any;
 
 class SourceCodeHeading extends React.Component<{}, State> {
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, [
       "fullname_to_render",
       "paused_on_frame",
@@ -34,8 +33,7 @@ class SourceCodeHeading extends React.Component<{}, State> {
       this.state.fullname_to_render &&
       FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
     ) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-      num_lines = FileOps.get_num_lines_in_file(this.state.fullname_to_render);
+      num_lines = FileOps.get_num_lines_in_file(this.state.fullname_to_render, null);
     }
     return (
       <FileLink

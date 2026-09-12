@@ -164,14 +164,16 @@ let get_menu = function(open: boolean, on_toggle: () => void) {
   );
 };
 
-type State = any;
+type TopBarState = any;
+interface TopBarProps {
+  initial_user_input: string[];
+}
 
-class TopBar extends React.Component<{}, State> {
+class TopBar extends React.Component<TopBarProps, TopBarState> {
   spinner_timeout: any;
   spinner_timeout_msec: any;
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: TopBarProps) {
+    super(props);
     // state local to the component
     this.state = {
       assembly_flavor: "intel", // default to intel (choices are 'att' or 'intel')
@@ -375,7 +377,6 @@ class TopBar extends React.Component<{}, State> {
         }}
       >
         <div className="flexrow">
-          {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message */}
           <BinaryLoader initial_user_input={this.props.initial_user_input} />
           {spinner}
           {reverse_checkbox}

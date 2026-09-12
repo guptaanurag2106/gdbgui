@@ -6,9 +6,8 @@ type State = any;
 
 class Modal extends React.Component<{}, State> {
   fullscreen_node: any;
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, ["show_modal", "modal_body", "modal_header"]);
   }
   render() {

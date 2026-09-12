@@ -21,9 +21,8 @@ class Memory extends React.Component<{}, State> {
   static DEFAULT_ADDRESS_DELTA_BYTES = 31;
   static DEFAULT_BYTES_PER_LINE = 8;
 
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, [
       "memory_cache",
       "start_addr",

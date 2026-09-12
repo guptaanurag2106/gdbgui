@@ -6,9 +6,8 @@ import { store } from "statorgfc";
 type State = any;
 
 class InferiorProgramInfo extends React.Component<{}, State> {
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     this.get_li_for_signal = this.get_li_for_signal.bind(this);
     this.get_dropdown = this.get_dropdown.bind(this);
     this.state = {

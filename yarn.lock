@@ -852,12 +852,12 @@
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.15.tgz#e6e5a86d602beaca71ce5163fadf5f95d70931c7"
   integrity sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==
 
-"@types/react-dom@^16.8.2":
+"@types/react-dom@^16.9":
   version "16.9.25"
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.9.25.tgz#fc6440aaae3d2d3aa10f6afeb7f1b0c4a55d5e31"
   integrity sha512-ZK//eAPhwft9Ul2/Zj+6O11YR6L4JX0J2sVeBC9Ft7x7HFN7xk7yUV/zDxqV6rjvqgl6r8Dq7oQImxtyf/Mzcw==
 
-"@types/react@^16.8.7":
+"@types/react@^16.14.0":
   version "16.14.70"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.14.70.tgz#c97b717a6263e18e546c54b3b870482d867c6a93"
   integrity sha512-DM5Q7rSx9G6QYcVvMgxvEurL5P06OxcDNUXrLxlpBzG4ccUewcBCmsztYbxJBobzO8RIwwmjoaD5OsKqdHDuYQ==
@@ -3301,7 +3301,7 @@ pure-rand@^7.0.0:
   resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-7.0.1.tgz#6f53a5a9e3e4a47445822af96821ca509ed37566"
   integrity sha512-oTUZM/NAZS8p7ANR3SHh30kXB+zK2r2BPcEn/awJIbOvq82WoMN4p62AWWp3Hhw50G0xMsw1mhIBLqHw64EcNQ==
 
-react-dom@^16.4:
+react-dom@^16.14.0:
   version "16.14.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.14.0.tgz#7ad838ec29a777fb3c75c3a190f661cf92ab8b89"
   integrity sha512-1gCeQXDLoIqMgqD3IO2Ah9bnf0w9kzhwN5q4FGnHZ67hBm9yePzB5JJAIQCc8x3pFnNlwFq4RidZggNAAkzWWw==
@@ -3334,7 +3334,7 @@ react-split@^2.0.14:
     prop-types "^15.5.7"
     split.js "^1.6.0"
 
-react@^16.8:
+react@^16.14.0:
   version "16.14.0"
   resolved "https://registry.yarnpkg.com/react/-/react-16.14.0.tgz#94d776ddd0aaa37da3eda8fc5b6b18a4c9a3114d"
   integrity sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g==

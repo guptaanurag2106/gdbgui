@@ -10,9 +10,8 @@ class MiddleLeft extends React.Component {
   fetch_more_at_top_timeout: any;
   onscroll_timeout: any;
   source_code_container_node = React.createRef<HTMLDivElement>();
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     this.onscroll_container = this.onscroll_container.bind(this);
     this.onscroll_timeout = null;
     this.fetch_more_at_top_timeout = null;

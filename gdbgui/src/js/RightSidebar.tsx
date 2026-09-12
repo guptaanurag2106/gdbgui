@@ -43,8 +43,7 @@ class Collapser extends React.Component<{}, CollapserState> {
   _resizing: any;
   collapser_box_node: any;
   constructor(props: {}) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+    super(props);
     this.state = {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'collapsed' does not exist on type '{}'.
       collapsed: props.collapsed,
@@ -163,9 +162,8 @@ class Collapser extends React.Component<{}, CollapserState> {
 }
 
 class RightSidebar extends React.Component {
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, ["theme"]);
   }
   render() {

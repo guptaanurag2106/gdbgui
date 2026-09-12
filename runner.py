@@ -102,7 +102,6 @@ def run_command(command: list[str]) -> bool:
         return False
 
 
-
 def test_python(*extra: str) -> bool:
     return run_command(
         [

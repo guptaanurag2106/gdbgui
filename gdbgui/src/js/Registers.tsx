@@ -17,9 +17,8 @@ let register_name_fetch_count = 0,
 type State = any;
 
 class Registers extends React.Component<{}, State> {
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: {}) {
+    super(props);
     store.connectComponentState(this, [
       "inferior_program",
       "previous_register_values",
