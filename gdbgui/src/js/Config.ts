@@ -1,6 +1,7 @@
 /* global initial_data */
 /* global debug */
 import { store } from "statorgfc";
+import Actions from "./Actions";
 import constants from "./constants";
 import Util from "./Util";
 
@@ -66,12 +67,12 @@ const initial_store_data = {
     source_file_paths: [], // all the paths gdb says were used to compile the target binary
     language: "c_family", // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
     files_being_fetched: [],
-    fullname_to_render: null,
-    line_of_source_to_flash: null,
+    fullname_to_render: null as string | null,
+    line_of_source_to_flash: null as number | null,
     current_assembly_address: null,
     // rendered_source: {},
     make_current_line_visible: false, // set to true when source code window should jump to current line
-    cached_source_files: [], // list with keys fullname, source_code
+    cached_source_files: [] as CachedFileType[], // list with keys fullname, source_code
     disassembly_for_missing_file: [], // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
     show_inline_disassembly: true, // show/hide disassembly (additional button) when source_file is available and disassembly is fetched once
     missing_files: [], // files that were attempted to be fetched but did not exist on the local filesystem
@@ -113,6 +114,9 @@ const initial_store_data = {
 
     gdb_console_entries: [],
 
+    status_message: "Connecting",
+    status_message_level: "warning",
+
     // if we try to write something before the websocket is connected, store it here
     queuedGdbCommands: [],
 
@@ -124,22 +128,26 @@ const initial_store_data = {
 };
 
 export async function load_config() {
-    await Util.get_json<Record<any, unknown>>("/config")
+    await Util.get_json<Record<string, unknown>>("/config")
         .then((data) => {
             for (const [key, value] of Object.entries(data)) {
                 // @ts-expect-error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ debug: boolean; gdbgui_version: string; latest_gdbgui_version: string; gdb_version: string; gdb_version_array: never[]; gdb_pid: undefined; gdb_command: string; can_fetch_register_values: boolean; ... 65 more ...; past_binaries: Set<...>; }'.
-                initial_store_data[key as any] = value;
+                initial_store_data[key] = value;
             }
         })
-        .catch((err) =>
-            console.log("Error fetching /config endpoint, using defaults", err),
-        );
+        .catch((err) => {
+            console.log("Error fetching /config endpoint, using defaults", err);
+            Actions.add_console_entries(
+                `Error fetching /config endpoint, using defaults`,
+                constants.console_entry_type.STD_ERR,
+            );
+        });
 }
 
 export function update_config_key(key: string, value: unknown) {
     Util.post_json("/config", { key, value })
         .then((data) => {
-            console.log(data);
+            console.log("update_config_key", data);
         })
         .catch((err) =>
             console.log(

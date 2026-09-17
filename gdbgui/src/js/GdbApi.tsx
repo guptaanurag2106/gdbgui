@@ -108,7 +108,7 @@ const GdbApi = {
             socket = null;
 
             Actions.show_modal(
-                "",
+                "Error",
                 <>
                     <p>
                         Could not connect to the backend session. Ensure the
@@ -120,11 +120,13 @@ const GdbApi = {
                 "Could not connect to the backend session",
                 constants.console_entry_type.STD_ERR,
             );
+            Actions.set_status_entry("Connection Failed", "error");
         }
     },
     _init_handlers: function () {
         console.assert(socket != null);
         if (socket === null) return;
+        Actions.set_status_entry("Connected", "info");
 
         socket.addEventListener("message", (event) => {
             try {
@@ -157,6 +159,10 @@ const GdbApi = {
                                 );
                             }
                             if (error) {
+                                Actions.set_status_entry(
+                                    "Couldn't start gdb",
+                                    "error",
+                                );
                                 socket?.close();
                                 return;
                             }
@@ -171,6 +177,10 @@ const GdbApi = {
                         break;
                     case "error_running_gdb_command":
                         {
+                            Actions.set_status_entry(
+                                "Error connecting to gdb",
+                                "error",
+                            );
                             Actions.add_console_entries(
                                 `Error occurred on server when running gdb command: ${data.payload.message}`,
                                 constants.console_entry_type.STD_ERR,
@@ -180,6 +190,10 @@ const GdbApi = {
                         break;
                     case "fatal_server_error":
                         {
+                            Actions.set_status_entry(
+                                "Error connecting to gdb",
+                                "error",
+                            );
                             Actions.add_console_entries(
                                 `Message from server: ${data.payload.message}`,
                                 constants.console_entry_type.STD_ERR,
@@ -231,12 +245,17 @@ const GdbApi = {
         socket.addEventListener("close", (event) => {
             log("socket closed", event);
             socket = null;
+            Actions.add_console_entries(
+                "The connection to the gdb session has been closed",
+                constants.console_entry_type.STD_ERR,
+            );
+            Actions.set_status_entry("Connection Closed", "error");
             // we no longer need to warn the user before they exit the page since the gdb process
             // on the server is already gone
             window.onbeforeunload = () => null;
             if (event.reason === "existing_connection") {
                 Actions.show_modal(
-                    "",
+                    "Error",
                     <>
                         <p>
                             The connection to the gdb session has been closed,
@@ -246,7 +265,7 @@ const GdbApi = {
                 );
             } else {
                 Actions.show_modal(
-                    "",
+                    "Error",
                     <>
                         <p>
                             The connection to the gdb session has been closed.
@@ -255,13 +274,9 @@ const GdbApi = {
                     </>,
                 );
             }
-            Actions.add_console_entries(
-                "The connection to the gdb session has been closed",
-                constants.console_entry_type.STD_ERR,
-            );
         });
     },
-    _waiting_for_response_timeout: null,
+    _waiting_for_response_timeout: null as ReturnType<typeof setTimeout> | null,
     click_run_button: function () {
         Actions.inferior_program_starting();
         GdbApi.run_gdb_command("-exec-run");
@@ -296,6 +311,7 @@ const GdbApi = {
             "-exec-next" +
                 (store.get("debug_in_reverse") || reverse ? " --reverse" : ""),
         );
+        Actions.set_status_entry("Paused", "info");
     },
     click_step_button: function (reverse = false) {
         Actions.inferior_program_resuming();
@@ -303,6 +319,7 @@ const GdbApi = {
             "-exec-step" +
                 (store.get("debug_in_reverse") || reverse ? " --reverse" : ""),
         );
+        Actions.set_status_entry("Paused", "info");
     },
     click_return_button: function () {
         // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
@@ -311,6 +328,7 @@ const GdbApi = {
         // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
         GdbApi.run_gdb_command("-exec-return");
         Actions.inferior_program_paused();
+        Actions.set_status_entry("Paused", "info");
     },
     click_next_instruction_button: function (reverse = false) {
         Actions.inferior_program_resuming();
@@ -382,7 +400,6 @@ const GdbApi = {
         const WAIT_TIME_SEC = 10;
         // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         clearTimeout(GdbApi._waiting_for_response_timeout);
-        // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'null'.
         GdbApi._waiting_for_response_timeout = setTimeout(() => {
             Actions.clear_program_state();
             store.set("waiting_for_response", false);
@@ -508,7 +525,8 @@ const GdbApi = {
     refresh_breakpoints: function () {
         GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()]);
     },
-    get_inferior_binary_last_modified_unix_sec(path: any) {
+    //TODO:do something with last_modified_unix_sec (showing the popup if it is after binary)
+    get_inferior_binary_last_modified_unix_sec(path: string) {
         Util.get_json("/get_last_modified_unix_sec", { path: path })
             .then((response: any) => {
                 GdbApi._recieve_last_modified_unix_sec(response);
@@ -543,8 +561,8 @@ const GdbApi = {
         GdbApi.run_gdb_command(`set disassembly-flavor ${flavor}`);
     },
     _recieve_last_modified_unix_sec(data: {
-        path: any;
-        last_modified_unix_sec: any;
+        path: string;
+        last_modified_unix_sec: number;
     }) {
         if (data.path === store.get("inferior_binary_path")) {
             store.set(

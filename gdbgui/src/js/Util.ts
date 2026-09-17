@@ -158,14 +158,14 @@ const Util = {
               0.1.0, 0.0.9 -> true
               0.0.9, 0.0.8 -> false
             */
-    is_newer(latest: any, current: any) {
-        latest = latest.split(".");
-        current = current.split(".");
-        if (latest.length !== current.length) {
+    is_newer(latest: string, current: string) {
+        const lat = latest.split(".");
+        const cur = current.split(".");
+        if (lat.length !== cur.length) {
             return true;
         }
-        for (let i in latest) {
-            if (latest[i] > current[i]) {
+        for (let i in lat) {
+            if (lat[i] > cur[i]) {
                 return true;
             }
         }

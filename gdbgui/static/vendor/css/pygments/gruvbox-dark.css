@@ -1,0 +1,85 @@
+/* pre { line-height: 125%; } */
+/* td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; } */
+/* span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; } */
+/* td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; } */
+/* span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; } */
+.pygments-gruvbox-dark .hll { background-color: #49483e }
+.pygments-gruvbox-dark { background: #232629; color: #CCC }
+.pygments-gruvbox-dark .c { color: #777; font-style: italic } /* Comment */
+.pygments-gruvbox-dark .err { color: #A61717; background-color: #E3D2D2 } /* Error */
+.pygments-gruvbox-dark .esc { color: #CCC } /* Escape */
+.pygments-gruvbox-dark .g { color: #CCC } /* Generic */
+.pygments-gruvbox-dark .k { color: #7686BB; font-weight: bold } /* Keyword */
+.pygments-gruvbox-dark .l { color: #CCC } /* Literal */
+.pygments-gruvbox-dark .n { color: #CCC } /* Name */
+.pygments-gruvbox-dark .o { color: #CCC } /* Operator */
+.pygments-gruvbox-dark .x { color: #CCC } /* Other */
+.pygments-gruvbox-dark .p { color: #CCC } /* Punctuation */
+.pygments-gruvbox-dark .ch { color: #777; font-style: italic } /* Comment.Hashbang */
+.pygments-gruvbox-dark .cm { color: #777; font-style: italic } /* Comment.Multiline */
+.pygments-gruvbox-dark .cp { color: #777; font-style: italic } /* Comment.Preproc */
+.pygments-gruvbox-dark .cpf { color: #777; font-style: italic } /* Comment.PreprocFile */
+.pygments-gruvbox-dark .c1 { color: #777; font-style: italic } /* Comment.Single */
+.pygments-gruvbox-dark .cs { color: #777; font-style: italic } /* Comment.Special */
+.pygments-gruvbox-dark .gd { color: #CCC } /* Generic.Deleted */
+.pygments-gruvbox-dark .ge { color: #CCC } /* Generic.Emph */
+.pygments-gruvbox-dark .ges { color: #CCC } /* Generic.EmphStrong */
+.pygments-gruvbox-dark .gr { color: #CCC } /* Generic.Error */
+.pygments-gruvbox-dark .gh { color: #CCC } /* Generic.Heading */
+.pygments-gruvbox-dark .gi { color: #CCC } /* Generic.Inserted */
+.pygments-gruvbox-dark .go { color: #CCC } /* Generic.Output */
+.pygments-gruvbox-dark .gp { color: #FFF } /* Generic.Prompt */
+.pygments-gruvbox-dark .gs { color: #CCC } /* Generic.Strong */
+.pygments-gruvbox-dark .gu { color: #CCC } /* Generic.Subheading */
+.pygments-gruvbox-dark .gt { color: #CCC } /* Generic.Traceback */
+.pygments-gruvbox-dark .kc { color: #7686BB; font-weight: bold } /* Keyword.Constant */
+.pygments-gruvbox-dark .kd { color: #7686BB; font-weight: bold } /* Keyword.Declaration */
+.pygments-gruvbox-dark .kn { color: #7686BB; font-weight: bold } /* Keyword.Namespace */
+.pygments-gruvbox-dark .kp { color: #7686BB; font-weight: bold } /* Keyword.Pseudo */
+.pygments-gruvbox-dark .kr { color: #7686BB; font-weight: bold } /* Keyword.Reserved */
+.pygments-gruvbox-dark .kt { color: #7686BB; font-weight: bold } /* Keyword.Type */
+.pygments-gruvbox-dark .ld { color: #CCC } /* Literal.Date */
+.pygments-gruvbox-dark .m { color: #4FB8CC } /* Literal.Number */
+.pygments-gruvbox-dark .s { color: #51CC99 } /* Literal.String */
+.pygments-gruvbox-dark .na { color: #CCC } /* Name.Attribute */
+.pygments-gruvbox-dark .nb { color: #CCC } /* Name.Builtin */
+.pygments-gruvbox-dark .nc { color: #CCC } /* Name.Class */
+.pygments-gruvbox-dark .no { color: #CCC } /* Name.Constant */
+.pygments-gruvbox-dark .nd { color: #CCC } /* Name.Decorator */
+.pygments-gruvbox-dark .ni { color: #CCC } /* Name.Entity */
+.pygments-gruvbox-dark .ne { color: #CCC } /* Name.Exception */
+.pygments-gruvbox-dark .nf { color: #6A6AFF } /* Name.Function */
+.pygments-gruvbox-dark .nl { color: #CCC } /* Name.Label */
+.pygments-gruvbox-dark .nn { color: #CCC } /* Name.Namespace */
+.pygments-gruvbox-dark .nx { color: #E2828E } /* Name.Other */
+.pygments-gruvbox-dark .py { color: #CCC } /* Name.Property */
+.pygments-gruvbox-dark .nt { color: #CCC } /* Name.Tag */
+.pygments-gruvbox-dark .nv { color: #7AB4DB; font-weight: bold } /* Name.Variable */
+.pygments-gruvbox-dark .ow { color: #CCC } /* Operator.Word */
+.pygments-gruvbox-dark .pm { color: #CCC } /* Punctuation.Marker */
+.pygments-gruvbox-dark .w { color: #BBB } /* Text.Whitespace */
+.pygments-gruvbox-dark .mb { color: #4FB8CC } /* Literal.Number.Bin */
+.pygments-gruvbox-dark .mf { color: #4FB8CC } /* Literal.Number.Float */
+.pygments-gruvbox-dark .mh { color: #4FB8CC } /* Literal.Number.Hex */
+.pygments-gruvbox-dark .mi { color: #4FB8CC } /* Literal.Number.Integer */
+.pygments-gruvbox-dark .mo { color: #4FB8CC } /* Literal.Number.Oct */
+.pygments-gruvbox-dark .sa { color: #51CC99 } /* Literal.String.Affix */
+.pygments-gruvbox-dark .sb { color: #51CC99 } /* Literal.String.Backtick */
+.pygments-gruvbox-dark .sc { color: #51CC99 } /* Literal.String.Char */
+.pygments-gruvbox-dark .dl { color: #51CC99 } /* Literal.String.Delimiter */
+.pygments-gruvbox-dark .sd { color: #51CC99 } /* Literal.String.Doc */
+.pygments-gruvbox-dark .s2 { color: #51CC99 } /* Literal.String.Double */
+.pygments-gruvbox-dark .se { color: #51CC99 } /* Literal.String.Escape */
+.pygments-gruvbox-dark .sh { color: #51CC99 } /* Literal.String.Heredoc */
+.pygments-gruvbox-dark .si { color: #51CC99 } /* Literal.String.Interpol */
+.pygments-gruvbox-dark .sx { color: #51CC99 } /* Literal.String.Other */
+.pygments-gruvbox-dark .sr { color: #51CC99 } /* Literal.String.Regex */
+.pygments-gruvbox-dark .s1 { color: #51CC99 } /* Literal.String.Single */
+.pygments-gruvbox-dark .ss { color: #51CC99 } /* Literal.String.Symbol */
+.pygments-gruvbox-dark .bp { color: #CCC } /* Name.Builtin.Pseudo */
+.pygments-gruvbox-dark .fm { color: #6A6AFF } /* Name.Function.Magic */
+.pygments-gruvbox-dark .vc { color: #7AB4DB; font-weight: bold } /* Name.Variable.Class */
+.pygments-gruvbox-dark .vg { color: #BE646C; font-weight: bold } /* Name.Variable.Global */
+.pygments-gruvbox-dark .vi { color: #7AB4DB; font-weight: bold } /* Name.Variable.Instance */
+.pygments-gruvbox-dark .vm { color: #7AB4DB; font-weight: bold } /* Name.Variable.Magic */
+.pygments-gruvbox-dark .il { color: #4FB8CC } /* Literal.Number.Integer.Long */

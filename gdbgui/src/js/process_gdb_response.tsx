@@ -67,7 +67,6 @@ const process_gdb_response = function (response_array: any) {
                 // try again with mode 3, for older gdb api's
                 // store.set("gdb_version_array", [7, 6, 0]);
                 // store.set("gdb_version", "7.6.0");
-                // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '3' is not assignable to paramete... Remove this comment to see the full error message
                 FileOps.fetch_assembly_cur_line(3);
             } else if (
                 r.payload &&
@@ -76,13 +75,7 @@ const process_gdb_response = function (response_array: any) {
             ) {
                 Actions.add_gdb_response_to_console(r);
                 Actions.add_console_entries(
-                    <React.Fragment>
-                        <span>Follow </span>
-                        <a href="https://github.com/cs01/gdbgui/issues/55#issuecomment-288209648">
-                            these instructions
-                        </a>
-                        <span> to fix this error</span>
-                    </React.Fragment>,
+                    `Follow https://github.com/cs01/gdbgui/issues/55#issuecomment-288209648 these instructions to fix this error`,
                     constants.console_entry_type.GDBGUI_OUTPUT_RAW,
                 );
                 continue;

@@ -39,10 +39,8 @@ class ToolTipTourguide extends React.Component<ToolTipTourguideProps, State> {
     static next() {
         store.set("tour_guide_step", store.get("tour_guide_step") + 1);
     }
-    guide_finshed() {
-        store.set("tour_guide_step", 0);
-    }
     static start_guide() {
+        store.set("tour_guide_step", 0);
         store.set("show_tour_guide", true);
     }
     componentDidUpdate() {
@@ -107,42 +105,39 @@ class ToolTipTourguide extends React.Component<ToolTipTourguideProps, State> {
         let is_last_step =
                 this.props.step_num + 1 === this.state.num_tour_guide_steps,
             dismiss = is_last_step ? null : (
-                <span
-                    className="btn btn-default pointer"
+                <button
+                    type="button"
+                    className="pointer rounded border border-[var(--border)] bg-[var(--hover)] px-2 py-1 text-[var(--fg)] hover:bg-[var(--accent)] hover:text-[var(--bg)]"
                     onClick={ToolTipTourguide.dismiss}
                 >
                     Dismiss
-                </span>
+                </button>
             );
         return (
             <div
                 ref={this.ref}
+                className="absolute z-[1000] min-w-[200px] max-w-[350px] overflow-auto whitespace-normal rounded border p-2 text-m shadow-lg"
                 style={{
-                    minWidth: "200px",
-                    maxWidth: "350px",
-                    background: "white",
-                    border: "1px solid",
-                    padding: "5px",
-                    zIndex: "1000",
-                    position: "absolute",
-                    overflow: "auto",
-                    whiteSpace: "normal",
                     left: left,
                     top: top,
-                    fontSize: "small",
+                    backgroundColor: "var(--surface)",
+                    borderColor: "var(--border)",
+                    color: "var(--fg)",
                 }}
             >
                 {this.props.content}
-                <p />
+                <div className="h-2" />
                 {this.props.step_num + 1} of {this.state.num_tour_guide_steps}
-                <p />
+                <div className="h-2" />
                 {dismiss}
-                <span
-                    className="btn btn-primary pointer"
+                <button
+                    type="button"
+                    className="pointer ml-2 rounded bg-[var(--accent)] px-2 py-1 hover:opacity-90"
+                    style={{ color: "var(--bg)" }}
                     onClick={ToolTipTourguide.next}
                 >
                     {is_last_step ? "Finish" : "Next"}
-                </span>
+                </button>
             </div>
         );
     }

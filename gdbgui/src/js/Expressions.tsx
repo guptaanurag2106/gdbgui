@@ -32,9 +32,7 @@ class Expressions extends React.Component {
 
         let content = this.objs_to_render.map((obj: any) => (
             <GdbVariable
-                // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
                 obj={obj}
-                //same key no need for re-renders
                 key={obj.expression}
                 expression={obj.expression}
                 expr_type="expr"
@@ -52,19 +50,10 @@ class Expressions extends React.Component {
             <div>
                 <input
                     id="expressions_input"
-                    className="form-control"
                     placeholder="expression or variable"
-                    style={{
-                        display: "inline",
-                        padding: "6px 6px",
-                        height: "25px",
-                        fontSize: "1em",
-                        marginTop: "5px",
-                    }}
+                    className="mb-2 box-border w-full rounded border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-[var(--fg)] outline-none focus:border-[var(--accent)]"
                     onKeyUp={Expressions.keydown_on_input}
                 />
-
-                <p />
 
                 {content}
             </div>

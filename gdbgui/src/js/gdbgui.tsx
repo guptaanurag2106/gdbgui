@@ -31,8 +31,10 @@ import ToolTipTourguide from "./ToolTipTourguide";
 
 import "../css/gdbgui.css";
 import { Terminals } from "./Terminals";
+import StatusFooter from "./StatusFooter";
 
 class Gdbgui extends React.PureComponent<{}, any> {
+    //TODO:componentWillMount vs constructor
     componentWillMount() {
         GdbApi.init();
         GlobalEvents.init();
@@ -44,75 +46,76 @@ class Gdbgui extends React.PureComponent<{}, any> {
     }
     render() {
         return (
-            <div className={`splitjs_container ${this.state.theme || ""}`}>
+            <div
+                className={`splitjs_container pygments-${this.state.theme || ""}`}
+            >
                 <TopBar
-                    initial_user_input={initial_data.initial_binary_and_args}
+                    initial_binary_and_args={
+                        initial_data.initial_binary_and_args
+                    }
                 />
 
                 <Split
                     direction="vertical"
                     sizes={[70, 30]}
-                    gutterSize={8}
+                    gutterSize={5}
                     cursor="row-resize"
                     minSize={[100, 50]}
                     onDrag={() => window.dispatchEvent(new Event("resize"))}
                     style={{
-                        height: "100%",
+                        flex: 1,
+                        minHeight: 0,
                         width: "100%",
                         overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
                     }}
                 >
-                    <div
-                        id="middle"
-                        style={{ paddingTop: "60px", boxSizing: "border-box" }}
-                        className="flex flex-col overflow-hidden"
+                    <Split
+                        direction="horizontal"
+                        sizes={this.state.middle_sizes}
+                        gutterSize={5}
+                        cursor="col-resize"
+                        minSize={[0, 100, 100]}
+                        expandToMin={false}
+                        onDrag={() => window.dispatchEvent(new Event("resize"))}
+                        onDragEnd={(sizes: number[]) => {
+                            store.set("middle_sizes", sizes);
+                            update_config_key("middle_sizes", sizes);
+                        }}
+                        style={{
+                            overflow: "hidden",
+                            display: "flex",
+                            flexDirection: "row",
+                        }}
                     >
-                        <Split
-                            direction="horizontal"
-                            sizes={this.state.middle_sizes}
-                            gutterSize={8}
-                            cursor="col-resize"
-                            minSize={[0, 100, 100]}
-                            expandToMin={false}
-                            onDrag={() =>
-                                window.dispatchEvent(new Event("resize"))
-                            }
-                            onDragEnd={(sizes: number[]) => {
-                                store.set("middle_sizes", sizes);
-                                update_config_key("middle_sizes", sizes);
-                            }}
+                        <div className="content">
+                            <FoldersView />
+                        </div>
+
+                        <div className="content">
+                            <MiddleLeft />
+                        </div>
+
+                        <div
+                            className="content"
                             style={{
-                                flex: 1,
-                                minHeight: 0,
-                                overflow: "hidden",
-                                display: "flex",
-                                flexDirection: "row",
+                                overflow: "auto",
                             }}
                         >
-                            <div
-                                id="folders_view"
-                                className="content"
-                                style={{ backgroundColor: "#333" }}
-                            >
-                                <FoldersView />
-                            </div>
+                            <RightSidebar
+                                signals={initial_data.signals}
+                                debug={debug}
+                            />
+                        </div>
+                    </Split>
 
-                            <div id="source_code_view" className="content">
-                                <MiddleLeft />
-                            </div>
-
-                            <div id="controls_sidebar" className="content">
-                                <RightSidebar
-                                    signals={initial_data.signals}
-                                    debug={debug}
-                                />
-                            </div>
-                        </Split>
-                    </div>
-
-                    <div id="bottom" className="flex flex-col overflow-hidden">
+                    <div
+                        className="content"
+                        style={{
+                            backgroundColor: "var(--topbar-bg)",
+                        }}
+                    >
                         <ToolTipTourguide
                             step_num={4}
                             position={"topleft"}
@@ -125,20 +128,11 @@ class Gdbgui extends React.PureComponent<{}, any> {
                                 </div>
                             }
                         />
-
-                        <div
-                            id="bottom_content"
-                            className="content"
-                            style={{
-                                flex: 1,
-                                minHeight: 0,
-                                backgroundColor: "#000",
-                            }}
-                        >
-                            <Terminals />
-                        </div>
+                        <Terminals />
                     </div>
                 </Split>
+
+                <StatusFooter />
 
                 {/* below are elements that are only displayed under certain conditions */}
                 <Modal />
@@ -162,8 +156,7 @@ class Gdbgui extends React.PureComponent<{}, any> {
     }
     componentDidMount() {
         if (debug) {
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'getUnwatchedKeys' does not exist on type... Remove this comment to see the full error message
-            console.warn(store.getUnwatchedKeys());
+            console.warn("Unwatched keys: ", store.getUnwatchedKeys());
         }
     }
 }
@@ -175,12 +168,10 @@ async function main() {
         immutable: false,
         debounce_ms: 10,
     };
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'initialize' does not exist on type '{ ge... Remove this comment to see the full error message
     store.initialize(initial_store_data, store_options);
     if (debug) {
         // log call store changes in console except if changed key was in
         // constants.keys_to_not_log_changes_in_console
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'use' does not exist on type '{ get(key: ... Remove this comment to see the full error message
         store.use(function (key: any, oldval: any, newval: any) {
             if (
                 constants.keys_to_not_log_changes_in_console.indexOf(key) === -1

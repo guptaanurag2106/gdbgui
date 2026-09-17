@@ -1,4 +1,5 @@
 import React from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 type FileSystemProps = {
     rootnode: any;
@@ -26,15 +27,9 @@ class FileSystem extends React.Component<FileSystemProps, {}> {
                 </ul>
             );
         };
-        let indent = "\u00A0\u00A0\u00A0".repeat(depth),
-            glyph = null;
+        let indent = "\u00A0\u00A0\u00A0".repeat(depth);
         let is_file = !node.children,
             is_dir = !is_file;
-        if (is_dir) {
-            glyph = node.toggled
-                ? "glyphicon-chevron-down"
-                : "glyphicon-chevron-right";
-        }
 
         let onClickName = null;
         if (is_file) {
@@ -45,14 +40,20 @@ class FileSystem extends React.Component<FileSystemProps, {}> {
 
         return (
             <React.Fragment key={this.nodecount}>
-                <li className="pointer">
+                <li className="pointer py-0.5">
                     {indent}
-                    <span
-                        className={"glyphicon  " + glyph}
-                        onClick={() => {
-                            this.props.onToggle(node);
-                        }}
-                    />
+                    {is_dir && (
+                        <span
+                            className="mr-1 text-[var(--muted)]"
+                            onClick={() => this.props.onToggle(node)}
+                        >
+                            {node.toggled ? (
+                                <ChevronDown size={14} className="inline" />
+                            ) : (
+                                <ChevronRight size={14} className="inline" />
+                            )}
+                        </span>
+                    )}
                     {/* @ts-expect-error ts-migrate(2322) FIXME: Type 'null' is not assignable to type '((event: Mo... Remove this comment to see the full error message */}
                     <span onClick={onClickName}>{node.name}</span>
                 </li>
@@ -64,10 +65,8 @@ class FileSystem extends React.Component<FileSystemProps, {}> {
     render() {
         this.nodecount = -1;
         return (
-            <div id="filesystem">
-                <ul style={{ color: "#ccc" }}>
-                    {this.get_node_jsx(this.props.rootnode)}
-                </ul>
+            <div className="text-[var(--fg)]">
+                <ul>{this.get_node_jsx(this.props.rootnode)}</ul>
             </div>
         );
     }

@@ -11,7 +11,7 @@ void React; // using jsx implicity uses React
 
 const Actions = {
     clear_program_state: function () {
-        store.set("line_of_source_to_flash", undefined);
+        store.set("line_of_source_to_flash", null);
         store.set("paused_on_frame", undefined);
         store.set("selected_frame_num", 0);
         store.set("thread_ids", undefined);
@@ -74,7 +74,7 @@ const Actions = {
     clear_console: function () {
         store.set("gdb_console_entries", []);
     },
-    add_console_entries: function (entries: any, type: string) {
+    add_console_entries: function (entries: string[] | string, type: string) {
         if (type === constants.console_entry_type.STD_OUT) {
             // ignore
             return;
@@ -104,6 +104,17 @@ const Actions = {
         } else {
             console.error("Pty not available. New entries are:", entries);
         }
+    },
+    set_status_entry: function (message: string, level: string) {
+        if (!(level in constants.statusFooterColours)) {
+            level = "info";
+            console.assert(
+                false &&
+                    `add_status_entry level ${level} not in statusFooterColours`,
+            );
+        }
+        store.set("status_message", message);
+        store.set("status_message_level", level);
     },
     add_gdb_response_to_console(mi_obj: any) {
         if (!mi_obj) {
@@ -148,7 +159,7 @@ const Actions = {
     toggle_modal_visibility() {
         store.set("show_modal", !store.get("show_modal"));
     },
-    show_modal(header: any, body: any) {
+    show_modal(header: string, body: JSX.Element) {
         store.set("modal_header", header);
         store.set("modal_body", body);
         store.set("show_modal", true);
@@ -156,20 +167,26 @@ const Actions = {
     set_gdb_binary_and_arguments(binary: any, args: any) {
         // remove list of source files associated with the loaded binary since we're loading a new one
         store.set("source_file_paths", []);
+        //TODO:do we need to this? language set
         store.set("language", "c_family");
         store.set("inferior_binary_path", null);
+        //reset
         Actions.inferior_program_exited();
         let cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
         GdbApi.run_gdb_command(cmds);
         GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
+        Actions.set_status_entry("Loaded binary", "info");
     },
     connect_to_gdbserver(user_input: any) {
         // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
         store.set("source_file_paths", []);
+        //TODO:do we need to this? language set
         store.set("language", "c_family");
         store.set("inferior_binary_path", null);
         Actions.inferior_program_exited();
         GdbApi.run_gdb_command([`-target-select remote ${user_input}`]);
+        //TODO:should this be here or in process_gdb_response of this
+        Actions.set_status_entry("Connected to process", "info");
     },
     get_target_features() {
         GdbApi.run_gdb_command("-list-target-features");
@@ -196,23 +213,25 @@ const Actions = {
     attach_to_process(user_input: any) {
         // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
         GdbApi.run_gdb_command(`-target-attach ${user_input}`);
+        //TODO:should this be here or in process_gdb_response of this
+        Actions.set_status_entry("Attached to process", "info");
     },
     fetch_source_files() {
         store.set("source_file_paths", []);
         GdbApi.run_gdb_command("-file-list-exec-source-files");
     },
-    view_file(fullname: any, line: any) {
+    view_file(fullname: string, line: number) {
         store.set("fullname_to_render", fullname);
         store.set("source_code_infinite_scrolling", false);
         Actions.set_line_state(line);
     },
-    set_line_state(line: any) {
+    set_line_state(line: number) {
         store.set("source_code_infinite_scrolling", false);
         store.set(
             "source_code_selection_state",
             constants.source_code_selection_states.USER_SELECTION,
         );
-        store.set("line_of_source_to_flash", parseInt(line));
+        store.set("line_of_source_to_flash", line);
         store.set("make_current_line_visible", true);
     },
     clear_cached_assembly() {

@@ -6,6 +6,8 @@ import Util from "./Util";
 import FileOps from "./FileOps";
 import { FileLink } from "./Links";
 import constants from "./constants";
+import { input_style } from "./styles";
+import { Trash2, List, Pencil } from "lucide-react";
 
 const BreakpointSourceLineCache = {
     _cache: {} as Record<string, Record<number, string>>,
@@ -29,7 +31,7 @@ const BreakpointSourceLineCache = {
 
 type BreakpointState = any;
 
-class Breakpoint extends React.Component<{}, BreakpointState> {
+class Breakpoint extends React.Component<any, BreakpointState> {
     constructor(props: {}) {
         super(props);
         this.state = {
@@ -58,10 +60,7 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
 
         if (line) {
             return (
-                <span
-                    className="monospace"
-                    style={{ whiteSpace: "nowrap", fontSize: "0.9em" }}
-                >
+                <span className="monospace whitespace-nowrap text-[0.95em]">
                     {line || <br />}
                 </span>
             );
@@ -71,15 +70,14 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
     get_delete_jsx(bkpt_num_to_delete: any) {
         return (
             <div
-                style={{ width: "10px", display: "inline" }}
-                className="pointer breakpoint_trashcan"
+                className="inline-block w-3 pointer breakpoint_trashcan text-[var(--muted)] hover:text-[var(--accent-2)]"
                 onClick={(e) => {
                     e.stopPropagation();
                     Breakpoints.delete_breakpoint(bkpt_num_to_delete);
                 }}
                 title={`Delete breakpoint ${bkpt_num_to_delete}`}
             >
-                <span className="glyphicon glyphicon-trash"> </span>
+                <Trash2 size={14} />
             </div>
         );
     }
@@ -113,7 +111,6 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
         });
     }
     render() {
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'bkpt' does not exist on type 'Readonly<{... Remove this comment to see the full error message
         let b = this.props.bkpt,
             checked = b.enabled === "y" ? "checked" : "",
             source_line = this.get_source_line(b.fullname_to_display, b.line);
@@ -123,16 +120,20 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
             bkpt_num_to_delete = b.parent_breakpoint_number;
             info_glyph = (
                 <span
-                    className="glyphicon glyphicon-th-list"
+                    className="text-[var(--muted)]"
                     title="Child breakpoint automatically created from parent. If parent or any child of this tree is deleted, all related breakpoints will be deleted."
-                />
+                >
+                    <List size={14} />
+                </span>
             );
         } else if (b.is_parent_breakpoint) {
             info_glyph = (
                 <span
-                    className="glyphicon glyphicon-th-list"
+                    className="text-[var(--muted)]"
                     title="Parent breakpoint with one or more child breakpoints. If parent or any child of this tree is deleted, all related breakpoints will be deleted."
-                />
+                >
+                    <List size={14} />
+                </span>
             );
             bkpt_num_to_delete = b.number;
         } else {
@@ -168,7 +169,7 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
                             : "Add"
                     } breakpoint condition`}
                 >
-                    <span className="glyphicon glyphicon-edit"></span>
+                    <Pencil size={14} className="inline pointer" />
                     <span
                         className={`italic ${this.state.breakpoint_condition ? "bold" : ""}`}
                     >
@@ -180,15 +181,8 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
                 break_condition = (
                     <input
                         type="text"
-                        style={{
-                            display: "inline",
-                            width: "110px",
-                            padding: "10px 10px",
-                            height: "25px",
-                            fontSize: "1em",
-                        }}
+                        style={input_style}
                         placeholder="Break condition"
-                        className="form-control"
                         onKeyUp={this.on_key_up_bktp_cond.bind(this, b.number)}
                         onChange={this.on_change_bkpt_cond.bind(this)}
                         value={this.state.breakpoint_condition}
@@ -198,27 +192,15 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
 
             const times_hit = this.get_num_times_hit(b);
             function_jsx = (
-                <div style={{ display: "inline" }}>
-                    <span className="monospace" style={{ paddingRight: "5px" }}>
+                <div className="inline-flex items-center gap-2 flex-wrap">
+                    <span className="monospace">
                         {info_glyph} {func}
                     </span>
-                    <span
-                        style={{
-                            color: "#bbbbbb",
-                            fontStyle: "italic",
-                            paddingRight: "5px",
-                        }}
-                    >
+                    <span className="text-[var(--muted)] italic">
                         thread groups: {b["thread-groups"]}
                     </span>
                     <span>{break_condition}</span>
-                    <span
-                        style={{
-                            color: "#bbbbbb",
-                            fontStyle: "italic",
-                            paddingLeft: "5px",
-                        }}
-                    >
+                    <span className="text-[var(--muted)] italic">
                         {times_hit}
                     </span>
                 </div>
@@ -227,44 +209,31 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
 
         return (
             <div
-                className="breakpoint"
+                className="breakpoint rounded border border-[var(--border)] p-1.5 mb-1"
                 onClick={() => Actions.view_file(b.fullname_to_display, b.line)}
             >
-                <table
-                    style={{
-                        width: "100%",
-                        fontSize: "0.9em",
-                        borderWidth: "0px",
-                    }}
-                    className="lighttext table-condensed"
-                >
-                    <tbody>
-                        <tr>
-                            <td>
-                                <input
-                                    type="checkbox"
-                                    // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'boolean |... Remove this comment to see the full error message
-                                    checked={checked}
-                                    onChange={() =>
-                                        Breakpoints.enable_or_disable_bkpt(
-                                            checked,
-                                            b.number,
-                                        )
-                                    }
-                                />
-                                {function_jsx} {delete_jsx}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>{location_jsx}</td>
-                        </tr>
-
-                        <tr>
-                            <td>{source_line}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div className="flex items-start gap-1.5">
+                    <input
+                        type="checkbox"
+                        className="mt-0.5 shrink-0"
+                        checked={checked === "checked"}
+                        onChange={() =>
+                            Breakpoints.enable_or_disable_bkpt(
+                                checked,
+                                b.number,
+                            )
+                        }
+                    />
+                    <div className="min-w-0 flex-1">
+                        <div>
+                            {function_jsx} {delete_jsx}
+                        </div>
+                        <div>{location_jsx}</div>
+                        <div className="text-[0.9em] text-[var(--muted)]">
+                            {source_line}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     } // render function
@@ -286,36 +255,22 @@ class Breakpoints extends React.Component {
             : "enable all breakpoints";
 
         for (let b of breakpoints) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Property 'bkpt' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
             breakpoints_jsx.push(<Breakpoint bkpt={b} key={b.number} />);
         }
 
         if (breakpoints_jsx.length) {
             return (
                 <div>
-                    <div
-                        className="lighttext"
-                        style={{
-                            fontSize: "0.9em",
-                            paddingLeft: "5px",
-                            paddingTop: "2px",
-                        }}
-                    >
-                        <label
-                            style={{ fontWeight: "normal", marginBottom: 0 }}
-                        >
-                            <input
-                                type="checkbox"
-                                style={{ marginRight: "6px" }}
-                                checked={all_enabled}
-                                onChange={() =>
-                                    Breakpoints.enable_or_disable_all(
-                                        all_enabled,
-                                    )
-                                }
-                            />
-                            {toggle_label}
-                        </label>
+                    <div className="flex items-center gap-1.5 text-[var(--muted)] text-[14px] pl-1 pt-0.5">
+                        <input
+                            type="checkbox"
+                            className="mt-0.5 shrink-0"
+                            checked={all_enabled}
+                            onChange={() =>
+                                Breakpoints.enable_or_disable_all(all_enabled)
+                            }
+                        />
+                        <span>{toggle_label}</span>
                     </div>
 
                     {breakpoints_jsx}

@@ -1,5 +1,7 @@
 declare module "statorgfc" {
     export let store: {
+        initialize(initial_store: any, options: dict): void;
+
         get(key: string): any;
         set(key: string, value: any): any;
 
@@ -11,6 +13,12 @@ declare module "statorgfc" {
         ): void;
 
         subscribeToKeys(keys: string[], callback: () => void);
+
+        getUnwatchedKeys(): string[];
+
+        use(
+            middleware_func: (key: any, oldval: any, newval: any) => bool,
+        ): void;
     };
     export let middleware: {
         logChanges(key: string, oldval: any, newval: any): bool;
@@ -28,3 +36,14 @@ declare var initial_data: {
     using_windows: boolean;
 };
 declare var debug: boolean;
+
+type SourceCodeObjType = Record<number, string>;
+
+type CachedFileType = {
+    fullname: string;
+    source_code_obj: SourceCodeObjType;
+    assembly: any;
+    last_modified_unix_sec: number;
+    num_lines_in_file: number;
+    exists: boolean;
+};

@@ -1,5 +1,4 @@
 import React from "react";
-import { store } from "statorgfc";
 
 type CompletionDropdownProps = {
     list: string[];
@@ -7,17 +6,17 @@ type CompletionDropdownProps = {
     onSubmit?: (text: string) => void;
     onChange?: (text: string) => void;
     placeholder?: string;
-    initialValue?: string;
-    debounceDelay?: number;
-    maxItems?: number;
-    showAllOnEmpty?: boolean;
+    initial_value?: string;
+    debounce_delay?: number;
+    max_items?: number;
+    show_all_on_empty?: boolean;
+    disabled?: boolean | undefined;
 };
 
 type CompletionDropdownState = {
     term: string;
     results: string[];
     currentIndex: number;
-    theme: string;
     isFocused: boolean;
 };
 
@@ -26,7 +25,7 @@ type DropdownItem = {
     tokens: string[];
 };
 
-const ROW_HEIGHT = 26;
+const ROW_HEIGHT = 44;
 
 class CompletionDropdown extends React.Component<
     CompletionDropdownProps,
@@ -46,17 +45,12 @@ class CompletionDropdown extends React.Component<
     constructor(props: CompletionDropdownProps) {
         super(props);
         this.state = {
-            term: this.props.initialValue || "",
+            term: this.props.initial_value || "",
             results: [],
             currentIndex: -1,
-            theme: store.get("theme"),
             isFocused: false,
         };
         this.items = this.make_dropdown_items(props.list);
-    }
-
-    componentDidMount() {
-        store.connectComponentState(this, ["theme"]);
     }
 
     componentDidUpdate(
@@ -343,14 +337,14 @@ class CompletionDropdown extends React.Component<
         if (this.timer) clearTimeout(this.timer);
         this.timer = window.setTimeout(
             () => this.search(term),
-            this.props.debounceDelay,
+            this.props.debounce_delay,
         );
     }
 
     search(term: string) {
         let results: string[] = [];
         if (term.trim() === "") {
-            if (this.props.showAllOnEmpty && this.state.isFocused) {
+            if (this.props.show_all_on_empty && this.state.isFocused) {
                 results = this.items.map((item) => item.text);
             }
         } else {
@@ -445,12 +439,13 @@ class CompletionDropdown extends React.Component<
     }
 
     render() {
-        const { term, results, currentIndex, theme } = this.state;
+        const { term, results, currentIndex } = this.state;
         const show = results.length > 0;
         return (
-            <div className={`completionDropdown ${theme || ""}`}>
+            <div className="relative min-w-0 w-full">
                 <input
-                    className="form-control"
+                    className="h-9 w-full rounded-r border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--fg)] shadow-sm outline-none focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={this.props.disabled}
                     autoComplete="off"
                     role="combobox"
                     aria-autocomplete="list"
@@ -474,12 +469,16 @@ class CompletionDropdown extends React.Component<
                 />
                 <ul
                     ref={this.ulRef}
-                    style={{ maxHeight: this.props.maxItems! * ROW_HEIGHT }}
+                    className="absolute left-0 right-0 top-9 z-[12] max-h-56 overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface)] py-1 text-[var(--fg)] shadow-lg"
+                    style={{
+                        maxHeight: (this.props.max_items! ?? 50) * ROW_HEIGHT,
+                    }}
                     hidden={!show}
                 >
                     {results.map((r, i) => (
                         <li
                             key={i}
+                            className={`cursor-pointer break-words px-2 py-2 ${i === currentIndex ? "bg-[var(--hover)]" : ""}`}
                             aria-selected={i === currentIndex}
                             onMouseMove={() => this.on_li_mousemove(i)}
                             onMouseDown={(e) => this.on_li_mousedown(e, i)}

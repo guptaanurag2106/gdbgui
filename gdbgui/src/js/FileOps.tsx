@@ -52,10 +52,9 @@ let FileFetcher = {
         Util.get_json("/read_file", data)
             .then((response: any) => {
                 response.source_code;
-                let source_code_obj = {};
+                let source_code_obj = {} as SourceCodeObjType;
                 let linenum = response.start_line;
                 for (let line of response.source_code_array) {
-                    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     source_code_obj[linenum] = line;
                     linenum++;
                 }
@@ -157,7 +156,7 @@ const FileOps = {
             constants.source_code_selection_states.USER_SELECTION,
         );
         store.set("fullname_to_render", fullname);
-        store.set("line_of_source_to_flash", line);
+        store.set("line_of_source_to_flash", parseInt(line));
         store.set("make_current_line_visible", true);
         store.set("source_code_infinite_scrolling", false);
     },
@@ -344,7 +343,10 @@ const FileOps = {
             store.set("source_code_state", states.NONE_AVAILABLE);
         }
     },
-    get_num_lines_in_file: function (fullname: any, source_file_obj: any) {
+    get_num_lines_in_file: function (
+        fullname: string,
+        source_file_obj: CachedFileType | null,
+    ) {
         if (!source_file_obj) {
             source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
         }
@@ -352,7 +354,7 @@ const FileOps = {
             console.error(
                 "Developer error: expected to find file object for " + fullname,
             );
-            return;
+            return Infinity;
         }
         if (!source_file_obj.num_lines_in_file) {
             console.error('Developer error: expected key "num_lines_in_file"');
@@ -360,7 +362,11 @@ const FileOps = {
         }
         return source_file_obj.num_lines_in_file;
     },
-    lines_are_cached: function (fullname: any, start_line: any, end_line: any) {
+    lines_are_cached: function (
+        fullname: string,
+        start_line: number,
+        end_line: number,
+    ) {
         let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname),
             linenum = start_line;
         if (!source_file_obj) {
@@ -406,7 +412,7 @@ const FileOps = {
         }
         return source_file_obj.source_code_obj[linenum];
     },
-    assembly_is_cached: function (fullname: any) {
+    assembly_is_cached: function (fullname: string) {
         let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
         return (
             source_file_obj &&
@@ -414,7 +420,9 @@ const FileOps = {
             Object.keys(source_file_obj.assembly).length
         );
     },
-    get_source_file_obj_from_cache: function (fullname: any) {
+    get_source_file_obj_from_cache: function (
+        fullname: string,
+    ): CachedFileType | null {
         let cached_files = store.get("cached_source_files");
         for (let sf of cached_files) {
             if (sf.fullname === fullname) {
@@ -424,10 +432,10 @@ const FileOps = {
         return null;
     },
     add_source_file_to_cache: function (
-        fullname: any,
-        source_code_obj: any,
-        last_modified_unix_sec: any,
-        num_lines_in_file: any,
+        fullname: string,
+        source_code_obj: SourceCodeObjType,
+        last_modified_unix_sec: number,
+        num_lines_in_file: number,
     ) {
         let cached_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
         if (cached_file_obj === null) {
@@ -439,7 +447,7 @@ const FileOps = {
                     last_modified_unix_sec: last_modified_unix_sec,
                     num_lines_in_file: num_lines_in_file,
                     exists: true,
-                },
+                } as CachedFileType,
                 cached_source_files = store.get("cached_source_files");
 
             cached_source_files.push(new_source_file);
@@ -494,7 +502,7 @@ const FileOps = {
             }
         }
     },
-    get_cached_assembly_for_file: function (fullname: any) {
+    get_cached_assembly_for_file: function (fullname: string) {
         for (let file of store.get("cached_source_files")) {
             if (file.fullname === fullname) {
                 return file.assembly;
@@ -577,7 +585,7 @@ const FileOps = {
      */
     get_dissasembly_format_num: function (gdb_version_array: any) {
         if (gdb_version_array.length === 0) {
-            // assuming new version, but we shouldn't ever not know the version...
+            //TODO: check if this is possible: assuming new version, but we shouldn't ever not know the version...
             return 4;
         } else if (
             gdb_version_array[0] < 7 ||
@@ -607,29 +615,30 @@ const FileOps = {
     /**
      * Fetch disassembly for current file/line.
      */
-    fetch_assembly_cur_line: function (mi_response_format = null) {
+    fetch_assembly_cur_line: function (
+        mi_response_format = null as number | null,
+    ) {
         if (
             mi_response_format === null ||
             !Number.isFinite(mi_response_format)
         ) {
             // try to determine response format based on our guess of the gdb version being used
-            // @ts-expect-error ts-migrate(2322) FIXME: Type '4' is not assignable to type 'null'.
             mi_response_format = FileOps.get_dissasembly_format_num(
                 store.get("gdb_version_array"),
             );
         }
 
         let fullname = store.get("fullname_to_render"),
-            line = parseInt(store.get("line_of_source_to_flash"));
+            line = store.get("line_of_source_to_flash");
         if (!line) {
             line = 1;
         }
         FileOps.fetch_disassembly(fullname, line, mi_response_format);
     },
     fetch_disassembly: function (
-        fullname: any,
-        start_line: any,
-        mi_response_format: any,
+        fullname: string,
+        start_line: number,
+        mi_response_format: number,
     ) {
         let cmd = FileOps.get_fetch_disassembly_command(
             fullname,

@@ -20,7 +20,8 @@ else:
 TEMPLATE_DIR = BASE_PATH / "templates"
 STATIC_DIR = BASE_PATH / "static"
 
-THEMES = ["monokai", "light"]
+THEMES = ["gruvbox-dark", "native", "stata-dark"]
+DEFAULT_THEME = THEMES[0]
 
 
 def colorize(text):

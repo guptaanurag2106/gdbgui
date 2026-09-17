@@ -12,6 +12,7 @@ import GdbApi from "./GdbApi";
 import CopyToClipboard from "./CopyToClipboard";
 import Actions from "./Actions";
 import Graph from "./Graph";
+import { Trash2, TreeDeciduous, Ban, BarChart3 } from "lucide-react";
 
 /**
  * Simple object to manage fetching of child variables. Maintains a queue of parent expressions
@@ -161,33 +162,24 @@ let VarCreator = {
     },
 };
 
-class GdbVariable extends React.Component {
+class GdbVariable extends React.Component<any> {
     render() {
         const is_root = true;
 
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'expr_type' does not exist on type 'Reado... Remove this comment to see the full error message
         if (this.props.expr_type === "local") {
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
             return this.get_ul_for_local(this.props.obj);
         } else {
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
             if (this.props.obj.numchild > 0) {
                 return this.get_ul_for_var_with_children(
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'expression' does not exist on type 'Read... Remove this comment to see the full error message
                     this.props.expression,
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
                     this.props.obj,
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'expr_type' does not exist on type 'Reado... Remove this comment to see the full error message
                     this.props.expr_type,
                     is_root,
                 );
             } else {
                 return this.get_ul_for_var_without_children(
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'expression' does not exist on type 'Read... Remove this comment to see the full error message
                     this.props.expression,
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
                     this.props.obj,
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'expr_type' does not exist on type 'Reado... Remove this comment to see the full error message
                     this.props.expr_type,
                     is_root,
                 );
@@ -213,16 +205,28 @@ class GdbVariable extends React.Component {
                 : () => {};
 
         return (
-            <div style={{ paddingLeft: "6px" }}>
+            <div className="flex items-baseline py-px">
+                <span
+                    onClick={onclick}
+                    style={{
+                        fontFamily: "monospace",
+                        width: "12px",
+                        textAlign: "center",
+                    }}
+                    className={`inline-block shrink-0 ${can_be_expanded ? "pointer" : ""}`}
+                >
+                    {can_be_expanded ? "+" : ""}
+                </span>
                 <span
                     onClick={onclick}
                     className={can_be_expanded ? "pointer" : ""}
                 >
-                    {can_be_expanded ? "+" : ""} {local.name}&nbsp;
+                    {local.name}
                 </span>
-                {value}
-
-                <span className="var_type">{(local.type || "").trim()}</span>
+                <span className="ml-2 text-[var(--fg)]">{value}</span>
+                <span className="ml-1.5 text-[12px] italic text-[var(--muted)]">
+                    {(local.type || "").trim()}
+                </span>
             </div>
         );
     }
@@ -277,7 +281,6 @@ class GdbVariable extends React.Component {
             expr_type,
             is_root,
             plus_or_minus,
-            // @ts-expect-error ts-migrate(2345) FIXME: Type 'Element' is not assignable to type 'string'.
             child_tree,
             mi_obj.numchild,
         );
@@ -294,23 +297,22 @@ class GdbVariable extends React.Component {
         let val;
         if (obj.is_int) {
             val = (
-                <div className="inline">
+                <span className="inline-flex items-center">
                     <span className="gdbVarValue">
                         {Memory.make_addrs_into_links_react(
                             obj._int_value_to_str_in_radix,
                         )}
-                        <button
-                            className="btn btn-default btn-xs btn-radix"
-                            onClick={() => {
-                                GdbVariable.change_radix(obj);
-                            }}
-                            title="click to change radix"
-                            style={{ fontSize: "60%" }}
-                        >
-                            {obj._radix == -1 ? "char" : `base ${obj._radix}`}
-                        </button>
                     </span>
-                </div>
+                    <button
+                        className="btn-radix ml-0.5 inline-flex items-center rounded border border-[var(--border)] bg-[var(--bg)] px-1 py-px text-[0.85em] leading-none text-[var(--fg)] hover:bg-[var(--hover)]"
+                        onClick={() => {
+                            GdbVariable.change_radix(obj);
+                        }}
+                        title="click to change radix"
+                    >
+                        {obj._radix == -1 ? "char" : `base ${obj._radix}`}
+                    </button>
+                </span>
             );
         } else {
             val =
@@ -344,54 +346,50 @@ class GdbVariable extends React.Component {
         expr_type: any,
         is_root: any,
         plus_or_minus = "",
-        child_tree = "",
+        child_tree: any = "",
         numchild = 0,
     ) {
-        let glyph_style = { fontSize: "0.8em", paddingLeft: "5px" },
-            delete_button =
+        let delete_button =
                 is_root && expr_type === "expr" ? (
                     <span
-                        style={glyph_style}
-                        className="glyphicon glyphicon-trash pointer"
+                        className="pointer text-[0.85em] text-[var(--muted)] hover:text-[var(--accent-2)]"
                         onClick={() =>
                             GdbVariable.delete_gdb_variable(mi_obj.name)
                         }
-                    />
-                ) : (
-                    ""
-                ),
+                    >
+                        <Trash2 size={14} />
+                    </span>
+                ) : null,
             has_children = numchild > 0,
             can_draw_tree =
-                has_children && (expr_type === "expr" || expr_type === "local"), // hover var can't draw tree
+                has_children && (expr_type === "expr" || expr_type === "local"),
             tree = can_draw_tree ? (
                 <span
-                    style={glyph_style}
-                    className="glyphicon glyphicon-tree-deciduous pointer"
+                    className="pointer text-[0.85em] text-[var(--muted)] hover:text-[var(--accent)]"
                     onClick={() =>
                         GdbVariable.click_draw_tree_gdb_variable(mi_obj.name)
                     }
-                />
-            ) : (
-                ""
-            ),
+                >
+                    <TreeDeciduous size={14} />
+                </span>
+            ) : null,
             toggle_classes = has_children ? "pointer" : "",
-            plot_content = "",
-            plot_button = "",
+            plot_content = null as React.ReactNode,
+            plot_button = null as React.ReactNode,
             plusminus_click_callback = has_children
                 ? () =>
                       GdbVariable.click_toggle_children_visibility(mi_obj.name)
                 : () => {};
         if (mi_obj.can_plot && mi_obj.show_plot) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
             plot_button = (
                 <span
-                    style={glyph_style}
-                    className="pointer glyphicon glyphicon-ban-circle"
+                    className="pointer text-[0.85em] text-[var(--muted)] hover:text-[var(--accent-2)]"
                     onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}
                     title="remove x/y plot"
-                />
+                >
+                    <Ban size={14} />
+                </span>
             );
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
             plot_content = (
                 <Graph
                     data={mi_obj.values}
@@ -401,42 +399,53 @@ class GdbVariable extends React.Component {
                 />
             );
         } else if (mi_obj.can_plot && !mi_obj.show_plot) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
             plot_button = (
                 <span
-                    style={glyph_style}
-                    className="glyphicon glyphicon glyphicon-equalizer pointer"
+                    className="pointer text-[0.85em] text-[var(--muted)] hover:text-[var(--accent)]"
                     onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}
                     title="show x/y plot"
-                />
+                >
+                    <BarChart3 size={14} />
+                </span>
             );
         }
 
         return (
             <ul key={expression} className="varUL">
                 <li className="varLI">
-                    <span
-                        className={toggle_classes}
-                        onClick={plusminus_click_callback}
-                    >
-                        {plus_or_minus} {expression}&nbsp;
-                    </span>
-
-                    {GdbVariable._get_value_jsx(mi_obj)}
-
-                    <span className="var_type">
-                        {(mi_obj.type || "").trim()}
-                    </span>
-
-                    <div className="right_help_icon_show_on_hover">
-                        <CopyToClipboard
-                            content={GdbVariable._get_full_path(mi_obj)}
-                        />
-                        :{tree}
-                        {plot_button}
-                        {delete_button}
+                    <div className="flex items-baseline">
+                        <span
+                            style={{
+                                fontFamily: "monospace",
+                                width: "12px",
+                                textAlign: "center",
+                            }}
+                            className={`inline-block shrink-0 font-bold text-[var(--muted)] ${toggle_classes}`}
+                            onClick={plusminus_click_callback}
+                        >
+                            {plus_or_minus}
+                        </span>
+                        <span
+                            className={`shrink-0 ${toggle_classes}`}
+                            onClick={plusminus_click_callback}
+                        >
+                            {expression}
+                        </span>
+                        <span className="ml-2 text-[var(--fg)]">
+                            {GdbVariable._get_value_jsx(mi_obj)}
+                        </span>
+                        <span className="ml-1.5 text-[12px] text-[var(--muted)]">
+                            {(mi_obj.type || "").trim()}
+                        </span>
+                        <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-[var(--muted)] right_help_icon_show_on_hover">
+                            <CopyToClipboard
+                                content={GdbVariable._get_full_path(mi_obj)}
+                            />
+                            {tree}
+                            {plot_button}
+                            {delete_button}
+                        </span>
                     </div>
-
                     {plot_content}
                 </li>
                 {child_tree}

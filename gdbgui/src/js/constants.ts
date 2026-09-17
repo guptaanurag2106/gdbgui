@@ -8,6 +8,7 @@ let constants = {
     Y_BUTTON_NUM: 89,
     N_BUTTON_NUM: 78,
     COMMA_BUTTON_NUM: 188,
+
     IGNORE_ERRORS_TOKEN_STR: "1",
     DISASSEMBLY_FOR_MISSING_FILE_STR: "2",
     CREATE_VAR_STR: "3",
@@ -60,6 +61,12 @@ let constants = {
         lblue: "\x1B[1;34m",
         yellow: "\x1B[0;33m",
     },
+
+    statusFooterColours: {
+        warning: "yellow",
+        error: "red",
+        info: "green",
+    } as Record<any, string>,
 
     colorTypeMap: {} as Record<string, string>,
 };

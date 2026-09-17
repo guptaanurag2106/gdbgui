@@ -20,7 +20,7 @@ jinja2==3.1.6
     # via gdbgui (pyproject.toml)
 markupsafe==3.0.3
     # via jinja2
-pygments==2.19.2
+pygments==2.21.0
     # via gdbgui (pyproject.toml)
 python-dotenv==1.2.3
     # via uvicorn

@@ -172,7 +172,7 @@ def develop(*extra: str) -> bool:
 
 
 def build(*extra: str) -> bool:
-    if not run_command(["rm", "-rf", "dist", "build"]):
+    if not run_command(["rm", "-rf", "dist", "build", "gdbgui/static/css", "gdbgui/static/js"]):
         return False
     if not run_command(["yarn", "install"]):
         return False

@@ -95,6 +95,7 @@ def get_parser() -> argparse.ArgumentParser:
             'i.e. --remap-sources=\'{"/buildmachine": "/current/machine"}\''
         ),
     )
+    # TODO:check if project_home is used for cli args (like actually set gdb working directory) etc as well
     other.add_argument(
         "--project",
         help='Set the project directory. When viewing the "folders" pane, paths are shown relative to this directory.',

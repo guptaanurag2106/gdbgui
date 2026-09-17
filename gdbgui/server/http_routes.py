@@ -10,7 +10,9 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from typing import cast
 
-from gdbgui import htmllistformatter, __version__
+from gdbgui import __version__
+from .htmllistformatter import HtmlListFormatter
+
 from .constants import (
     TEMPLATE_DIR,
     STATIC_DIR,
@@ -32,6 +34,8 @@ async def gdbgui(request: Request):
         if ("gdb_command" in request.query_params)
         else request.app.state.config["gdb_command"]
     )
+    # TODO:reading config twice, once here and once on page load
+    config = Config.read()
 
     initial_data = {
         "gdbgui_version": __version__,
@@ -51,7 +55,7 @@ async def gdbgui(request: Request):
             "version": __version__,
             "debug": request.app.debug,
             "initial_data": initial_data,
-            "themes": THEMES,
+            "theme": config["theme"],
         },
     )
 
@@ -129,9 +133,7 @@ async def read_file(request: Request):
                 # convert string into tokens
                 tokens = lexer.get_tokens("\n".join(raw_source_code_lines_of_interest))
                 # format tokens into nice, marked up list of html
-                formatter = (
-                    htmllistformatter.HtmlListFormatter()
-                )  # Don't add newlines after each line
+                formatter = HtmlListFormatter()  # Don't add newlines after each line
                 source_code = formatter.get_marked_up_list(tokens)
             else:
                 highlighted = False

@@ -17,12 +17,12 @@ module.exports = (env, argv) => {
       filename: "js/[name].js",
       clean: false, // can make to !is_dev after removing vendor folder
     },
-    cache: {
-      type: "filesystem",
-      buildDependencies: {
-        config: [__filename]
-      }
-    },
+    // cache: {
+    //   type: "filesystem",
+    //   buildDependencies: {
+    //     config: [__filename]
+    //   }
+    // },
     module: {
       rules: [
         {

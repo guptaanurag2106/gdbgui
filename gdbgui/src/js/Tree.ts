@@ -39,9 +39,10 @@ const Tree = {
         if (!gdbvar) {
             // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
             Tree.el.innerHTML = `
+            <br/>
             <span class=placeholder>
-                create an Expression, then click <span class='glyphicon glyphicon-tree-deciduous'></span>
-                when viewing a variable with children to interactively explore a tree view. You can click nodes to
+                create an Expression, then click the tree icon when viewing a variable
+                with children to interactively explore a tree view. You can click nodes to
                 expand/collapse them.
             </span>`;
             return;

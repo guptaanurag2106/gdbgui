@@ -11,12 +11,11 @@ import Actions from "./Actions";
 import constants from "./constants";
 import Util from "./Util";
 import { update_config_key } from "./Config";
+import { Menu, Loader2 } from "lucide-react";
 
-let onkeyup_jump_to_line = (e: any) => {
-    if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-        Actions.set_line_state(e.currentTarget.value);
-    }
-};
+const top_bar_action_class =
+    "inline-flex h-full items-center px-1 bg-[var(--accent)] hover:opacity-90 disabled:cursor-not-allowed";
+const top_bar_action_style: React.CSSProperties = { color: "var(--bg)" };
 
 let show_license = function () {
     Actions.show_modal(
@@ -46,19 +45,17 @@ let show_license = function () {
     );
 };
 
-let About = {
-    show_about: function () {
-        Actions.show_modal(
-            "About gdbgui",
+let show_about = function () {
+    Actions.show_modal(
+        "About gdbgui",
+        <div>
+            <div>gdbgui, v{store.get("gdbgui_version")}</div>
+            <div>Copyright © Chad Smith</div>
             <div>
-                <div>gdbgui, v{store.get("gdbgui_version")}</div>
-                <div>Copyright © Chad Smith</div>
-                <div>
-                    <a href="https://chadsmith.dev">chadsmith.dev</a>
-                </div>
-            </div>,
-        );
-    },
+                <a href="https://chadsmith.dev">chadsmith.dev</a>
+            </div>
+        </div>,
+    );
 };
 
 let show_session_info = function () {
@@ -84,111 +81,106 @@ let show_session_info = function () {
 
 let get_menu = function (open: boolean, on_toggle: () => void) {
     return (
-        <ul
-            style={{
-                height: 25,
-                padding: 0,
-                paddingRight: "15px",
-                fontSize: "1.3em",
-            }}
-            className="nav navbar-nav navbar-right"
-        >
-            <li id="menudropdown" className={`dropdown ${open ? "open" : ""}`}>
-                <a
-                    href="#"
-                    role="button"
-                    style={{ height: 25, padding: 0, paddingRight: 20 }}
-                    className="dropdown-toggle"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        on_toggle();
-                    }}
-                >
-                    <span className="glyphicon glyphicon-menu-hamburger">
-                        {" "}
-                    </span>
-                </a>
-                <ul className="dropdown-menu" onClick={() => on_toggle()}>
-                    <li>
-                        <a
-                            title="show guide"
-                            className="pointer"
-                            onClick={ToolTipTourguide.start_guide}
-                        >
-                            Show Guide
-                        </a>
-                    </li>
-                    <li>
-                        <a onClick={show_session_info} className="pointer">
-                            Session Information
-                        </a>
-                    </li>
+        <div>
+            <button
+                className="text-[var(--fg)] hover:text-[var(--accent)]"
+                onClick={(e) => {
+                    e.preventDefault();
+                    on_toggle();
+                }}
+            >
+                <Menu size={20} />
+            </button>
+            <ul
+                className={
+                    open
+                        ? "absolute right-0 top-11 z-[110] min-w-52 rounded border border-[var(--border)] bg-[var(--surface)] py-1 text-[var(--fg)] shadow-lg"
+                        : "hidden"
+                }
+                onClick={() => on_toggle()}
+            >
+                <li>
+                    <button
+                        onClick={() =>
+                            store.set(
+                                "show_settings",
+                                !store.get("show_settings"),
+                            )
+                        }
+                        title="settings"
+                        className="w-full px-3 py-2 hover:bg-[var(--hover)]"
+                    >
+                        Settings
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="w-full px-3 py-2 hover:bg-[var(--hover)]"
+                        onClick={ToolTipTourguide.start_guide}
+                    >
+                        Show Guide
+                    </button>
+                </li>
+                <li>
+                    <button
+                        onClick={show_session_info}
+                        className="w-full px-3 py-2 hover:bg-[var(--hover)]"
+                    >
+                        Session Information
+                    </button>
+                </li>
+                <li>
+                    <button
+                        onClick={show_license}
+                        className="w-full px-3 py-2 hover:bg-[var(--hover)]"
+                    >
+                        License
+                    </button>
+                </li>
+                <li>
+                    <button
+                        onClick={show_about}
+                        className="w-full px-3 py-2 hover:bg-[var(--hover)]"
+                    >
+                        About gdbgui
+                    </button>
+                </li>
+            </ul>
 
-                    <li role="separator" className="divider" />
-                    <li>
-                        <a
-                            href="https://github.com/guptaanurag2106/gdbgui"
-                            className="pointer"
-                        >
-                            GitHub
-                        </a>
-                    </li>
-                    <li>
-                        <a href="http://gdbgui.com" className="pointer">
-                            Homepage
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
-                            YouTube Channel
-                        </a>
-                    </li>
-
-                    <li role="separator" className="divider" />
-                    <li>
-                        <a onClick={show_license} className="pointer">
-                            License
-                        </a>
-                    </li>
-                    <li>
-                        <a onClick={About.show_about} className="pointer">
-                            About gdbgui
-                        </a>
-                    </li>
-                </ul>
-
-                <ToolTipTourguide
-                    top={"100%"}
-                    left={"-300px"}
-                    step_num={0}
-                    content={
-                        <div>
-                            <h5>Welcome to gdbgui.</h5>
-                            <p>
-                                This guide can be shown at any time by clicking
-                                the menu button,
-                                <span className="glyphicon glyphicon-menu-hamburger">
-                                    {" "}
-                                </span>
-                                , then clicking "Show Guide".
-                            </p>
-                        </div>
-                    }
-                />
-            </li>
-        </ul>
+            <ToolTipTourguide
+                top={"100%"}
+                left={"-300px"}
+                step_num={0}
+                content={
+                    <div>
+                        <h5>Welcome to gdbgui.</h5>
+                        <p>
+                            This guide can be shown at any time by clicking the
+                            menu button, ☰, then clicking "Show Guide".
+                        </p>
+                    </div>
+                }
+            />
+        </div>
     );
 };
 
-type TopBarState = any;
+interface TopBarState {
+    assembly_flavor: "intel" | "att";
+    show_spinner: boolean;
+    show_hamburger_menu: boolean;
+    waiting_for_response: boolean;
+    source_code_state: string;
+}
 interface TopBarProps {
-    initial_user_input: string[];
+    initial_binary_and_args: string[];
 }
 
+//TODO:topbar doesn't show --project (project directory)
 class TopBar extends React.Component<TopBarProps, TopBarState> {
     spinner_timeout: any;
     spinner_timeout_msec: any;
+    hamburgerRef = React.createRef<HTMLDivElement>();
     constructor(props: TopBarProps) {
         super(props);
         // state local to the component
@@ -196,28 +188,24 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             assembly_flavor: "intel", // default to intel (choices are 'att' or 'intel')
             show_spinner: false,
             show_hamburger_menu: false,
+            waiting_for_response: false,
+            source_code_state: constants.source_code_states.NONE_AVAILABLE,
         };
         // global state attached to this component
         store.connectComponentState(
             this,
-            [
-                "debug_in_reverse",
-                "reverse_supported",
-                "source_code_state",
-                "show_inline_disassembly",
-                "waiting_for_response",
-                "show_filesystem",
-                "latest_gdbgui_version",
-                "gdbgui_version",
-                "cached_source_files",
-                "fullname_to_render",
-                "theme",
-            ],
+            ["source_code_state", "waiting_for_response", "theme"],
             this.store_update_callback.bind(this),
         );
 
         this.spinner_timeout = null;
         this.spinner_timeout_msec = 5000;
+    }
+    componentDidMount() {
+        document.addEventListener("mousedown", this._handle_click_outside);
+    }
+    componentWillUnmount() {
+        document.removeEventListener("mousedown", this._handle_click_outside);
     }
     store_update_callback(keys: any) {
         if (keys.indexOf("waiting_for_response") !== -1) {
@@ -229,6 +217,15 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             }
         }
     }
+    _handle_click_outside = (e: MouseEvent) => {
+        if (
+            this.state.show_hamburger_menu &&
+            this.hamburgerRef.current &&
+            !this.hamburgerRef.current.contains(e.target as Node)
+        ) {
+            this.setState({ show_hamburger_menu: false });
+        }
+    };
     _set_spinner_timeout() {
         this.spinner_timeout = setTimeout(() => {
             if (this.state.waiting_for_response) {
@@ -240,315 +237,14 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
         clearTimeout(this.spinner_timeout);
     }
     toggle_assembly_flavor() {
-        const flavor = this.state.assembly_flavor === "att" ? "intel" : "att";
-        this.setState({ assembly_flavor: flavor });
-        GdbApi.set_assembly_flavor(flavor);
+        const new_flavour =
+            this.state.assembly_flavor === "att" ? "intel" : "att";
+        this.setState({ assembly_flavor: new_flavour });
+        GdbApi.set_assembly_flavor(new_flavour);
         Actions.clear_cached_assembly();
         FileOps.fetch_assembly_cur_line();
     }
-    get_controls() {
-        return (
-            <div
-                role="group"
-                style={{ marginBottom: 6, height: 25, width: 250 }}
-                className="btn-group btn-group"
-            >
-                <ToolTipTourguide
-                    step_num={3}
-                    position={"bottomleft"}
-                    onClick={(e: any) => e.stopPropagation()}
-                    content={
-                        <div>
-                            <h5>
-                                These buttons allow you to control execution of
-                                the target you are debugging.
-                            </h5>
-                            <p>
-                                Hover over these buttons to see a description of
-                                their action. For example, the{" "}
-                                <span className="glyphicon glyphicon-repeat" />{" "}
-                                button starts (or restarts) a program from the
-                                beginning.
-                            </p>
-                            <p>
-                                Each button has a keyboard shortcut. For
-                                example, you can press "r" to start running.
-                            </p>
-                        </div>
-                    }
-                />
-                <ControlButtons />
-            </div>
-        );
-    }
-    render() {
-        let toggle_assm_button = "";
-        if (
-            this.state.source_code_state ===
-                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
-            this.state.source_code_state ===
-                constants.source_code_states.ASSM_CACHED
-        ) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
-            toggle_assm_button = (
-                <button
-                    onClick={this.toggle_assembly_flavor.bind(this)}
-                    type="button"
-                    title={
-                        "Toggle between assembly flavors. The options are att or intel."
-                    }
-                    className={"btn btn-default btn-xs"}
-                >
-                    <span
-                        title={`Currently displaying ${this.state.assembly_flavor}. Click to toggle.`}
-                    >
-                        {this.state.assembly_flavor}
-                    </span>
-                </button>
-            );
-        }
-
-        let reload_button_disabled = "disabled";
-        if (
-            this.state.source_code_state ===
-                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
-            this.state.source_code_state ===
-                constants.source_code_states.SOURCE_CACHED
-        ) {
-            reload_button_disabled = "";
-        }
-        let reload_button = (
-            <button
-                onClick={FileOps.refresh_cached_source_files}
-                type="button"
-                title="Erase file from local cache and re-fetch it"
-                className={"btn btn-default btn-xs " + reload_button_disabled}
-            >
-                <span>Reload file</span>
-            </button>
-        );
-
-        let toggle_inline_disassembly_button = "";
-        let source_file_obj = FileOps.get_source_file_obj_from_cache(
-            store.get("fullname_to_render"),
-        );
-        if (
-            source_file_obj &&
-            source_file_obj.assembly &&
-            Object.keys(source_file_obj.assembly).length > 0
-        ) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
-            toggle_inline_disassembly_button = (
-                <button
-                    onClick={() =>
-                        store.set(
-                            "show_inline_disassembly",
-                            !store.get("show_inline_disassembly"),
-                        )
-                    }
-                    type="button"
-                    title="Show/Hide disassembly"
-                    className="btn btn-default btn-xs"
-                >
-                    <span>
-                        {store.get("show_inline_disassembly") ? "Hide" : "Show"}{" "}
-                        disassembly
-                    </span>
-                </button>
-            );
-        }
-
-        let spinner = (
-            <span
-                className=""
-                style={{ height: "100%", margin: "5px", width: "14px" }}
-            />
-        );
-        if (this.state.show_spinner) {
-            spinner = (
-                <span
-                    className="glyphicon glyphicon-refresh glyphicon-refresh-animate"
-                    style={{ height: "100%", margin: "5px", width: "14px" }}
-                />
-            );
-        }
-
-        let reverse_checkbox = (
-            <label
-                title={
-                    "when clicking buttons to the right, pass the `--reverse` " +
-                    "flag to gdb in an attempt to debug in reverse. This is not always supported. " +
-                    "rr is known to support reverse debugging. Keyboard shortcuts go in " +
-                    "reverse when pressed with the shift key."
-                }
-                style={{
-                    fontWeight: "normal",
-                    fontSize: "0.9em",
-                    margin: "5px",
-                }}
-            >
-                <input
-                    type="checkbox"
-                    disabled={!this.state.reverse_supported}
-                    checked={store.get("debug_in_reverse")}
-                    onChange={(e) => {
-                        store.set("debug_in_reverse", e.target.checked);
-                    }}
-                />
-                reverse
-            </label>
-        );
-
-        return (
-            <div
-                id="top"
-                className={this.state.theme}
-                style={{
-                    background:
-                        this.state.theme === "monokai" ? "#2d2d2d" : "#f5f6f7",
-                    position: "absolute",
-                    width: "100%",
-                }}
-            >
-                <div className="flexrow">
-                    <BinaryLoader
-                        initial_user_input={this.props.initial_user_input}
-                    />
-                    {spinner}
-                    {reverse_checkbox}
-
-                    {this.get_controls()}
-
-                    <span
-                        onClick={() =>
-                            store.set(
-                                "show_settings",
-                                !store.get("show_settings"),
-                            )
-                        }
-                        title="settings"
-                        className="pointer glyphicon glyphicon-cog"
-                        style={{ marginRight: "10px", fontSize: "1.3em" }}
-                    />
-                    {get_menu(this.state.show_hamburger_menu, () =>
-                        this.setState({
-                            show_hamburger_menu:
-                                !this.state.show_hamburger_menu,
-                        }),
-                    )}
-                </div>
-
-                <div
-                    style={{ marginTop: 3, whiteSpace: "nowrap" }}
-                    className="flexrow"
-                >
-                    <div
-                        role="group"
-                        style={{ height: "25px", marginRight: "10px" }}
-                        className="btn-group btn-group"
-                    >
-                        <button
-                            className="btn btn-default btn-xs"
-                            title="Toggle file explorer visibility"
-                            onClick={() => {
-                                let middle_pane_sizes =
-                                        store.get("middle_sizes"),
-                                    file_explorer_size = middle_pane_sizes[0],
-                                    source_size = middle_pane_sizes[1],
-                                    sidebar_size = middle_pane_sizes[2],
-                                    new_file_explorer_size,
-                                    new_source_size,
-                                    new_sidebar_size;
-
-                                if (store.get("show_filesystem")) {
-                                    // hide it since it's shown right now
-                                    new_file_explorer_size = 0;
-                                    new_source_size =
-                                        source_size + file_explorer_size / 2;
-                                    new_sidebar_size =
-                                        sidebar_size + file_explorer_size / 2;
-                                } else {
-                                    // show it - use stored sizes or defaults
-                                    new_file_explorer_size = Math.max(
-                                        30,
-                                        file_explorer_size || 30,
-                                    );
-                                    new_source_size = Math.max(
-                                        30,
-                                        source_size -
-                                            new_file_explorer_size / 2,
-                                    );
-                                    new_sidebar_size =
-                                        99 -
-                                        new_file_explorer_size -
-                                        new_source_size;
-                                }
-
-                                store.set(
-                                    "show_filesystem",
-                                    !store.get("show_filesystem"),
-                                );
-                                const new_sizes = [
-                                    new_file_explorer_size,
-                                    new_source_size,
-                                    new_sidebar_size,
-                                ];
-                                store.set("middle_sizes", new_sizes);
-                                update_config_key("middle_sizes", new_sizes);
-                            }}
-                        >
-                            {store.get("show_filesystem")
-                                ? "Hide filesystem"
-                                : "Show filesystem"}
-                        </button>
-
-                        {reload_button}
-
-                        <button
-                            onClick={() => {
-                                store.set("show_inline_disassembly", true);
-                                FileOps.fetch_assembly_cur_line();
-                            }}
-                            type="button"
-                            title="fetch disassembly"
-                            className="btn btn-default btn-xs"
-                        >
-                            <span>Fetch disassembly</span>
-                        </button>
-
-                        {toggle_inline_disassembly_button}
-
-                        {toggle_assm_button}
-                    </div>
-
-                    <input
-                        onKeyUp={onkeyup_jump_to_line}
-                        autoComplete="on"
-                        title="Enter line number, then press enter"
-                        placeholder="jump to line"
-                        style={{ width: 150, height: 25, marginLeft: 10 }}
-                        className="form-control dropdown-input"
-                    />
-
-                    <div
-                        style={{
-                            marginRight: 5,
-                            marginLeft: 5,
-                            marginTop: 5,
-                            whiteSpace: "nowrap",
-                            fontFamily: "monospace",
-                            fontSize: "0.7em",
-                            display: "flex",
-                            overflow: "auto",
-                        }}
-                        className="lighttext"
-                    >
-                        <SourceCodeHeading />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    //TODO: should i show this somewhere? fetch latest_gdbgui_version from github
     static needs_to_update_gdbgui_version() {
         // to actually check each value:
         try {
@@ -560,6 +256,204 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             console.error(err);
             return true;
         }
+    }
+    render() {
+        let toggle_assm_button;
+        if (
+            this.state.source_code_state ===
+                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+            this.state.source_code_state ===
+                constants.source_code_states.ASSM_CACHED
+        ) {
+            toggle_assm_button = (
+                <button
+                    onClick={this.toggle_assembly_flavor.bind(this)}
+                    type="button"
+                    title={
+                        "Toggle between assembly flavors. The options are Intel or AT&T."
+                    }
+                    className={top_bar_action_class}
+                    style={top_bar_action_style}
+                >
+                    {this.state.assembly_flavor === "intel" ? "Intel" : "AT&T"}
+                </button>
+            );
+        }
+
+        let reload_button;
+        if (
+            this.state.source_code_state ===
+                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+            this.state.source_code_state ===
+                constants.source_code_states.SOURCE_CACHED
+        ) {
+            reload_button = (
+                <button
+                    onClick={FileOps.refresh_cached_source_files}
+                    type="button"
+                    title="Erase file from local cache and re-fetch it"
+                    className={top_bar_action_class}
+                    style={top_bar_action_style}
+                >
+                    Reload file
+                </button>
+            );
+        }
+
+        //TODO:not show unless file is loaded (same as condition for reload button??)
+        let fetch_disassembly_button = (
+            <button
+                onClick={() => {
+                    store.set("show_inline_disassembly", true);
+                    FileOps.fetch_assembly_cur_line();
+                }}
+                type="button"
+                title="fetch disassembly"
+                className={top_bar_action_class}
+                style={top_bar_action_style}
+            >
+                Fetch disassembly
+            </button>
+        );
+
+        let toggle_inline_disassembly_button;
+        let source_file_obj = FileOps.get_source_file_obj_from_cache(
+            store.get("fullname_to_render"),
+        );
+        if (
+            source_file_obj &&
+            source_file_obj.assembly &&
+            Object.keys(source_file_obj.assembly).length > 0
+        ) {
+            toggle_inline_disassembly_button = (
+                <button
+                    onClick={() =>
+                        store.set(
+                            "show_inline_disassembly",
+                            !store.get("show_inline_disassembly"),
+                        )
+                    }
+                    type="button"
+                    title="Show/Hide disassembly"
+                    className={top_bar_action_class}
+                    style={top_bar_action_style}
+                >
+                    <span>
+                        {store.get("show_inline_disassembly") ? "Hide" : "Show"}{" "}
+                        disassembly
+                    </span>
+                </button>
+            );
+        }
+
+        let spinner = <span className="inline-block h-6 w-3.5 shrink-0" />;
+        if (this.state.show_spinner) {
+            spinner = (
+                <Loader2
+                    size={20}
+                    className="shrink-0 text-[var(--accent)] animate-spin"
+                />
+            );
+        }
+
+        return (
+            <div
+                className="text-[var(--fg)]"
+                style={{
+                    backgroundColor: "var(--topbar-bg)",
+                    borderBottom: "5px solid var(--gutter)",
+                    paddingBottom: "5px",
+                }}
+            >
+                <div className="flex h-9 items-center justify-center gap-20">
+                    <BinaryLoader
+                        initial_binary_and_args={
+                            this.props.initial_binary_and_args
+                        }
+                    />
+                    {spinner}
+
+                    <ControlButtons />
+                    <div
+                        ref={this.hamburgerRef}
+                        className="h-full flex items-center"
+                    >
+                        {get_menu(this.state.show_hamburger_menu, () =>
+                            this.setState({
+                                show_hamburger_menu:
+                                    !this.state.show_hamburger_menu,
+                            }),
+                        )}
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 mt-4 h-7">
+                    <button
+                        className={top_bar_action_class}
+                        style={top_bar_action_style}
+                        title="Toggle file explorer visibility"
+                        onClick={() => {
+                            let middle_pane_sizes = store.get("middle_sizes"),
+                                file_explorer_size = middle_pane_sizes[0],
+                                source_size = middle_pane_sizes[1],
+                                sidebar_size = middle_pane_sizes[2],
+                                new_file_explorer_size,
+                                new_source_size,
+                                new_sidebar_size;
+
+                            if (store.get("show_filesystem")) {
+                                // hide it since it's shown right now
+                                new_file_explorer_size = 0;
+                                new_source_size =
+                                    source_size + file_explorer_size / 2;
+                                new_sidebar_size =
+                                    sidebar_size + file_explorer_size / 2;
+                            } else {
+                                // show it - use stored sizes or defaults
+                                new_file_explorer_size = Math.max(
+                                    30,
+                                    file_explorer_size || 30,
+                                );
+                                new_source_size = Math.max(
+                                    30,
+                                    source_size - new_file_explorer_size / 2,
+                                );
+                                new_sidebar_size =
+                                    99 -
+                                    new_file_explorer_size -
+                                    new_source_size;
+                            }
+
+                            store.set(
+                                "show_filesystem",
+                                !store.get("show_filesystem"),
+                            );
+                            const new_sizes = [
+                                new_file_explorer_size,
+                                new_source_size,
+                                new_sidebar_size,
+                            ];
+                            store.set("middle_sizes", new_sizes);
+                            update_config_key("middle_sizes", new_sizes);
+                        }}
+                    >
+                        {store.get("show_filesystem")
+                            ? "Hide filesystem"
+                            : "Show filesystem"}
+                    </button>
+
+                    {reload_button}
+
+                    {fetch_disassembly_button}
+
+                    {toggle_inline_disassembly_button}
+
+                    {toggle_assm_button}
+
+                    <SourceCodeHeading />
+                </div>
+            </div>
+        );
     }
 }
 

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import shutil
 from typing import Any
-from .constants import THEMES
+from .constants import THEMES, DEFAULT_THEME
 import tempfile
 
 
@@ -13,7 +13,7 @@ class Config:
         raise Exception("initializing static class Config")
 
     DEFAULT_CONFIG: dict[str, Any] = {
-        "theme": "monokai",
+        "theme": DEFAULT_THEME,
         "max_lines_of_code_to_fetch": 500,
         "auto_add_breakpoint_to_main": True,
         "pretty_print": True,

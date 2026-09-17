@@ -6,11 +6,8 @@
     <title>gdbgui - gdb in a browser</title>
     <base target="_blank" />
     <link rel="shortcut icon" href="{{ url_for('static', path='favicon.ico') }}" />
-    <link href="{{ url_for('static', path='vendor/css/bootstrap.min.css') }}" rel="stylesheet" />
     <link href="{{ url_for('static', path='css/main.css?_='~version) }}" rel="stylesheet" />
-    {% for theme in themes %}
-        <link href="{{ url_for('static', path='vendor/css/pygments/'~theme~".css") }}" rel="stylesheet" />
-    {% endfor %}
+    <link id="pygments-theme" href="{{ url_for('static', path='vendor/css/pygments/'~theme~".css") }}" rel="stylesheet"/>
     <script type="text/javascript" src="{{ url_for('static', path='vendor/js/vis-4.20.1.min.js') }}" defer></script>
 
     <script>
@@ -20,7 +17,7 @@
     <script type="text/javascript" src="{{ url_for('static', path='js/main.js?_='~version) }}" defer></script>
   </head>
 
-  <body style="background-color: #333;">
+  <body>
       <div id="gdbgui" class="splitjs_container">
           <div style="text-align: center; color: #ccc;">
               <h3>Loading application, please wait.</h3>

@@ -1,6 +1,7 @@
 import * as React from "react";
 import ToolTip from "./ToolTip";
 import { store } from "statorgfc";
+import { Copy } from "lucide-react";
 
 type Props = {
     content: string | null;
@@ -14,7 +15,7 @@ class CopyToClipboard extends React.Component<Props> {
         }
         return (
             <span
-                className={"pointer glyphicon glyphicon-book"}
+                className="pointer"
                 style={{ color: "#ccc", display: "inline" }}
                 ref={(node) => (this.node = node)}
                 onMouseOver={() => {
@@ -46,7 +47,9 @@ class CopyToClipboard extends React.Component<Props> {
                         );
                     }
                 }}
-            />
+            >
+                <Copy size={14} className="inline" />
+            </span>
         );
     }
 }

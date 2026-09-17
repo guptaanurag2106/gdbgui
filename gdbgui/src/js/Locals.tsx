@@ -24,7 +24,6 @@ class Locals extends React.Component {
             if (obj) {
                 content.push(
                     <GdbVariable
-                        // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
                         obj={obj}
                         key={obj.expression}
                         expression={obj.expression}
@@ -34,7 +33,6 @@ class Locals extends React.Component {
             } else {
                 content.push(
                     <GdbVariable
-                        // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
                         obj={local}
                         key={local.name}
                         expression={local.name}

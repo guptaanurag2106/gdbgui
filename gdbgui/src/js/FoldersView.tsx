@@ -5,6 +5,7 @@ import constants from "./constants";
 import SourceFileAutocomplete from "./SourceFileAutocomplete";
 import FileSystem from "./FileSystem";
 import Actions from "./Actions";
+import { btn_style } from "./styles";
 
 const default_rootnode = {
     name: 'Load inferior program, then click "Fetch source files" to populate this window',
@@ -36,7 +37,7 @@ class FoldersView extends React.Component<{}, State> {
         };
         store.connectComponentState(
             this,
-            ["source_code_state", "source_file_paths"],
+            ["source_code_state", "source_file_paths", "inferior_program"],
             this.update_filesystem_data.bind(this),
         );
 
@@ -60,69 +61,86 @@ class FoldersView extends React.Component<{}, State> {
                 file_is_rendered && this.state.source_file_paths.length,
             hiding_entries =
                 this.state.source_file_paths.length >
-                this.max_filesystem_entries;
+                this.max_filesystem_entries,
+            has_files =
+                Array.isArray(this.state.source_file_paths) &&
+                this.state.source_file_paths.length > 0,
+            binary_loaded =
+                (this.state.inferior_program ||
+                    constants.inferior_states.unknown) !==
+                constants.inferior_states.unknown,
+            folder_btn_style = (disabled: boolean): React.CSSProperties => ({
+                ...btn_style,
+                ...(disabled
+                    ? {
+                          backgroundColor: "var(--hover)",
+                          color: "var(--muted)",
+                          cursor: "not-allowed" as const,
+                      }
+                    : {}),
+            });
 
         return (
-            <div>
+            <div className="flex flex-col gap-2 text-[var(--fg)] bg-[var(--topbar-bg)] overflow-y-auto h-full">
                 <button
-                    className="btn btn-xs btn-primary"
+                    className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                    style={folder_btn_style(!binary_loaded)}
+                    disabled={!binary_loaded}
                     onClick={Actions.fetch_source_files}
-                    style={{ marginLeft: "5px", marginTop: "5px" }}
                 >
                     Fetch source files
                 </button>
 
-                <div style={{ width: "100%" }}>
-                    <SourceFileAutocomplete
-                        file_paths={this.state.source_file_paths}
-                    />
-                </div>
-                <div
-                    role="group"
-                    className="btn-group btn-group"
-                    style={{ padding: "4px" }}
-                >
+                <SourceFileAutocomplete
+                    file_paths={this.state.source_file_paths}
+                    disabled={!has_files}
+                />
+
+                <div className="flex flex-wrap gap-1">
                     <button
-                        className="btn btn-xs btn-default"
+                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                        style={folder_btn_style(!has_files)}
+                        disabled={!has_files}
                         onClick={this.expand_all}
                     >
                         Expand all
                     </button>
-
                     <button
-                        className="btn btn-xs btn-default"
+                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                        style={folder_btn_style(!has_files)}
+                        disabled={!has_files}
                         onClick={this.collapse_all}
                     >
                         Collapse all
                     </button>
-
-                    <button
-                        className={
-                            "btn btn-xs btn-default " +
-                            (can_reveal ? "" : "hidden")
-                        }
-                        onClick={() =>
-                            this.reveal_path(store.get("fullname_to_render"))
-                        }
-                    >
-                        Reveal current file
-                    </button>
+                    {can_reveal && (
+                        //TODO:button does what??
+                        <button
+                            className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                            style={btn_style}
+                            onClick={() =>
+                                this.reveal_path(
+                                    store.get("fullname_to_render"),
+                                )
+                            }
+                        >
+                            Reveal current file
+                        </button>
+                    )}
                 </div>
 
-                {store.get("source_file_paths").length ? (
-                    <p style={{ color: "white", padding: "4px" }}>
+                {store.get("source_file_paths").length > 0 && (
+                    <p style={{ color: "var(--muted)" }}>
                         {store.get("source_file_paths").length} known files used
                         to compile the inferior program
                     </p>
-                ) : (
-                    ""
                 )}
 
-                {hiding_entries ? (
+                {hiding_entries && (
                     <p
                         style={{
-                            color: "black",
-                            background: "orange",
+                            backgroundColor: "var(--accent-2)",
+                            color: "var(--bg)",
                             padding: "4px",
                         }}
                     >
@@ -133,8 +151,6 @@ class FoldersView extends React.Component<{}, State> {
                         ). All files can still be searched for in the input
                         above.
                     </p>
-                ) : (
-                    ""
                 )}
 
                 <FileSystem
@@ -153,9 +169,7 @@ class FoldersView extends React.Component<{}, State> {
                 path.unshift("");
                 break;
             }
-            // prepend this file/directory to the path
             path.unshift(curnode.name);
-            // try to prepend the parent
             curnode = curnode.parent;
         }
         if (path.length) {
@@ -178,7 +192,7 @@ class FoldersView extends React.Component<{}, State> {
         let names = path.split("/").filter((n: any) => n !== ""),
             curnode = this.state.rootnode;
 
-        curnode.toggled = true; // expand the root
+        curnode.toggled = true;
         for (let name of names) {
             curnode = get_child_node_with_name(name, curnode);
             if (curnode) {
@@ -232,21 +246,19 @@ class FoldersView extends React.Component<{}, State> {
             for (let name of names) {
                 let child = get_child_node_with_name(name, curnode);
                 if (child) {
-                    // found an existing child node, use it
                     curnode = child;
                 } else {
-                    // add child and set it to cur node
                     new_node = {
                         name: name,
                         toggled: toggled,
-                        // @ts-expect-error  error TS2353: Object literal may only specify known properties, and 'parent' does not exist in type '{ name: any; toggled: boolean; children: never[]; }'.
+                        // @ts-expect-error  error TS2353
                         parent: curnode,
                     };
                     if (curnode.children) {
-                        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ name: any; toggled: boolean; p... Remove this comment to see the full error message
+                        // @ts-expect-error ts-migrate(2345)
                         curnode.children.push(new_node);
                     } else {
-                        // @ts-expect-error ts-migrate(2322) FIXME: Type '{ name: any; toggled: boolean; parent: { nam... Remove this comment to see the full error message
+                        // @ts-expect-error ts-migrate(2322)
                         curnode.children = [new_node];
                     }
                     curnode = new_node;

@@ -1,17 +1,112 @@
 @import "tailwindcss";
-button:focus {
-  /* For some reason normalize.css is getting injected into the html page, and it adds a 5px outline
-  on focused buttons */
-  outline-width: 0;
+@source "../js/**/*.{ts,tsx}";
+/* base resets that bootstrap was providing */
+html {
+  font-size: 14px;
+  box-sizing: border-box;
 }
-/* styling for all html tags */
-body {
-  background: #f5f6f7;
-  color: grey;
-  border-color: grey;
-  overflow: hidden;
-  padding: 0px;
-  height: 100%;
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+button, input, select, textarea {
+  font: inherit;
+  line-height: inherit;
+}
+button {
+  cursor: pointer;
+}
+/* theme variables, derived from the pygments themes.
+   Scoped by the pygments root class on the app root node, so switching
+   the root class re-themes every component using these variables.
+   Token mirrors (--tok-*) copy the pygments token colors for chrome use;
+   highlighted source itself keeps using the pygments token classes. */
+.pygments-default {
+  --bg: #f8f8f8; /* .pygments-default background */
+  --fg: #000000; /* default browser text / Pygments base text */
+  --muted: #717171; /* .go */
+  --border: #d4d4d4;
+  --surface: #f8f8f8;
+  --topbar-bg: #ececec;
+  --accent: #008000; /* .k */
+  --accent-2: #ba2121; /* .s */
+  --hover: #dcdcdc;
+  --hll: #ffffcc; /* .hll */
+  --gutter: #d4d4d4;
+  --gutter-hover: #008000;
+  --tok-keyword: #008000;
+  --tok-comment: #3d7b7b;
+  --tok-string: #ba2121;
+  --tok-number: #666666;
+  --tok-function: #0000ff;
+  --tok-variable: #19177c;
+  --tok-preproc: #9c6500;
+  --tok-type: #b00040;
+}
+.pygments-stata-dark {
+  --bg: #232629; /* .pygments-stata-dark background */
+  --fg: #cccccc; /* .n */
+  --muted: #777777; /* .c */
+  --border: #3d4349;
+  --surface: #232629;
+  --topbar-bg: #1c1f22;
+  --accent: #7686bb; /* .k */
+  --accent-2: #51cc99; /* .s */
+  --hover: #2f3439;
+  --hll: #49483e; /* .hll */
+  --gutter: #3a4046;
+  --gutter-hover: #7686bb;
+  --tok-keyword: #7686bb;
+  --tok-comment: #777777;
+  --tok-string: #51cc99;
+  --tok-number: #4fb8cc;
+  --tok-function: #6a6aff;
+  --tok-variable: #7ab4db;
+  --tok-preproc: #777777;
+  --tok-type: #7686bb;
+}
+.pygments-native {
+  --bg: #202020; /* .pygments-native background */
+  --fg: #d0d0d0; /* .n */
+  --muted: #ababab; /* .c */
+  --border: #3d3d3d;
+  --surface: #202020;
+  --topbar-bg: #191919;
+  --accent: #6ebf26; /* .k */
+  --accent-2: #ed9d13; /* .s */
+  --hover: #2b2b2b;
+  --hll: #404040; /* .hll */
+  --gutter: #3d3d3d;
+  --gutter-hover: #6ebf26;
+  --tok-keyword: #6ebf26;
+  --tok-comment: #ababab;
+  --tok-string: #ed9d13;
+  --tok-number: #51b2fd;
+  --tok-function: #71adff;
+  --tok-variable: #40ffff;
+  --tok-preproc: #ff3a3a;
+  --tok-type: #6ebf26;
+}
+.pygments-gruvbox-dark {
+  --bg: #282828;
+  --fg: #ebdbb2;
+  --muted: #928374;
+  --border: #504945;
+  --surface: #282828;
+  --topbar-bg: #1d2021;
+  --accent: #b8bb26;
+  --accent-2: #d3869b;
+  --hover: #3c3836;
+  --hll: #504945;
+  --gutter: #504945;
+  --gutter-hover: #b8bb26;
+  --tok-keyword: #b8bb26;
+  --tok-comment: #928374;
+  --tok-string: #d3869b;
+  --tok-number: #d3869b;
+  --tok-function: #fabd2f;
+  --tok-variable: #ebdbb2;
+  --tok-preproc: #fe8019;
+  --tok-type: #83a598;
 }
 /* split layout */
 .splitjs_container {
@@ -19,7 +114,10 @@ body {
   width: 100vw;
   overflow: hidden;
   position: relative;
-  background-color: #333;
+  background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  color: var(--fg);
 }
 .split {
   box-sizing: border-box;
@@ -31,14 +129,14 @@ body {
   box-sizing: border-box;
 }
 .gutter {
-  background-color: #3e3e3e;
+  background-color: var(--gutter);
   background-repeat: no-repeat;
   background-position: 50%;
   transition: background-color 0.15s ease;
   flex-shrink: 0;
 }
 .gutter:hover {
-  background-color: #0284c7;
+  background-color: var(--gutter-hover);
 }
 .gutter.gutter-horizontal {
   cursor: col-resize;
@@ -48,529 +146,93 @@ body {
   cursor: row-resize;
   width: 100%;
 }
-pre {
-  overflow: visible !important;
-}
-td {
-  vertical-align: top;
-}
-
-/* styling for generic classes */
-.flip180 {
-  -webkit-transform: rotate(180deg);
-  -moz-transform: rotate(180deg);
-  -o-transform: rotate(180deg);
-  -ms-transform: rotate(180deg);
-  transform: rotate(180deg);
-}
-.inline {
-  display: inline;
-}
-.bold {
-  font-weight: bold;
-}
-.italic {
-  font-style: italic;
-}
-.pre {
-  white-space: pre;
-}
-.monospace {
-  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-.memadr,
-.memadr_react {
-  /* todo - migrate everything to react, then rename memadr_react to memadr  */
-  color: #489ce4;
-  text-decoration: none;
-}
-.lighttext {
-  color: #4a4a4a;
-}
-.glyphicon {
-  /* glyphicons are too bold, make them lighter*/
-  color: #848484;
-}
-.glyphicon-book {
-  /* glyphicons are too bold, make them lighter*/
-  margin-left: 4px;
-}
-.visibility_toggler {
-  cursor: pointer;
-}
-.placeholder {
-  color: #ccc;
-  font-style: italic;
-}
-.flex {
-  display: flex;
-}
-.flexrow {
-  display: flex;
-  flex-direction: row;
-}
-.flexcol {
-  display: flex;
-  flex-direction: column;
-}
-.collapser {
-  margin: 0 0 10px 0;
-}
-/* components get their own titlebars */
-.titlebar {
-  width: 100%;
-  color: black;
-  background-color: #ddf1ff;
-  border-color: #c3c3c3;
-  border-width: 1px;
-  border-style: solid;
-  padding: 2px 1px;
-}
+/* generic pointer cursor (used across components) */
 .pointer {
   cursor: pointer;
 }
-.collapser:hover .rowresizer {
-  cursor: row-resize;
-  height: 10px;
-  width: 100%;
-  background-color: white;
-  background-repeat: no-repeat;
-  background-position: 50%;
-  background-image: url("/static/vendor/images/splitjs/grips/horizontal.png");
+/* consistent input focus — no Bootstrap duplicate outlines */
+input, select, textarea {
+  outline: none;
 }
-.collapser .rowresizer {
-  height: 10px;
-  width: 100%;
-  background-color: white;
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: none !important;
 }
-
-.disabled {
-  background-color: lightgrey;
-  opacity: 0.6;
-  pointer-events: none;
-}
-.margin_sm {
-  margin: 2px;
-}
-.no_padding {
-  padding: 2px !important;
-}
-.highlight {
-  background: rgba(255, 255, 0, 0.5) !important;
-  color: #333;
-}
-div.breakpoint {
-  border: solid;
-  cursor: pointer;
-  /* need top and bottom border so when hovering and showing border on row, there is no "jumping" */
-  border-width: 0px;
-  border-top-width: 1px;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-  border-color: #f5f5f5; /* make border color the same as the background color */
-}
-.breakpoint td {
-  padding-top: 1px !important;
-  padding-bottom: 1px !important;
-}
-.breakpoint:hover {
-  background-color: #f5f5f5;
-}
-.breakpoint_trashcan,
-.right_help_icon_show_on_hover {
-  margin-right: 5px;
-  display: none !important;
-}
-div.breakpoint:hover div.breakpoint_trashcan,
-.varLI:hover .right_help_icon_show_on_hover {
-  display: inline !important;
-}
-.line_num {
-  width: 50px;
-  border-width: 0px;
-  border-top-width: 1px;
-  border-top-color: transparent;
-  border-right-width: 1px;
-  border-bottom-width: 0px;
-  border-style: solid;
-  border-right-color: #c7c7c7;
-  padding-left: 10px;
-  padding-right: 10px;
-  font-size: 0.9em;
-  color: #ababab;
-  cursor: pointer;
-}
-/* the line number has its style changed if it has a breakpoint */
-.line_num.breakpoint,
-.line_num.disabled_breakpoint {
-  color: black;
-}
-.line_num.breakpoint {
-  background: #33cdff !important;
-  border-style: solid;
-  /*border-top-width: 1px;*/
-  border-right-width: 0px;
-  /*border-bottom-width: 1px;*/
-  border-left-width: 0px;
-  border-color: transparent;
-}
-.line_num.disabled_breakpoint {
-  background: #ffd6d7 !important;
-}
-.line_num.conditional_breakpoint {
-  background: #ff9966 !important;
-  color: black;
-}
-td.assembly {
-  padding-bottom: 0px;
-  padding-top: 0px;
-  white-space: nowrap;
-}
-/* instruction content */
-.instrContent {
-  min-width: 250px;
-  display: inline-block;
-}
+/* source code */
 #code_table {
-  font-family: monospace;
-  border-collapse: separate;
-  font-size: 0.9em;
-}
-.srccode td {
-  padding-left: 3px;
-  padding-bottom: 0px;
-  padding-top: 0px;
-  border-style: solid;
-  border-top-width: 1px;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-  border-left-width: 0px;
-  border-color: transparent;
-}
-td.line_num {
-  border-style: solid;
-  border-right-width: 1px;
-  border-top-width: 0px;
-  border-bottom-width: 0px;
-  border-left-width: 0px;
-  border-right-color: #d4d4d4;
-  border-top-color: transparent;
-  border-bottom-color: transparent;
-}
-/* wsp == whitespace. Needed to preserve leading whitespace.
-    this span wraps syntax-highlighted source code */
-.wsp {
-  white-space: pre;
-}
-
-.current_assembly_command {
-  font-weight: bold;
-}
-.padding_left {
-  padding-left: 5px;
-}
-.loc {
-  height: 18px;
-}
-.paused_on_line {
-  border-width: 0px;
-}
-.dropdown-btn {
-  vertical-align: top;
-  height: 30px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-#memory table {
-  font-family: monospace;
-}
-.memory_char:empty {
-  content: "?";
-}
-
-/* specific styling for ids or components */
-#always_on_top {
-  position: fixed;
-  top: 0;
-  margin-top: 0;
-  width: 100%;
-  border-bottom: black;
-  border-style: solid;
-  border-width: 0px;
-  z-index: 1000;
-  background: #f1f1f1;
-}
-/* .chad {
-  @apply font-bold py-2 px-4 rounded;
-}
-.btn-blue {
-  @apply bg-blue-500 text-white;
-}
-.btn-blue:hover {
-  @apply bg-red-700;
-} */
-
-#filesystem ul,
-#filesystem li {
-  list-style-type: none;
-  padding: 0;
-}
-#gdb_command_input,
-#gdb_command_input .gdb_command_input {
-  height: 30px;
-  border-width: 0;
-  background-color: #3c3c3c !important;
-  color: #f9f9f9 !important;
-  font-family: Menlo, Monaco, Consolas, "Courier New", monospace !important;
-}
-#gdb_command_input {
-  width: 100%;
-  height: 30px;
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
-}
-#gdb_command_input tr td:nth-child(1) {
-  width: 30px;
-  vertical-align: middle;
-}
-#gdb_command_input tr td:nth-child(2) {
-  width: 100%;
-}
-#gdb_command_input tr td:nth-child(3) {
-  width: 15px;
-  vertical-align: middle;
-  padding-right: 10px;
-}
-#gdb_command_input .gdb_command_input:focus {
-  outline-color: none;
-  box-shadow: none;
-}
-.fullscreen_modal {
-  padding: 10px;
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 120;
-  background: rgba(0, 0, 0, 0.8);
-  overflow: auto;
-}
-.blur {
-  filter: blur(3px);
-}
-#gdb_settings_modal {
-  width: 800px;
-  padding: 40px;
-  z-index: 120;
-  background: white;
-  max-height: 85%;
-  overflow: auto;
-  margin-left: auto;
-  margin-right: auto;
-}
-.modal_content {
-  padding: 20px;
-  margin-top: 10px;
-  margin-left: auto;
-  margin-right: auto;
-  background: white;
-  margin: auto;
-  border: 1px solid #888;
-  border-radius: 4px;
-  width: 500px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-}
-
-#hovervar {
-  background: white;
-  width: 350px;
-  height: 200px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  visibility: none;
-  overflow: auto;
-  padding: 10px;
-  border: solid 1px #989898;
-  border-radius: 4px;
-  /* http://www.cssmatic.com/box-shadow */
-  -webkit-box-shadow: 9px 10px 31px 0px rgba(0, 0, 0, 0.75);
-  -moz-box-shadow: 9px 10px 31px 0px rgba(0, 0, 0, 0.75);
-  box-shadow: 9px 10px 31px 0px rgba(0, 0, 0, 0.75);
-}
-
-#gdb_mi_output {
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-  overflow: auto;
-  font-size: 0.9em;
-  height: 300px;
-  width: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+  background-color: var(--bg);
+  color: var(--fg);
 }
-
-/* styling for "Expressions" component */
-#expressions li,
-#locals li,
-#hovervar li {
+#code_container {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+#code_table td {
+  padding: 0 4px;
+  vertical-align: top;
+  background-color: transparent;
+}
+#code_table .line_num {
+  width: 44px;
+  min-width: 44px;
+  text-align: right;
+  color: var(--muted);
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+#code_table .line_num.breakpoint {
+  background: var(--accent);
+  color: #fff;
+}
+#code_table .line_num.disabled_breakpoint {
+  background: var(--hover);
+  color: var(--muted);
+}
+#code_table .line_num.conditional_breakpoint {
+  background: var(--accent-2);
+  color: #fff;
+}
+#code_table tr.paused_on_line > td {
+  background: var(--hll);
+}
+/* TODO: flash animation removed from CSS for now — needs redesign.
+   See SourceCode.tsx flash class, which still adds the "flash" class
+   but this rule is intentionally omitted so it has no visual effect.
+   The class is kept in JS so the row is still scroll-to-able. */
+/* tree variable views */
+.varUL {
+  margin: 0;
+  padding-left: 0;
   list-style: none;
 }
-#expressions,
-#locals,
-#hovervar {
-  white-space: nowrap;
-  font-family: monospace;
-  font-size: 0.9em;
-  overflow: auto;
-  margin: 0;
-  padding: 0;
+.varUL .varUL {
+  padding-left: 12px;
 }
-
+.varLI {
+  line-height: 1.6;
+}
+.varLI .right_help_icon_show_on_hover {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.varLI:hover .right_help_icon_show_on_hover {
+  opacity: 1;
+}
 .varLI .btn-radix {
-  display: none !important;
+  opacity: 0;
+  transition: opacity 0.1s;
 }
 .varLI:hover .btn-radix {
-  display: inline !important;
+  opacity: 1;
 }
-
-ul.varUL {
-  /* padding-top: 0; */
-  padding-left: 6px;
-  border: 0;
-  margin: 0;
-}
-.varUL ul li {
-  padding-left: 6px;
-}
-/* Show type of variable in lighter text */
-.var_type {
-  color: #a0a0a0;
-  margin-left: 5px;
-  font-style: italic;
-}
-.plot {
-  width: 300px;
-  height: 200px;
-  display: visible;
-}
-#plot_coordinate_tooltip {
-  position: fixed;
-  display: none;
-  border: 1px solid #828282;
-  padding: 2px;
-  background-color: #f5f5f5;
-}
-#threads ul {
-  list-style: none;
-  padding: 0;
-}
-#memory table {
-  font-size: 0.9em;
-}
-
-/* Make refresh icon spin - http://www.bootply.com/128062*/
-.glyphicon-refresh-animate {
-  -animation: spin 0.7s infinite linear;
-  -webkit-animation: webkit-spin 0.7s infinite linear;
-}
-
-@-webkit-keyframes webkit-spin {
-  from {
-    -webkit-transform: rotate(0deg);
-  }
-  to {
-    -webkit-transform: rotate(360deg);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: scale(1) rotate(0deg);
-  }
-  to {
-    transform: scale(1) rotate(360deg);
-  }
-}
-
-button:focus {
-  /* For some reason normalize.css is getting injected into the html page, and it adds a 5px outline
-  on focused buttons */
-  outline-width: 0 !important;
-}
-
-/* ---------------- generic fuzzy completion dropdown ---------------- */
-.completionDropdown {
-  position: relative;
-  width: 100%;
-}
-
-.completionDropdown > input {
-  width: 100%;
-  height: 2em;
-  box-sizing: border-box;
-}
-
-.completionDropdown > ul {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin: 2px 0 0;
-  padding: 0;
-  list-style: none;
-  max-height: 220px;
-  overflow-y: auto;
-  z-index: 12;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.completionDropdown > ul:empty {
-  display: none;
-}
-
-.completionDropdown > ul > li {
-  padding: 4px 8px;
-  cursor: pointer;
-  overflow-wrap: break-word;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.completionDropdown > ul > li:hover,
-.completionDropdown > ul > li[aria-selected="true"] {
-  background: #e8f0fe;
-  color: #000;
-}
-
-/* dark (monokai) theme */
-.completionDropdown.monokai > ul {
-  background: #3c3c3c;
-  border-color: #555;
-}
-
-.completionDropdown.monokai > ul > li {
-  color: #f8f8f2;
-}
-
-.completionDropdown.monokai > ul > li:hover,
-.completionDropdown.monokai > ul > li[aria-selected="true"] {
-  background: #555;
-  color: #f8f8f2;
-}
-
-/* integration with Bootstrap .input-group (table layout) */
-.input-group > .completionDropdown {
-  display: table-cell;
-  vertical-align: middle;
-  width: 100%;
-}
-.input-group > .completionDropdown > .form-control {
-  height: 30px;
-  border-radius: 0 3px 3px 0;
-}
-.input-group > .completionDropdown > ul {
-  min-width: 100%;
+.highlight {
+  background: var(--hll);
+  color: var(--fg);
+  font-weight: bold;
+  border-radius: 2px;
+  padding: 0 2px;
 }

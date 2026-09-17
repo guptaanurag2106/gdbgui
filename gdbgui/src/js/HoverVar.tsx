@@ -53,14 +53,24 @@ class HoverVar extends React.Component {
         }
         this.obj = obj;
         if (obj) {
-            let is_dark = store.get("theme") === "monokai";
             let style: React.CSSProperties = {
                 position: "absolute",
                 left: HoverVar.left + "px",
                 top: HoverVar.top + "px",
-                backgroundColor: is_dark ? "#3c3c3c" : "white",
-                color: is_dark ? "#f8f8f2" : undefined,
-                borderColor: is_dark ? "#555" : undefined,
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--fg)",
+                maxWidth: "30vw",
+                maxHeight: "30vh",
+                overflowY: "auto",
+                overflowX: "hidden",
+                fontFamily: 'Menlo, Monaco, Consolas, "Courier New", monospace',
+                fontSize: "14px",
+                margin: 0,
+                padding: "4px 6px",
+                borderRadius: "4px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                zIndex: 9999,
             };
             return (
                 <div
@@ -70,7 +80,6 @@ class HoverVar extends React.Component {
                     onMouseLeave={HoverVar.mouseout_hover_window}
                 >
                     <GdbVariable
-                        // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
                         obj={obj}
                         key={obj.expression}
                         expression={obj.expression}

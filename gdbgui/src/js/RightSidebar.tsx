@@ -17,6 +17,8 @@ import Registers from "./Registers";
 import Tree from "./Tree";
 import Threads from "./Threads";
 import ToolTipTourguide from "./ToolTipTourguide";
+import { base_style, input_style } from "./styles";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 let onmouseup_in_parent_callbacks: any = [],
     onmousemove_in_parent_callbacks: any = [];
@@ -42,6 +44,17 @@ type CollapserProps = {
 };
 type CollapserState = OwnCollapserState & typeof Collapser.defaultProps;
 
+const titlebar_style = {
+    cursor: "pointer",
+    padding: "6px 8px",
+    borderBottom: "1px solid var(--border)",
+    fontSize: "14px",
+    fontWeight: "bold" as const,
+    color: "var(--fg)",
+    backgroundColor: "var(--hover)",
+    userSelect: "none" as const,
+};
+
 class Collapser extends React.Component<CollapserProps, CollapserState> {
     static defaultProps = { collapsed: false, id: "" };
     _height_when_clicked: any;
@@ -53,7 +66,7 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
         this.state = {
             collapsed: props.collapsed,
             autosize: true,
-            height_px: null, // if an integer, force height to this value
+            height_px: null,
             _mouse_y_click_pos_px: null,
             _height_when_clicked: null,
         };
@@ -92,30 +105,20 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
         this.setState({ autosize: true });
     }
     render() {
-        let style = {
-            height: this.state.autosize ? "auto" : this.state.height_px + "px",
-            overflow: this.state.autosize ? "visible" : "auto",
-            padding: "0 6px",
-        };
-
-        let reset_size_button = "";
+        let reset_size_button: JSX.Element | null = null;
         if (!this.state.autosize) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
             reset_size_button = (
                 <span
                     onClick={this.onclick_restore_autosize}
-                    className="placeholder"
                     title={
                         "Height frozen at " +
                         this.state.height_px +
                         "px. Click to restore autosize."
                     }
                     style={{
-                        // @ts-expect-error ts-migrate(2322) FIXME: Object literal may only specify known properties, ... Remove this comment to see the full error message
-                        align: "right",
-                        position: "relative",
-                        top: "-10px",
                         cursor: "pointer",
+                        color: "var(--muted)",
+                        fontSize: "11px",
                     }}
                 >
                     reset height
@@ -123,43 +126,44 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
             );
         }
 
-        let resizer = "";
+        let resizer: JSX.Element | null = null;
         if (!this.state.collapsed) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
             resizer = (
-                <React.Fragment>
-                    <div
-                        className="rowresizer"
-                        onMouseDown={this.onmousedown_resizer}
-                        style={{ textAlign: "right" }}
-                        title="Click and drag to resize height"
-                    >
-                        {" "}
-                        {reset_size_button}
-                    </div>
-                </React.Fragment>
+                <div
+                    onMouseDown={this.onmousedown_resizer}
+                    style={{ textAlign: "right", cursor: "ns-resize" }}
+                    title="Click and drag to resize height"
+                >
+                    {reset_size_button}
+                </div>
             );
         }
 
         return (
-            <div className="collapser">
+            <div>
                 <div
-                    className="pointer titlebar"
+                    style={titlebar_style}
                     onClick={this.toggle_visibility.bind(this)}
                 >
-                    <span
-                        className={`glyphicon glyphicon-chevron-${
-                            this.state.collapsed ? "right" : "down"
-                        }`}
-                        style={{ marginRight: "6px" }}
-                    />
-                    <span className="lighttext">{this.props.title}</span>
+                    {this.state.collapsed ? (
+                        <ChevronRight size={14} className="inline" />
+                    ) : (
+                        <ChevronDown size={14} className="inline" />
+                    )}{" "}
+                    {this.props.title}
                 </div>
 
                 <div
                     className={this.state.collapsed ? "hidden" : ""}
                     id={this.props.id}
-                    style={style}
+                    style={{
+                        height: this.state.autosize
+                            ? "auto"
+                            : this.state.height_px + "px",
+                        overflow: this.state.autosize ? "visible" : "auto",
+                        padding: "4px 6px",
+                        ...base_style,
+                    }}
                     ref={(n) => (this.collapser_box_node = n)}
                 >
                     {this.props.content}
@@ -181,29 +185,21 @@ class RightSidebar extends React.Component<RightSidebarProps, any> {
         store.connectComponentState(this, ["theme"]);
     }
     render() {
-        let input_style = {
-                display: "inline",
-                width: "100px",
-                padding: "6px 15px",
-                height: "25px",
-                fontSize: "1em",
-            },
-            mi_output = "";
+        let mi_output: JSX.Element | null = null;
         if (this.props.debug) {
-            // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
             mi_output = (
-                <Collapser
-                    title="gdb mi output"
-                    // @ts-expect-error ts-migrate(S2322) Type '{ id: string; title: string; collapsed: true; content: Element; }' is not assignable to type 'IntrinsicAttributes &
-                    content={<GdbMiOutput id="gdb_mi_output" />}
-                />
+                <Collapser title="gdb mi output" content={<GdbMiOutput />} />
             );
         }
 
         return (
             <div
-                className={`content ${this.state.theme}`}
-                style={{ overflow: "auto" }}
+                style={{
+                    backgroundColor: "var(--topbar-bg)",
+                    overflow: "auto",
+                    fontSize: "14px",
+                    color: "var(--fg)",
+                }}
                 onMouseUp={onmouseup_in_parent_callback}
                 onMouseMove={onmousemove_in_parent_callback}
             >
@@ -257,18 +253,16 @@ class RightSidebar extends React.Component<RightSidebarProps, any> {
                     title="Tree"
                     collapsed={true}
                     content={
-                        <div>
+                        <div className="flex gap-1.5 mb-1">
                             <input
                                 id="tree_width"
-                                className="form-control"
                                 placeholder="width (px)"
-                                style={input_style}
+                                style={{ ...input_style }}
                             />
                             <input
                                 id="tree_height"
-                                className="form-control"
                                 placeholder="height (px)"
-                                style={input_style}
+                                style={{ ...input_style }}
                             />
                             <div id={constants.tree_component_id} />
                         </div>
@@ -290,7 +284,6 @@ class RightSidebar extends React.Component<RightSidebarProps, any> {
                     title="signals"
                     collapsed={true}
                     content={
-                        // @ts-expect-error ts-migrate(2322) FIXME: Property 'signals' does not exist on type 'Intrins... Remove this comment to see the full error message
                         <InferiorProgramInfo signals={this.props.signals} />
                     }
                 />

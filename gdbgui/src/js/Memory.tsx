@@ -12,6 +12,7 @@ import ReactTable from "./ReactTable";
 import { MemoryLink } from "./Links";
 import Actions from "./Actions";
 import React from "react";
+import { input_style } from "./styles";
 
 type State = any;
 
@@ -32,9 +33,9 @@ class Memory extends React.Component<{}, State> {
     get_memory_component_jsx_content() {
         if (Object.keys(store.get("memory_cache")).length === 0) {
             return (
-                <span key="nothing" className="placeholder">
+                <div key="nothing" className="placeholder mt-1">
                     no memory to display
-                </span>
+                </div>
             );
         }
 
@@ -52,8 +53,7 @@ class Memory extends React.Component<{}, State> {
         data.push([
             <span
                 key="moretop"
-                className="pointer"
-                style={{ fontStyle: "italic", fontSize: "0.8em" }}
+                className="pointer italic text-[0.8em]"
                 onClick={Memory.click_read_preceding_memory}
             >
                 more
@@ -110,8 +110,7 @@ class Memory extends React.Component<{}, State> {
             data.push([
                 <span
                     key="morebottom"
-                    className="pointer"
-                    style={{ fontStyle: "italic", fontSize: "0.8em" }}
+                    className="pointer italic text-[0.8em]"
                     onClick={Memory.click_read_more_memory}
                 >
                     more
@@ -121,53 +120,44 @@ class Memory extends React.Component<{}, State> {
             ]);
         }
 
-        // @ts-expect-error ts-migrate(2769) FIXME: Type 'string' is not assignable to type 'never'.
         return <ReactTable data={data} header={["address", "hex", "char"]} />;
     }
     render() {
-        let input_style = {
-                display: "inline",
-                width: "100px",
-                padding: "6px 15px",
-                height: "25px",
-                fontSize: "1em",
-            },
-            content = this.get_memory_component_jsx_content();
+        let content = this.get_memory_component_jsx_content();
         return (
             <div>
-                <input
-                    id="memory_start_address"
-                    className="form-control"
-                    placeholder="start address (hex)"
-                    style={input_style}
-                    value={this.state.start_addr}
-                    onKeyUp={Memory.keypress_on_input}
-                    onChange={(e) => {
-                        store.set("start_addr", e.target.value);
-                    }}
-                />
-                <input
-                    id="memory_end_address"
-                    className="form-control"
-                    placeholder="end address (hex)"
-                    style={input_style}
-                    value={this.state.end_addr}
-                    onKeyUp={Memory.keypress_on_input}
-                    onChange={(e) => {
-                        store.set("end_addr", e.target.value);
-                    }}
-                />
-                <input
-                    id="memory_bytes_per_line"
-                    className="form-control"
-                    placeholder="bytes per line (dec)"
-                    style={input_style}
-                    value={this.state.bytes_per_line}
-                    onKeyUp={Memory.keypress_on_input}
-                    onChange={(e) => {
-                        store.set("bytes_per_line", e.target.value);
-                    }}
-                />
+                <div className="flex gap-1.5 mb-1">
+                    <input
+                        id="memory_start_address"
+                        placeholder="start address (hex)"
+                        style={input_style}
+                        value={this.state.start_addr}
+                        onKeyUp={Memory.keypress_on_input}
+                        onChange={(e) => {
+                            store.set("start_addr", e.target.value);
+                        }}
+                    />
+                    <input
+                        id="memory_end_address"
+                        placeholder="end address (hex)"
+                        style={input_style}
+                        value={this.state.end_addr}
+                        onKeyUp={Memory.keypress_on_input}
+                        onChange={(e) => {
+                            store.set("end_addr", e.target.value);
+                        }}
+                    />
+                    <input
+                        id="memory_bytes_per_line"
+                        placeholder="bytes/line"
+                        style={input_style}
+                        value={this.state.bytes_per_line}
+                        onKeyUp={Memory.keypress_on_input}
+                        onChange={(e) => {
+                            store.set("bytes_per_line", e.target.value);
+                        }}
+                    />
+                </div>
                 {content}
             </div>
         );

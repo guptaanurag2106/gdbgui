@@ -109,7 +109,7 @@ class Registers extends React.Component<{}, State> {
                     "value (decimal)",
                     "description",
                 ],
-                register_table_data = [],
+                register_table_data: any[] = [],
                 register_names = store.get("register_names"),
                 register_values = store.get("current_register_values"),
                 previous_register_values = store.get(
@@ -117,13 +117,13 @@ class Registers extends React.Component<{}, State> {
                 );
 
             for (let i in register_names) {
-                let name = register_names[i],
+                let name: any = register_names[i],
                     obj = register_values.find((v: any) => v["number"] === i),
                     hex_val_raw = "",
-                    disp_hex_val = "",
-                    disp_dec_val = "",
-                    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    register_description = register_descriptions[name] || "";
+                    disp_hex_val: any = "",
+                    disp_dec_val: any = "",
+                    register_description =
+                        (register_descriptions as any)[name] || "";
 
                 if (obj && obj.value) {
                     hex_val_raw = obj["value"];
@@ -154,18 +154,12 @@ class Registers extends React.Component<{}, State> {
                     }
 
                     if (changed) {
-                        name = <span className="highlight bold">{name}</span>;
-                        // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
+                        name = <span className="highlight">{name}</span>;
                         disp_hex_val = (
-                            <span className="highlight bold">
-                                {disp_hex_val}
-                            </span>
+                            <span className="highlight">{disp_hex_val}</span>
                         );
-                        // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
                         disp_dec_val = (
-                            <span className="highlight bold">
-                                {disp_dec_val}
-                            </span>
+                            <span className="highlight">{disp_dec_val}</span>
                         );
                     }
                 }
@@ -175,16 +169,9 @@ class Registers extends React.Component<{}, State> {
                     disp_hex_val,
                     disp_dec_val,
                     register_description,
-                ]);
+                ] as any[]);
             }
-            return (
-                <ReactTable
-                    data={register_table_data}
-                    // @ts-expect-error ts-migrate(2769) FIXME: Type 'string[]' is not assignable to type 'never[]... Remove this comment to see the full error message
-                    header={columns}
-                    style={{ fontSize: "0.9em" }}
-                />
-            );
+            return <ReactTable data={register_table_data} header={columns} />;
         }
         return <span className="placeholder">no data to display</span>;
     }

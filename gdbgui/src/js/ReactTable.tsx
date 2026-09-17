@@ -1,51 +1,49 @@
 import React from "react";
 
-class TableRow extends React.Component {
-    className: any;
-    get_tds() {
-        let tds = [];
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'data' does not exist on type 'Readonly<{... Remove this comment to see the full error message
-        for (let i in this.props.data) {
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'data' does not exist on type 'Readonly<{... Remove this comment to see the full error message
-            tds.push(<td key={i}>{this.props.data[i]}</td>);
-        }
-        return tds;
-    }
+type ReactTableProps = {
+    data: any[];
+    header?: string[];
+    style?: React.CSSProperties;
+};
+
+class ReactTable extends React.Component<ReactTableProps> {
+    static defaultProps = { header: [], style: {} };
 
     render() {
-        return <tr className={this.className}>{this.get_tds()}</tr>;
-    }
-}
-
-class ReactTable extends React.Component {
-    static defaultProps = { header: [] };
-    render_row(row_data: any, i: any) {
-        // @ts-expect-error ts-migrate(2769) FIXME: Property 'data' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
-        return <TableRow data={row_data} key={i} />;
-    }
-
-    render_head() {
-        let ths = [],
-            i = 0;
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'header' does not exist on type 'Readonly... Remove this comment to see the full error message
-        for (let th_data of this.props.header) {
-            ths.push(<th key={i}>{th_data}</th>);
-            i++;
-        }
-        return ths;
-    }
-
-    render() {
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'classes' does not exist on type 'Readonl... Remove this comment to see the full error message
-        let classes = ["table", "table-condensed"].concat(this.props.classes);
+        const header = this.props.header ?? [];
+        const { data, style } = this.props;
         return (
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'style' does not exist on type 'Readonly<... Remove this comment to see the full error message
-            <table className={classes.join(" ")} style={this.props.style}>
-                <thead>
-                    <tr>{this.render_head()}</tr>
-                </thead>
-                {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'data' does not exist on type 'Readonly<{... Remove this comment to see the full error message */}
-                <tbody>{this.props.data.map(this.render_row)}</tbody>
+            <table className="w-full border-collapse" style={style}>
+                {header.length > 0 && (
+                    <thead>
+                        <tr>
+                            {header.map((col: string, i: number) => (
+                                <th
+                                    key={i}
+                                    className="text-left px-1.5 py-0.5 border-b border-[var(--border)] text-[var(--muted)] font-bold whitespace-nowrap"
+                                >
+                                    {col}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                )}
+                <tbody>
+                    {data.map((row: any, i: number) => (
+                        <tr key={i} className="group">
+                            {(Array.isArray(row) ? row : [row]).map(
+                                (cell: any, j: number) => (
+                                    <td
+                                        key={j}
+                                        className="px-1.5 py-0.5 border-b border-[var(--border)] text-[var(--fg)] align-top group-hover:bg-[var(--hover)]"
+                                    >
+                                        {cell}
+                                    </td>
+                                ),
+                            )}
+                        </tr>
+                    ))}
+                </tbody>
             </table>
         );
     }

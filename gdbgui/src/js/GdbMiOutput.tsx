@@ -9,6 +9,7 @@
 import React from "react";
 import { store } from "statorgfc";
 import Util from "./Util";
+import { Ban } from "lucide-react";
 
 type State = any;
 
@@ -32,17 +33,14 @@ class GdbMiOutput extends React.Component<{}, State> {
             <div>
                 <button
                     title="clear all mi output"
-                    className="pointer btn btn-default btn-xs"
+                    className="pointer inline-flex items-center gap-1 rounded bg-[var(--accent)] px-2 py-0.5 text-[0.85em] hover:opacity-90"
+                    style={{ color: "var(--bg)" }}
                     onClick={() => store.set("gdb_mi_output", [])}
                 >
                     clear output
-                    <span className="glyphicon glyphicon-ban-circle pointer" />
+                    <Ban size={14} />
                 </button>
-                <div
-                    id="gdb_mi_output"
-                    className="otpt"
-                    style={{ fontSize: "0.8em" }}
-                >
+                <div id="gdb_mi_output" className="mt-1 font-mono text-xs">
                     {this.state.gdb_mi_output}
                 </div>
             </div>

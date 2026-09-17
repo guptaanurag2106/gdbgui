@@ -11,6 +11,7 @@ import CompletionDropdown from "./CompletionDropdown";
 
 type SourceFileAutocompleteProps = {
     file_paths: string[];
+    disabled?: boolean | undefined;
 };
 
 class SourceFileAutocomplete extends React.Component<
@@ -35,19 +36,15 @@ class SourceFileAutocomplete extends React.Component<
 
     render() {
         return (
-            <div
-                style={{ width: "100%", flex: "1 0", padding: "5px" }}
-                className="flex"
-            >
-                <CompletionDropdown
-                    list={this.props.file_paths}
-                    placeholder="Enter file path to view, press enter"
-                    onSelect={this.onFileSelect.bind(this)}
-                    onSubmit={this.onSubmit.bind(this)}
-                    maxItems={10}
-                    showAllOnEmpty
-                />
-            </div>
+            <CompletionDropdown
+                list={this.props.file_paths}
+                placeholder="Enter file path to view, press enter"
+                onSelect={this.onFileSelect.bind(this)}
+                onSubmit={this.onSubmit.bind(this)}
+                max_items={10}
+                show_all_on_empty
+                disabled={this.props.disabled}
+            />
         );
     }
 }

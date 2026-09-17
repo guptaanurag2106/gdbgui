@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "lucide-react": "^1.47.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-split": "^2.0.14",

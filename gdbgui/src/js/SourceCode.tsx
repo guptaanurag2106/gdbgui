@@ -10,6 +10,7 @@ import Memory from "./Memory";
 import { MemoryLink } from "./Links";
 import constants from "./constants";
 import Actions from "./Actions";
+import { Play } from "lucide-react";
 
 type State = any;
 
@@ -53,12 +54,8 @@ class SourceCode extends React.Component<{}, State> {
 
     render() {
         return (
-            <div className={this.state.theme} style={{ height: "100%" }}>
-                <table
-                    id="code_table"
-                    className={this.state.theme}
-                    style={{ width: "100%" }}
-                >
+            <div className="h-full">
+                <table id="code_table" className="w-full">
                     <tbody id="code_body">{this.get_body()}</tbody>
                 </table>
             </div>
@@ -231,21 +228,20 @@ class SourceCode extends React.Component<{}, State> {
             >
                 {this.get_linenum_td(line_num_being_rendered, gutter_cls)}
 
-                <td style={{ verticalAlign: "top" }} className="loc">
+                <td>
                     <span
-                        className="wsp"
+                        className="whitespace-pre"
                         dangerouslySetInnerHTML={{ __html: source }}
                     />
                 </td>
 
-                <td className="assembly">{assembly_content}</td>
+                <td className="whitespace-nowrap">{assembly_content}</td>
             </tr>
         );
     }
     get_linenum_td(linenum: any, gutter_cls = "") {
         return (
             <td
-                style={{ verticalAlign: "top", width: "30px" }}
                 className={"line_num " + gutter_cls}
                 onClick={() => {
                     this.click_gutter(linenum);
@@ -261,7 +257,7 @@ class SourceCode extends React.Component<{}, State> {
      */
     static _get_assm_content(key: any, assm: any, paused_addr: any) {
         let opcodes = assm.opcodes ? (
-                <span className="instrContent">{`(${assm.opcodes})`}</span>
+                <span className="inline-block min-w-[200px]">{`(${assm.opcodes})`}</span>
             ) : (
                 ""
             ),
@@ -270,23 +266,22 @@ class SourceCode extends React.Component<{}, State> {
             offset = assm.offset,
             addr = assm.address,
             on_current_instruction = paused_addr === assm.address,
-            cls = on_current_instruction ? "current_assembly_command" : "",
+            cls = on_current_instruction ? "font-bold" : "",
             asterisk = on_current_instruction ? (
-                <span
-                    className="glyphicon glyphicon-chevron-right"
-                    style={{ width: "10px", display: "inline-block" }}
-                />
-            ) : (
-                <span style={{ width: "10px", display: "inline-block" }}>
-                    {" "}
+                <span className="inline-block w-2.5 text-[var(--accent)]">
+                    <Play size={10} fill="currentColor" />
                 </span>
+            ) : (
+                <span className="inline-block w-2.5"> </span>
             );
         return (
-            <span key={key} style={{ whiteSpace: "nowrap" }} className={cls}>
+            <span key={key} className={`whitespace-nowrap ${cls}`}>
                 {asterisk} {/* @ts-expect-error ts-migrate(2769)*/}
                 <MemoryLink addr={addr} style={{ paddingRight: "5px" }} />
                 {opcodes /* i.e. mov */}
-                <span className="instrContent">{instruction}</span>
+                <span className="inline-block min-w-[200px]">
+                    {instruction}
+                </span>
                 {func_name ? (
                     <span>
                         {func_name}+{offset}
@@ -301,7 +296,7 @@ class SourceCode extends React.Component<{}, State> {
     _get_assm_row(key: any, assm: any, paused_addr: any) {
         return (
             <tr key={key} className="srccode">
-                <td className="assembly loc">
+                <td className="whitespace-nowrap">
                     {SourceCode._get_assm_content(key, assm, paused_addr)}
                 </td>
             </tr>
@@ -331,8 +326,7 @@ class SourceCode extends React.Component<{}, State> {
                     onClick={() => {
                         Actions.view_file(fullname, linenum);
                     }}
-                    style={{ fontStyle: "italic", paddingLeft: "10px" }}
-                    className="pointer"
+                    className="pointer italic pl-2.5 text-[var(--muted)]"
                 >
                     view more
                 </td>
@@ -343,13 +337,7 @@ class SourceCode extends React.Component<{}, State> {
         return (
             <tr key={linenum}>
                 <td />
-                <td
-                    style={{
-                        fontStyle: "italic",
-                        paddingLeft: "10px",
-                        fontSize: "0.8em",
-                    }}
-                >
+                <td className="italic pl-2.5 text-s text-[var(--muted)]">
                     (end of file)
                 </td>
             </tr>

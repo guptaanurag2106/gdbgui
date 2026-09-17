@@ -5,6 +5,7 @@ import GdbApi from "./GdbApi";
 import { FileLink } from "./Links";
 import Memory from "./Memory";
 import { MemoryLink } from "./Links";
+import { base_style, badge_style } from "./styles";
 
 class FrameArguments extends React.Component {
     render_frame_arg(frame_arg: any) {
@@ -23,9 +24,13 @@ class FrameArguments extends React.Component {
         }
         return (
             <ReactTable
-                // @ts-expect-error ts-migrate(2769) FIXME: Property 'data' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
                 data={frame_args.map(this.render_frame_arg)}
-                style={{ fontSize: "0.9em", borderWidth: "0", margin: "0" }}
+                style={{
+                    fontSize: "14px",
+                    borderWidth: "0",
+                    margin: "0",
+                    borderCollapse: "collapse",
+                }}
             />
         );
     }
@@ -61,7 +66,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     render() {
         if (this.state.threads.length <= 0) {
             this.thread_data = {};
-            return <span className="placeholder" />;
+            return null;
         }
 
         let content = [];
@@ -108,18 +113,19 @@ class Threads extends React.Component<{}, ThreadsState> {
                 ),
             );
             content.push(
-                // @ts-expect-error ts-migrate(2769) FIXME: Type 'string' is not assignable to type 'never'.
                 <ReactTable
                     data={row_data}
-                    style={{ fontSize: "0.9em", marginBottom: 0 }}
+                    style={{
+                        ...base_style,
+                        marginBottom: 0,
+                        borderCollapse: "collapse",
+                    }}
                     key={thread.id}
                     header={["func", "file", "addr", "args"]}
-                    classes={["table-bordered", "table-striped"]}
                 />,
             );
-            content.push(<br key={thread.id + "br"} />);
         }
-        return <div>{content}</div>;
+        return <div className="text-[var(--fg)]">{content}</div>;
     }
 
     update_thread_data(thread: any) {
@@ -204,27 +210,17 @@ class Threads extends React.Component<{}, ThreadsState> {
         thread: any,
         is_current_thread_being_rendered: any,
     ) {
-        let selected,
-            cls = "";
+        let selected;
         if (is_current_thread_being_rendered) {
-            cls = "bold";
-            selected = (
-                <span
-                    className="label label-primary"
-                    title="This thread is selected. Variables can be inspected for the current frame of this thread."
-                >
-                    selected
-                </span>
-            );
+            selected = <span className={badge_style}>selected</span>;
         } else {
             selected = (
                 <button
-                    className="pointer btn btn-default btn-xs"
+                    className={`${badge_style} cursor-pointer`}
                     onClick={() => {
                         Threads.select_thread_id(thread.id);
                     }}
                     title="Select this thread"
-                    style={{ fontSize: "75%" }}
                 >
                     select
                 </button>
@@ -238,8 +234,7 @@ class Threads extends React.Component<{}, ThreadsState> {
         return (
             <span
                 key={"thread" + thread.id}
-                className={`${cls}`}
-                style={{ fontSize: "0.9em" }}
+                className={`text-[var(--fg)] ${is_current_thread_being_rendered ? "font-bold" : ""}`}
             >
                 {selected} {details}
                 {id}
@@ -257,26 +252,20 @@ class Threads extends React.Component<{}, ThreadsState> {
         frame_num: any,
     ) {
         let onclick;
-        let classes = [];
         let title;
 
         if (is_selected_frame) {
-            // current frame, current thread
             onclick = () => {};
-            classes.push("bold");
             title = `this is the active frame of the selected thread (frame id ${frame_num})`;
         } else if (is_current_thread_being_rendered) {
             onclick = () => {
                 Threads.select_frame(frame_num);
             };
-            classes.push("pointer");
             title = `click to select this frame (frame id ${frame_num})`;
         } else {
-            // different thread, allow user to switch threads
             onclick = () => {
                 Threads.select_thread_id(thread_id);
             };
-            classes.push("pointer");
             title = `click to select this thead (thread id ${thread_id})`;
         }
         let key = thread_id + frame_num;
@@ -285,7 +274,7 @@ class Threads extends React.Component<{}, ThreadsState> {
             <span
                 key={key}
                 title={title}
-                className={classes.join(" ")}
+                className={`text-[var(--fg)] ${is_selected_frame ? "font-bold" : ""} cursor-pointer`}
                 onClick={onclick}
             >
                 {frame.func}

@@ -54,15 +54,13 @@ class ToolTip extends React.Component {
         }
         return (
             <div
+                className="fixed z-[121] max-w-[350px] rounded border p-2 shadow-lg"
                 style={{
                     top: top,
                     left: left,
-                    maxWidth: "350px",
-                    background: "white",
-                    border: "1px solid",
-                    position: "fixed",
-                    padding: "5px",
-                    zIndex: "121",
+                    backgroundColor: "var(--surface)",
+                    borderColor: "var(--border)",
+                    color: "var(--fg)",
                 }}
             >
                 {tooltip.content}

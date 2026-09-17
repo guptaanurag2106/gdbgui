@@ -21,33 +21,39 @@ const CIRCLE_RADIUS_RATIO = 80;
 const BARS = 10;
 const FONT_FAMILY = "monospace";
 
-// questionably ugly colours, replace with monokai/light classes, or direct to tailwind
-const THEME_COLORS: Record<
-    string,
-    {
-        bg: string;
-        grid: string;
-        text: string;
-        line: string;
-        point: string;
-        hover: string;
-    }
-> = {
-    monokai: {
-        bg: "#333",
-        grid: "#49483e",
-        text: "#f8f8f2",
-        line: "#66d9ef",
-        point: "#a6e22e",
-        hover: "#e6db74",
+type GraphColors = {
+    bg: string;
+    grid: string;
+    text: string;
+    line: string;
+    point: string;
+    hover: string;
+};
+
+const THEME_COLORS: Record<string, GraphColors> = {
+    "stata-dark": {
+        bg: "#232629",
+        grid: "#3d4349",
+        text: "#cccccc",
+        line: "#7686bb",
+        point: "#51cc99",
+        hover: "#7686bb",
     },
-    light: {
-        bg: "#fff",
-        grid: "#ddd",
-        text: "#333",
-        line: "#0366d6",
-        point: "#22863a",
-        hover: "#e36209",
+    native: {
+        bg: "#202020",
+        grid: "#3d3d3d",
+        text: "#d0d0d0",
+        line: "#6ebf26",
+        point: "#ed9d13",
+        hover: "#6ebf26",
+    },
+    "gruvbox-dark": {
+        bg: "#282828",
+        grid: "#504945",
+        text: "#ebdbb2",
+        line: "#b8bb26",
+        point: "#fabd2f",
+        hover: "#b8bb26",
     },
 };
 
@@ -158,7 +164,7 @@ class Graph extends React.Component<Props, State> {
     }
 
     private _colors() {
-        return THEME_COLORS[this.state.theme] || THEME_COLORS.monokai;
+        return THEME_COLORS[this.state.theme];
     }
 
     private _sync_canvas_size(w: number, h: number) {
@@ -592,25 +598,14 @@ class Graph extends React.Component<Props, State> {
     };
 
     render() {
-        const is_dark = this.state.theme === "monokai";
-
         return (
-            <div className={this.state.theme}>
+            <div>
                 {this.props.title ? (
-                    <div
-                        className="lighttext"
-                        style={{ marginBottom: "4px", fontSize: "0.9em" }}
-                    >
+                    <div className="text-[var(--muted)] mb-1 text-[14px]">
                         {this.props.title}
                     </div>
                 ) : null}
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "flex-end",
-                        gap: "4px",
-                    }}
-                >
+                <div className="flex items-end gap-1">
                     <div
                         ref={this.container_ref}
                         style={{
@@ -625,17 +620,17 @@ class Graph extends React.Component<Props, State> {
                     >
                         <canvas
                             ref={this.canvas_ref}
-                            className="pointer"
+                            className="cursor-pointer"
                             style={{
                                 display: "block",
                                 width: "100%",
                                 height: "100%",
-                                outline: `1px solid ${is_dark ? "#555" : "#c3c3c3"}`,
+                                outline: "1px solid var(--border)",
                             }}
                         />
                     </div>
                     <button
-                        className="btn btn-default btn-xs pointer"
+                        className="cursor-pointer rounded border border-[var(--border)] bg-[var(--bg)] px-1.5 py-0.5 text-[var(--fg)] hover:bg-[var(--hover)]"
                         style={{
                             display: this.state.show_reset
                                 ? "inline-block"
