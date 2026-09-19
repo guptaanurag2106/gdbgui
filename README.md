@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-A browser-based frontend to gdb (gnu debugger)
+A browser-based frontend to gdb for C, C++, Go, Rust, and Fortran.
 </h3>
 
 <p align="center">
@@ -14,6 +14,8 @@ A browser-based frontend to gdb (gnu debugger)
 </p>
 
 ---
+
+**Docs**: https://guptaanurag2106.github.io/gdbgui/
 
 **Source Code**: https://github.com/guptaanurag2106/gdbgui/
 
