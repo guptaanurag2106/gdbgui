@@ -84,35 +84,21 @@ const Tree = {
         Tree.gdb_var_being_updated = null;
     },
     _update_canvas_size: function () {
-        if (!Tree.height_input || !Tree.width_input) return;
-        if (
-            Tree.network &&
-            // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-            Tree.network.canvas &&
-            // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-            Tree.network.canvas.options
-        ) {
-            // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-            if (parseInt(Tree.width_input.value)) {
-                // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-                Tree.network.canvas.options["width"] =
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property value does not exist on type HTMLElement
-                    parseInt(Tree.width_input.value) + "px";
-            } else {
-                // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-                Tree.network.canvas.options["width"] = "100%";
-            }
-            // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-            if (Tree.height_input.value) {
-                // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-                Tree.network.canvas.options["height"] =
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property value does not exist on type HTMLElement
-                    parseInt(Tree.height_input.value) + "px";
-            } else {
-                // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-                Tree.network.canvas.options["height"] = "100%";
-            }
-        }
+        if (!Tree.height_input || !Tree.width_input || !Tree.network) return;
+        // @ts-expect-error ts-migrate(2339) FIXME: Property value does not exist on type HTMLElement
+        const width_input_value = Tree.width_input.value;
+        // @ts-expect-error ts-migrate(2339) FIXME: Property value does not exist on type HTMLElement
+        const height_input_value = Tree.height_input.value;
+        const width = parseInt(width_input_value)
+            ? parseInt(width_input_value) + "px"
+            : "100%";
+        const height = height_input_value
+            ? parseInt(height_input_value) + "px"
+            : "100%";
+        // setOptions resizes the canvas and redraws; writing to
+        // network.canvas.options directly has no effect.
+        // @ts-expect-error ts-migrate(2339) FIXME: Property setOptions does not exist on type null
+        Tree.network.setOptions({ width: width, height: height });
     },
     // @param node: gdb variable object
     // @return string for node label in the tree

@@ -1,6 +1,6 @@
 gdb can be used in a plethora of environments. These guides help you get gdb and gdbgui working in specific environments.
 
-Remember, these guides, like gdbgui, are **open source** and can be edited by you, the users! See [contributing](contributing) to modify these docs.
+Remember, these guides, like gdbgui, are **open source** and can be edited by you, the users! See [contributing](contributing.md) to modify these docs.
 
 ## Running Locally
 
@@ -136,5 +136,5 @@ gdbgui -g arm-linux-gnuabi-gdb
 Links:
 
 - [Building GDB and GDBserver for cross debugging](https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver)
-- [http://www.brain-dump.org/blog/entry/138/Cross_Arch_Remote_Debugging_with_gdb_and_gdbserver](Cross Arch Remote Debugging with gdb and gdbserver)
+- [Cross Arch Remote Debugging with gdb and gdbserver](http://www.brain-dump.org/blog/entry/138/Cross_Arch_Remote_Debugging_with_gdb_and_gdbserver)
 - [support remote debug from x86_64 based PC gdb client with gdbgui, to ARM arch gdbserver (multiarch)](https://github.com/cs01/gdbgui/issues/237)

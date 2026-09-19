@@ -3,101 +3,49 @@ import React from "react";
 import Actions from "./Actions";
 import { store } from "statorgfc";
 import { btn_style, input_style } from "./styles";
-import { ChevronDown } from "lucide-react";
 
 type State = any;
 
 type Props = { signals: Record<string, string> };
 
 class InferiorProgramInfo extends React.Component<Props, State> {
-    dropdownRef = React.createRef<HTMLDivElement>();
     constructor(props: Props) {
         super(props);
-        this.get_li_for_signal = this.get_li_for_signal.bind(this);
-        this.get_dropdown = this.get_dropdown.bind(this);
         this.state = {
             selected_signal: "SIGINT",
             other_pid: "",
-            dropdown_open: false,
         };
         store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
     }
-    componentDidMount() {
-        document.addEventListener("mousedown", this._handle_click_outside);
-    }
-    componentWillUnmount() {
-        document.removeEventListener("mousedown", this._handle_click_outside);
-    }
-    _handle_click_outside = (e: MouseEvent) => {
-        if (
-            this.state.dropdown_open &&
-            this.dropdownRef.current &&
-            !this.dropdownRef.current.contains(e.target as Node)
-        ) {
-            this.setState({ dropdown_open: false });
-        }
-    };
-    get_li_for_signal(s: any, signal_key: any) {
-        let onclick = function () {
-            let obj = {};
-            // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            obj[signal_key] = s;
-            // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            this.setState(obj);
-        }.bind(this);
-
-        return (
-            <li
-                key={s}
-                className="px-2 py-1 cursor-pointer text-[var(--fg)] hover:bg-[var(--hover)]"
-                value={s}
-                onClick={onclick}
-            >
+    get_signal_options() {
+        // SIGKILL and SIGINT first, then the rest
+        const ordered = Object.keys(this.props.signals).sort((a, b) => {
+            const rank = (s: string) =>
+                s === "SIGINT" ? 0 : s === "SIGKILL" ? 1 : 2;
+            return rank(a) - rank(b) || a.localeCompare(b);
+        });
+        return ordered.map((s) => (
+            <option key={s} value={s}>
                 {`${s} (${this.props.signals[s]})`}
-            </li>
-        );
-    }
-    get_signal_choices(signal_key: any) {
-        let signals = [];
-        for (let s in this.props.signals) {
-            if (s === "SIGKILL" || s === "SIGINT") {
-                signals.push(this.get_li_for_signal(s, signal_key));
-            }
-        }
-        for (let s in this.props.signals) {
-            if (s !== "SIGKILL" && s !== "SIGINT") {
-                signals.push(this.get_li_for_signal(s, signal_key));
-            }
-        }
-        return signals;
+            </option>
+        ));
     }
     get_dropdown() {
+        // Native select: the browser renders the popup list in its own
+        // layer, so it is never clipped by the sidebar's overflow and
+        // never shifts layout or covers the sections below.
         return (
-            <div
-                ref={this.dropdownRef}
-                style={{ display: "inline-block", position: "relative" }}
+            <select
+                style={{ ...input_style, width: "auto" }}
+                value={this.state.selected_signal}
+                onChange={(e) => {
+                    this.setState({
+                        selected_signal: e.currentTarget.value,
+                    });
+                }}
             >
-                <button
-                    style={btn_style}
-                    type="button"
-                    onClick={() =>
-                        this.setState({
-                            dropdown_open: !this.state.dropdown_open,
-                        })
-                    }
-                >
-                    {this.state.selected_signal}{" "}
-                    <ChevronDown size={14} className="inline" />
-                </button>
-                {this.state.dropdown_open && (
-                    <ul
-                        className="absolute left-0 top-full z-[110] min-w-[140px] max-h-[300px] overflow-auto list-none m-0 p-0 border border-[var(--border)] bg-[var(--surface)] shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
-                        onClick={() => this.setState({ dropdown_open: false })}
-                    >
-                        {this.get_signal_choices("selected_signal")}
-                    </ul>
-                )}
-            </div>
+                {this.get_signal_options()}
+            </select>
         );
     }
     render() {

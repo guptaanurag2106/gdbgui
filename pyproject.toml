@@ -18,6 +18,8 @@ dependencies = [
     "starlette>=1.6.0",
     "jinja2>=3.1.0",
     "Pygments>=2.21",
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.7.7",
 ]
 keywords = [
     "gdb",

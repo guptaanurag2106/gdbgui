@@ -1,8 +1,19 @@
 site_name: gdbgui
-site_description: A browser-based frontend to gdb (gnu debugger)
+site_description: A browser-based frontend to gdb for C, C++, Go, Rust, and Fortran.
 
 theme:
   name: "material"
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+        
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
 repo_name: guptaanurag2106/gdbgui
 repo_url: https://github.com/guptaanurag2106/gdbgui
 site_url: https://guptaanurag2106.github.io/gdbgui/

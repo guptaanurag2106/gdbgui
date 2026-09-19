@@ -22,7 +22,7 @@ A browser-based frontend to gdb (gnu debugger)
 ## Origin
 
 This project is a fork of [gdbgui](https://github.com/cs01/gdbgui),
-originally created and maintained by Chad Smith (Grass Fed Code).
+originally created and maintained by [Chad Smith (Grass Fed Code)](https://chadsmith.dev/).
 
 It retains the GPLv3 license and contains substantial modifications
 and new contributions by Anurag Gupta.

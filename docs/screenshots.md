@@ -30,9 +30,7 @@ Choose from any signal your OS supports to send to the inferior. For example, to
 ## Source Code
 View source, assembly, add breakpoints. All symbols used to compile the
 target are listed in a dropdown above the source code viewer, and have
-autocompletion capabilities. There are two different color schemes: dark (monokai), and a light theme (default).
-
-![image](https://github.com/guptaanurag2106/gdbgui/raw/master/screenshots/source.png)
+autocompletion capabilities. There are three different color schemes: stata-dark, gruvbox-dark and native. See [pygments gallery](https://pygments.org/styles/) for colours.
 
 With assembly. Note the bold line is the current instruction that gdb is
 stopped on.

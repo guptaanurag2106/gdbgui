@@ -131,9 +131,20 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
             resizer = (
                 <div
                     onMouseDown={this.onmousedown_resizer}
-                    style={{ textAlign: "right", cursor: "ns-resize" }}
+                    style={{ textAlign: "center", cursor: "ns-resize" }}
                     title="Click and drag to resize height"
                 >
+                    <img
+                        src="/static/vendor/images/splitjs/grips/horizontal.png"
+                        alt=""
+                        draggable={false}
+                        style={{
+                            width: "25px",
+                            height: "auto",
+                            opacity: 0.6,
+                            margin: "0 auto",
+                        }}
+                    />
                     {reset_size_button}
                 </div>
             );
@@ -253,17 +264,19 @@ class RightSidebar extends React.Component<RightSidebarProps, any> {
                     title="Tree"
                     collapsed={true}
                     content={
-                        <div className="flex gap-1.5 mb-1">
-                            <input
-                                id="tree_width"
-                                placeholder="width (px)"
-                                style={{ ...input_style }}
-                            />
-                            <input
-                                id="tree_height"
-                                placeholder="height (px)"
-                                style={{ ...input_style }}
-                            />
+                        <div>
+                            <div className="flex gap-1.5 mb-1">
+                                <input
+                                    id="tree_width"
+                                    placeholder="width (px)"
+                                    style={{ ...input_style }}
+                                />
+                                <input
+                                    id="tree_height"
+                                    placeholder="height (px)"
+                                    style={{ ...input_style }}
+                                />
+                            </div>
                             <div id={constants.tree_component_id} />
                         </div>
                     }

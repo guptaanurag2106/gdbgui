@@ -28,7 +28,7 @@ A browser-based frontend to gdb (gnu debugger)
 
 It's perfect for beginners and experts. Simply run `gdbgui` from the terminal to start the gdbgui server, and a new tab will open in your browser.
 
-**Sound Good? Get started with [installation](installation)**.
+**Sound Good? Get started with [installation](installation.md)**.
 
 ## Testimonials
 
@@ -71,7 +71,7 @@ gdbgui is distributed through
 ## Origin
 
 This project is a fork of [gdbgui](https://github.com/cs01/gdbgui),
-originally created by [cs01](https://chadsmith.dev/).
+originally created by [Chad Smith (Grass Fed Code)](https://chadsmith.dev/).
 
 It retains the GPLv3 license and contains substantial modifications
 and new contributions by Anurag Gupta.
