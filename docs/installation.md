@@ -1,129 +1,89 @@
 # gdbgui installation
 
-There are a few ways to install gdbgui on your machine. There is even a way to run gdbgui without installing it. Read on to to find the one that's right for you.
+gdbgui is distributed as a Python wheel and source archive in the
+[Github Releases](https://github.com/guptaanurag2106/gdbgui/releases).
 
-## Method 1: Using `pipx` (recommended)
+## Install a released wheel
 
-gdbgui recommends using [pipx](https://github.com/pipxproject/pipx), a program to run Python CLI binaries in isolated environments.
+Download the `gdbgui-<version>-py3-none-any.whl` file from a release. For an
+isolated command-line installation, use [pipx](https://pipx.pypa.io/):
 
-You can install pipx like this:
-
-```
-python3 -m pip install --user pipx
-python3 -m userpath append ~/.local/bin
-```
-
-Restart/re-source your console to make sure the userpath is up to date.
-
-Then, install gdbgui with pipx:
-
-```
-pipx install gdbgui
+```bash
+pipx install ./gdbgui-0.16.0.0-py3-none-any.whl
 ```
 
-To upgrade run
+You can also install it in an existing virtual environment:
 
-```
-pipx upgrade gdbgui
-```
-
-When installation is finished, type `gdbgui` from the command line to run it, or `gdbgui -h` for help.
-
-To uninstall, run
-
-```
-pipx uninstall gdbgui
+```bash
+python -m pip install ./gdbgui-0.16.0.0-py3-none-any.whl
 ```
 
-### Try Without Installing
+Run gdbgui with:
 
-By using [pipx](https://github.com/pipxproject/pipx), you can run Python CLI programs in ephemeral one-time virtual environments.
-
-```
-pipx run gdbgui
+```bash
+gdbgui
 ```
 
-A new tab running the latest version of gdbgui will open in your browser. Press CTRL+C to end the process, and your system will remain untouched.
+Use `gdbgui --help` to see the available options. To remove the pipx
+installation, run `pipx uninstall gdbgui`.
 
-## Method 2: Using `pip`
+## Install from source
 
-`pip` is a popular installer for Python packages. gdbgui is a Python package and as such can be installed with pip, though we recommend using `pipx` rather than `pip` if possible.
+Source installation is for users who want to run with latest changes (which might
+have bugs) instead of the released version. This requires python 3.13 or newer,
+Node.js, yarn.
 
-If you prefer to use Virtual Environments, you can activate one and then run
+Clone the repository and build the frontend bundle:
 
-```
-pip install gdbgui
-```
-
-You can get upgrades with
-
-```
-pip install --upgrade gdbgui
-```
-
-To uninstall, run
-
-```
-pip uninstall gdbgui
+```bash
+git clone https://github.com/guptaanurag2106/gdbgui.git
+cd gdbgui
+yarn install --frozen-lockfile
+yarn build
 ```
 
-## Method 3: Download and Run Binary Executable
+Then install the checkout with pipx:
 
-Download and run the binary executable for your system from [GitHub Releases](https://github.com/guptaanurag2106/gdbgui/releases).
+```bash
+pipx install .
+```
 
-## System Dependencies for Python Package
+To upgrade (after pulling newer changes) or uninstall:
 
-Note that this only applies if you are installing the Python package, and not using the binary executable.
+```bash
+pipx upgrade .
+pipx uninstall .
+```
 
-- gdb (gnu debugger)
-- Python 3.4+ (recommended) or 2.7
-- pip version 8 or higher
+For a normal virtual environment, use `python -m pip install .` instead.
 
-### Linux Dependencies
+The repository also includes `runner.py` for development tasks such as tests,
+linting, documentation, and distribution builds. Run `python runner.py help`
+for the available commands.
 
-    sudo apt install gdb python3
+## System dependencies
 
-### macOS Dependencies
+- gdb (GNU debugger)
+- Python 3.13 or newer
 
-    brew install python3
-    brew install gdb --with-python --with-all-targets
+### Linux
 
-macOS users must also codesign gdb: follow [these
-instructions](http://andresabino.com/2015/04/14/codesign-gdb-on-mac-os-x-yosemite-10-10-2/). This will fix the error
+```bash
+sudo apt install gdb python3
+```
+
+### macOS
+
+```bash
+brew install python3
+brew install gdb
+```
+
+macOS users may also need to codesign gdb. See the
+[gdb codesigning instructions](http://andresabino.com/2015/04/14/codesign-gdb-on-mac-os-x-yosemite-10-10-2/)
+if gdb reports:
 `please check gdb is codesigned - see taskgated(8)`.
 
-### Windows Dependencies
+### Windows
 
-Note that windows is only supported for gdbgui versions less than 0.14.
-
-- [Python 3](https://www.python.org/downloads/windows/)
-- gdb, make, gcc
-
-If you do not have already have gdb/make/gcc installed, there are two options to install them on Windows: `MinGW` and `cygwin`.
-
-##### MinGW (recommended)
-
-Minimal GNU for Windows ([`MinGW`]([http://mingw.org/)) is the recommended Windows option. [Install MinGW](https://sourceforge.net/projects/mingw/files/Installer/mingw-get-setup.exe/download) with the "MinGW Base System" package. This is the default package which contains `make`, `gcc`, and `gdb`.
-
-It will install to somewhere like `C:\MinGW\bin\...`. For example `C:\MinGW\bin\gdb.exe`, `C:\MinGW\bin\mingw32-make.exe`, etc.
-
-Ensure this MinGW binary directory (i.e. `C:\MinGW\bin\`) is on your "Path" environment variable: Go to `Control Panel > System Properties > Environment Variables > System Variables > Path` and make sure `C:\MinGW\bin\` is added to that list. If it is not added to your "Path", you will have to run gdbgui with the path explicitly called out, such as `gdbgui -g C:\MinGW\bin\gdb.exe`.
-
-##### Cygwin
-
-Cygwin is a more UNIX-like compatibility layer on Windows, and `gdbgui` works with it as well.
-
-- Install [cygwin](https://cygwin.com/install.html)
-
-When installing cygwin packages, add the following:
-
-- python3
-- python3-pip
-- python3-devel
-- gdb
-- gcc-core
-- gcc-g++
-
-### Running from Source
-
-See the [contributing](/contributing) section.
+gdbgui does not support Windows at the moment.

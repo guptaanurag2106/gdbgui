@@ -1,5 +1,36 @@
 # gdbgui release history
 
+## 0.16.0
+
+This release is focused mostly on code cleanup, migrations (and modernization) and performance improvements.
+### Breaking changes
+
+- Remove dashboard and multi-session handling. One gdbgui instance is one client, one gdb instance, one debugged program.
+- Persist configuration in `$XDG_CONFIG_HOME/gdbgui/config.json`. All options can be modified in the UI.
+
+
+### Code cleanup, migrations
+
+- Remove jquery, bootstrap, lodash, moment, flot and related vendored assets.
+- Replace Flask with Starlette and uvicorn
+- Replace socket.io with native WebSockets
+- Upgrade Typescript to 5.x, Webpack to 5
+- Reduce typescript suppression debt, better error handling
+- Replace `setup.py` with `pyproject.toml`
+
+### Performance
+
+- Much lower First and Largest Contentful Paint times
+- Smaller build sizes (removed multiple vendored libraries)
+- No global ~50ms loop, polling. Switched to event-driven PTY readers using asyncio, lower latency for gdb responses
+
+
+### Packaging
+
+- Support Python 3.13 and newer.
+- Build wheels and source archives using `pyproject.toml`.
+
+
 ## 0.15.3.0
 - Update default python version to 3.13
 

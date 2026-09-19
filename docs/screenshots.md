@@ -96,16 +96,6 @@ yellow.
 
 ![image](https://github.com/guptaanurag2106/gdbgui/raw/master/screenshots/console.png)
 
-## authentication
-Authentication can be enabled when serving on a publicly accessible IP address. See `gdbgui --help` for instructions on how to enable authentication.
-
-![image](https://github.com/guptaanurag2106/gdbgui/raw/master/screenshots/authentication.png)
-
-
-## Dashboard
-A dashboard is available to let you look at all gdb instances managed by gdbgui. You can kill them, or attach to them. More than one person can attach to a managed gdb subprocess and participate in the debugging session simultaneously. i.e. if one person steps forward, all connected users see the program step forward in real time.
-
-![image](https://github.com/guptaanurag2106/gdbgui/raw/master/screenshots/dashboard.png)
 
 ## gdbgui at launch
 

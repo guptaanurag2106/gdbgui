@@ -20,28 +20,6 @@ button {
    the root class re-themes every component using these variables.
    Token mirrors (--tok-*) copy the pygments token colors for chrome use;
    highlighted source itself keeps using the pygments token classes. */
-.pygments-default {
-  --bg: #f8f8f8; /* .pygments-default background */
-  --fg: #000000; /* default browser text / Pygments base text */
-  --muted: #717171; /* .go */
-  --border: #d4d4d4;
-  --surface: #f8f8f8;
-  --topbar-bg: #ececec;
-  --accent: #008000; /* .k */
-  --accent-2: #ba2121; /* .s */
-  --hover: #dcdcdc;
-  --hll: #ffffcc; /* .hll */
-  --gutter: #d4d4d4;
-  --gutter-hover: #008000;
-  --tok-keyword: #008000;
-  --tok-comment: #3d7b7b;
-  --tok-string: #ba2121;
-  --tok-number: #666666;
-  --tok-function: #0000ff;
-  --tok-variable: #19177c;
-  --tok-preproc: #9c6500;
-  --tok-type: #b00040;
-}
 .pygments-stata-dark {
   --bg: #232629; /* .pygments-stata-dark background */
   --fg: #cccccc; /* .n */

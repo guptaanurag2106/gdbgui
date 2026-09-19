@@ -37,7 +37,7 @@ def wait_and_open_browser(browsername, url, host, port):
 
 
 def run_server(
-    config: dict[str, Any],
+    config: dict[str, Any] = {},
     host=DEFAULT_HOST,
     port=DEFAULT_PORT,
     debug=False,

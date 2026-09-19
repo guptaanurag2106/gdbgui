@@ -119,7 +119,7 @@ async def socket(socket: WebSocket):
         socket.app.state.socket = socket
         socket.app.state.debug_session = debug_session
 
-    logger.info("Created background thread to read gdb responses")
+    logger.info("Attached asyncio readers to pty fds")
     try:
         while True:
             try:

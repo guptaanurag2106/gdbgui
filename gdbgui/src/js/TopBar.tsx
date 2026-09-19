@@ -24,7 +24,7 @@ let show_license = function () {
             <a href="https://github.com/guptaanurag2106/gdbgui/blob/master/LICENSE">
                 GNU General Public License v3.0
             </a>
-            <p>Copyright © Chad Smith</p>
+            <p>Copyright © Chad Smith (original), Anurag Gupta (fork)</p>
             <p>
                 This software can be used personally or commercially for free.
             </p>
@@ -38,8 +38,7 @@ let show_license = function () {
             </p>
             <p>
                 If you wish to redistribute gdbgui as part of a closed source
-                product, you can do so for a fee. Contact
-                chadsmith.software@gmail.com for details.
+                product, you can do so for a fee.
             </p>
         </React.Fragment>,
     );
@@ -50,9 +49,11 @@ let show_about = function () {
         "About gdbgui",
         <div>
             <div>gdbgui, v{store.get("gdbgui_version")}</div>
-            <div>Copyright © Chad Smith</div>
+            <div>Copyright © Chad Smith (original), Anurag Gupta (fork)</div>
             <div>
-                <a href="https://chadsmith.dev">chadsmith.dev</a>
+                <a href="https://github.com/guptaanurag2106">
+                    github/guptaanurag2106
+                </a>
             </div>
         </div>,
     );

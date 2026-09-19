@@ -1,5 +1,5 @@
 <p align="center">
-<a href="http://gdbgui.com"><img src="https://github.com/guptaanurag2106/gdbgui/raw/master/images/gdbgui_banner.png"></a>
+<a href="https://github.com/guptaanurag2106/gdbgui"><img src="https://github.com/guptaanurag2106/gdbgui/raw/master/images/gdbgui_banner.png"></a>
 </p>
 
 <h3 align="center">
@@ -14,8 +14,6 @@ A browser-based frontend to gdb (gnu debugger)
 </p>
 
 ---
-
-**Documentation**: https://gdbgui.com
 
 **Source Code**: https://github.com/guptaanurag2106/gdbgui/
 

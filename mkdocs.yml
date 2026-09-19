@@ -5,27 +5,21 @@ theme:
   name: "material"
 repo_name: guptaanurag2106/gdbgui
 repo_url: https://github.com/guptaanurag2106/gdbgui
+site_url: https://guptaanurag2106.github.io/gdbgui/
 
 nav:
   - Home: "index.md"
   - Screenshot Tour: "screenshots.md"
   - Installation: "installation.md"
   - Getting Started: "gettingstarted.md"
-  - Examples: "examples.md"
   - Guides: "guides.md"
   - API: "api.md"
   - FAQ: "faq.md"
   - Contributing: "contributing.md"
   - How it Works: "howitworks.md"
-  - Contact: "contact.md"
   - Changelog: "changelog.md"
 
 markdown_extensions:
   - admonition #  note blocks, warning blocks -- https://github.com/mkdocs/mkdocs/issues/1659
   - markdown.extensions.codehilite:
       guess_lang: false
-
-extra:
-  analytics:
-    provider: google
-    property: UA-90243909-2    

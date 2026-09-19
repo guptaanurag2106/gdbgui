@@ -3,7 +3,7 @@ import Actions from "./Actions";
 import ToolTip from "./ToolTip";
 import React from "react";
 import { toggle_config_key, update_config_key } from "./Config";
-import { ChevronDown , X} from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 
 /**
  * Settings modal when clicking the gear icon
@@ -153,7 +153,7 @@ class Settings extends React.Component {
                         className="float-right text-2xl leading-none text-[var(--muted)] hover:text-[var(--fg)]"
                         onClick={() => store.set("show_settings", false)}
                     >
-                            <X size={18} className="inline" />
+                        <X size={18} className="inline" />
                     </button>
                     <h4 className="mb-4 text-lg font-semibold">Settings</h4>
                     {this.get_table()}

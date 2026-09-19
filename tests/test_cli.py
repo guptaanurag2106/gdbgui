@@ -2,13 +2,13 @@ import sys
 from typing import List
 from unittest import mock
 
-import gdbgui
+from gdbgui import cli
 import pytest  # type: ignore
 
 
 def run_gdbgui_cli(gdbgui_args: List[str]):
     with mock.patch.object(sys, "argv", ["gdbgui"] + gdbgui_args):
-        return gdbgui.cli.main()  # type: ignore
+        return cli.main()  # type: ignore
 
 
 # @pytest.mark.parametrize(

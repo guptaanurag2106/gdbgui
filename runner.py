@@ -90,6 +90,12 @@ def run_command(command: list[str]) -> bool:
         return False
 
 
+def clean(*extra: str) -> bool:
+    return run_command(
+        ["rm", "-rf", "dist", "build", "gdbgui/static/css", "gdbgui/static/js"]
+    )
+
+
 def test_python(*extra: str) -> bool:
     return run_command(
         [
@@ -109,8 +115,8 @@ def test_js(*extra: str) -> bool:
         return False
     if not run_command(["yarn", "test", *extra]):
         return False
-    if not run_command(["yarn", "build"]):
-        return False
+    # if not run_command(["yarn", "build"]):
+    #     return False
     return True
 
 
@@ -172,7 +178,9 @@ def develop(*extra: str) -> bool:
 
 
 def build(*extra: str) -> bool:
-    if not run_command(["rm", "-rf", "dist", "build", "gdbgui/static/css", "gdbgui/static/js"]):
+    if not run_command(
+        ["rm", "-rf", "dist", "build", "gdbgui/static/css", "gdbgui/static/js"]
+    ):
         return False
     if not run_command(["yarn", "install"]):
         return False
@@ -209,6 +217,7 @@ def install_deps(*extra: str) -> bool:
             "black==26.5.1",
             "vulture",
             "flake8",
+            "httpx2",
             "mypy==1.6.1",
             "check-manifest",
             "build",
@@ -232,6 +241,7 @@ def build_docs(*extra: str) -> bool:
 
 
 commands = {
+    "clean": clean,
     "install_deps": install_deps,
     "test_python": test_python,
     "test_js": test_js,

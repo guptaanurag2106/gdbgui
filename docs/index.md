@@ -1,5 +1,5 @@
 <p align="center">
-<a href="http://gdbgui.com"><img src="https://github.com/guptaanurag2106/gdbgui/raw/master/images/gdbgui_banner.png"></a>
+<a href="https://github.com/guptaanurag2106/gdbgui"><img src="https://github.com/guptaanurag2106/gdbgui/raw/master/images/gdbgui_banner.png"></a>
 </p>
 
 <h3 align="center">
@@ -10,10 +10,6 @@ A browser-based frontend to gdb (gnu debugger)
 
 <a href="https://github.com/guptaanurag2106/gdbgui/actions">
 <img src="https://github.com/guptaanurag2106/gdbgui/workflows/Tests/badge.svg?branch=master" alt="CI Tests" /></a>
-
-<a href="https://badge.fury.io/py/gdbgui">
-<img src="https://badge.fury.io/py/gdbgui.svg" alt="PyPI version" >
-</a>
 
 <img src="https://pepy.tech/badge/gdbgui" alt="Download Count" />
 
@@ -75,7 +71,7 @@ gdbgui is distributed through
 ## Origin
 
 This project is a fork of [gdbgui](https://github.com/cs01/gdbgui),
-originally created by cs01.
+originally created by [cs01](https://chadsmith.dev/).
 
 It retains the GPLv3 license and contains substantial modifications
 and new contributions by Anurag Gupta.

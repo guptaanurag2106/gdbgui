@@ -1,4 +1,4 @@
-export const base_style = { fontSize: "134x", color: "var(--fg)" };
+export const base_style = { fontSize: "14px", color: "var(--fg)" };
 
 export const btn_style = {
     backgroundColor: "var(--accent)",

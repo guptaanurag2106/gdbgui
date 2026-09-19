@@ -134,6 +134,7 @@ gdbgui -g arm-linux-gnuabi-gdb
 ```
 
 Links:
-* [Building GDB and GDBserver for cross debugging](https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver)
-* [http://www.brain-dump.org/blog/entry/138/Cross_Arch_Remote_Debugging_with_gdb_and_gdbserver](Cross Arch Remote Debugging with gdb and gdbserver)
-* [support remote debug from x86_64 based PC gdb client with gdbgui, to ARM arch gdbserver (multiarch)](https://github.com/cs01/gdbgui/issues/237)
+
+- [Building GDB and GDBserver for cross debugging](https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver)
+- [http://www.brain-dump.org/blog/entry/138/Cross_Arch_Remote_Debugging_with_gdb_and_gdbserver](Cross Arch Remote Debugging with gdb and gdbserver)
+- [support remote debug from x86_64 based PC gdb client with gdbgui, to ARM arch gdbserver (multiarch)](https://github.com/cs01/gdbgui/issues/237)
