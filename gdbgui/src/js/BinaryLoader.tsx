@@ -12,8 +12,6 @@ const TARGET_TYPES = {
     file: "file",
     server: "server",
     process: "process",
-    //TODO:what is this target type
-    target_download: "target_download",
 };
 
 interface BinaryLoaderState {
@@ -31,7 +29,6 @@ interface BinaryLoaderState {
  * and specify inputs
  */
 interface BinaryLoaderProps { }
-//TODO:allow to set cwd and gdb-cmd here only
 class BinaryLoader extends React.Component<
     BinaryLoaderProps,
     BinaryLoaderState
@@ -116,11 +113,10 @@ class BinaryLoader extends React.Component<
             return;
         }
 
-        this._add_user_input_to_history(user_input, user_cwd_input);
-
         if (this.state.target_type === TARGET_TYPES.file) {
             const { binary, args } =
                 this._parse_binary_and_args_from_user_input(user_input);
+            this._add_user_input_to_history(binary, args, user_cwd_input);
             Actions.set_gdb_binary_and_arguments(binary, args, user_cwd_input);
         } else if (this.state.target_type === TARGET_TYPES.server) {
             Actions.connect_to_gdbserver(user_input);
@@ -144,17 +140,18 @@ class BinaryLoader extends React.Component<
         this.set_target_app(text);
     }
 
-    _add_user_input_to_history(binary_and_args: string, cwd: string) {
+    _add_user_input_to_history(binary: string, args: string[], cwd: string) {
+        const binary_and_args_comb = [binary, ...args].join(" ");
         const found_index = this.state.targets.findIndex(
-            (target) => target.binary_and_args_comb === binary_and_args,
+            (target) => target.binary_and_args_comb === binary_and_args_comb,
         );
         let element: Target | null = null;
         if (found_index !== -1) {
             element = this.state.targets.splice(found_index, 1)[0];
         }
         this.state.targets.unshift({
-            binary_and_args: binary_and_args.split(" "),
-            binary_and_args_comb: binary_and_args,
+            binary_and_args: [binary, ...args],
+            binary_and_args_comb: binary_and_args_comb,
             project_cwd: cwd,
             gdb_cmd: element?.gdb_cmd || "",
         }); // add to beginning
@@ -173,7 +170,7 @@ class BinaryLoader extends React.Component<
      * @param      {string}  user_input raw input from user
      * @return     {Object}  { the binary (string) and arguments (array) parsed from user input }
      */
-    _parse_binary_and_args_from_user_input(user_input: any) {
+    _parse_binary_and_args_from_user_input(user_input: string) {
         let list_of_params = Util.string_to_array_safe_quotes(user_input),
             binary = "",
             args: any = [],

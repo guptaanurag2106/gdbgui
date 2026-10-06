@@ -1,10 +1,11 @@
 import React from "react";
 import { store } from "statorgfc";
-import FileOps from "./FileOps";
-import constants from "./constants";
-import SourceFileAutocomplete from "./SourceFileAutocomplete";
-import FileSystem from "./FileSystem";
 import Actions from "./Actions";
+import CompletionDropdown from "./CompletionDropdown";
+import constants from "./constants";
+import FileOps from "./FileOps";
+import FileSystem from "./FileSystem";
+import Util from "./Util";
 import { btn_style } from "./styles";
 
 const default_rootnode = {
@@ -50,117 +51,6 @@ class FoldersView extends React.Component<{}, State> {
         this.collapse_all = this.collapse_all.bind(this);
     }
 
-    render() {
-        let source_code_state = this.state.source_code_state,
-            file_is_rendered =
-                source_code_state ===
-                    constants.source_code_states.SOURCE_CACHED ||
-                source_code_state ===
-                    constants.source_code_states.ASSM_AND_SOURCE_CACHED,
-            can_reveal =
-                file_is_rendered && this.state.source_file_paths.length,
-            hiding_entries =
-                this.state.source_file_paths.length >
-                this.max_filesystem_entries,
-            has_files =
-                Array.isArray(this.state.source_file_paths) &&
-                this.state.source_file_paths.length > 0,
-            binary_loaded =
-                (this.state.inferior_program ||
-                    constants.inferior_states.unknown) !==
-                constants.inferior_states.unknown,
-            folder_btn_style = (disabled: boolean): React.CSSProperties => ({
-                ...btn_style,
-                ...(disabled
-                    ? {
-                          backgroundColor: "var(--hover)",
-                          color: "var(--muted)",
-                          cursor: "not-allowed" as const,
-                      }
-                    : {}),
-            });
-
-        return (
-            <div className="flex flex-col gap-2 text-[var(--fg)] bg-[var(--topbar-bg)] overflow-y-auto h-full">
-                <button
-                    className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                    style={folder_btn_style(!binary_loaded)}
-                    disabled={!binary_loaded}
-                    onClick={Actions.fetch_source_files}
-                >
-                    Fetch source files
-                </button>
-
-                <SourceFileAutocomplete
-                    file_paths={this.state.source_file_paths}
-                    disabled={!has_files}
-                />
-
-                <div className="flex flex-wrap gap-1">
-                    <button
-                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                        style={folder_btn_style(!has_files)}
-                        disabled={!has_files}
-                        onClick={this.expand_all}
-                    >
-                        Expand all
-                    </button>
-                    <button
-                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                        style={folder_btn_style(!has_files)}
-                        disabled={!has_files}
-                        onClick={this.collapse_all}
-                    >
-                        Collapse all
-                    </button>
-                    {can_reveal && (
-                        //TODO:button does what??
-                        <button
-                            className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                            style={btn_style}
-                            onClick={() =>
-                                this.reveal_path(
-                                    store.get("fullname_to_render"),
-                                )
-                            }
-                        >
-                            Reveal current file
-                        </button>
-                    )}
-                </div>
-
-                {store.get("source_file_paths").length > 0 && (
-                    <p style={{ color: "var(--muted)" }}>
-                        {store.get("source_file_paths").length} known files used
-                        to compile the inferior program
-                    </p>
-                )}
-
-                {hiding_entries && (
-                    <p
-                        style={{
-                            backgroundColor: "var(--accent-2)",
-                            color: "var(--bg)",
-                            padding: "4px",
-                        }}
-                    >
-                        Maximum entries in tree below is{" "}
-                        {this.max_filesystem_entries} (hiding{" "}
-                        {store.get("source_file_paths").length -
-                            this.max_filesystem_entries}
-                        ). All files can still be searched for in the input
-                        above.
-                    </p>
-                )}
-
-                <FileSystem
-                    rootnode={this.state.rootnode}
-                    onToggle={this.onToggle}
-                    onClickName={this.onClickName}
-                />
-            </div>
-        );
-    }
     onClickName(node: any) {
         let curnode = node,
             path = [];
@@ -176,6 +66,7 @@ class FoldersView extends React.Component<{}, State> {
             FileOps.user_select_file_to_view(path.join("/"), 1);
         }
     }
+
     reveal_path(path: any) {
         if (!path) {
             return;
@@ -207,6 +98,7 @@ class FoldersView extends React.Component<{}, State> {
         }
         this.setState({ rootnode: this.state.rootnode, cursor: curnode });
     }
+
     update_filesystem_data(keys: any) {
         if (keys.indexOf("source_file_paths") === -1) {
             return;
@@ -274,6 +166,7 @@ class FoldersView extends React.Component<{}, State> {
         node.toggled = !node.toggled;
         this.setState({ rootnode: this.state.rootnode });
     }
+
     expand_all() {
         let callback = (node: any) => {
             node.toggled = true;
@@ -283,6 +176,7 @@ class FoldersView extends React.Component<{}, State> {
         }
         this.setState({ rootnode: this.state.rootnode });
     }
+
     collapse_all() {
         let callback = (node: any) => {
             node.toggled = false;
@@ -292,6 +186,7 @@ class FoldersView extends React.Component<{}, State> {
         }
         this.setState({ rootnode: this.state.rootnode });
     }
+
     _dfs(node: any, callback: any) {
         callback(node);
         if (node.children) {
@@ -299,6 +194,132 @@ class FoldersView extends React.Component<{}, State> {
                 this._dfs(child, callback);
             }
         }
+    }
+
+    onDropdownSelect(text: string) {
+        const user_input = text.trim();
+        if (user_input.length === 0) {
+            return;
+        }
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '0' is not assignable to parameter of type 'undefined'
+        const [fullname, line] = Util.parse_fullname_and_line(user_input, 0);
+        FileOps.user_select_file_to_view(fullname, line);
+    }
+
+    render() {
+        let source_code_state = this.state.source_code_state,
+            file_is_rendered =
+                source_code_state ===
+                constants.source_code_states.SOURCE_CACHED ||
+                source_code_state ===
+                constants.source_code_states.ASSM_AND_SOURCE_CACHED,
+            can_reveal =
+                file_is_rendered && this.state.source_file_paths.length,
+            hiding_entries =
+                this.state.source_file_paths.length >
+                this.max_filesystem_entries,
+            has_files =
+                Array.isArray(this.state.source_file_paths) &&
+                this.state.source_file_paths.length > 0,
+            binary_loaded =
+                (this.state.inferior_program ||
+                    constants.inferior_states.unknown) !==
+                constants.inferior_states.unknown,
+            folder_btn_style = (disabled: boolean): React.CSSProperties => ({
+                ...btn_style,
+                ...(disabled
+                    ? {
+                        backgroundColor: "var(--hover)",
+                        color: "var(--muted)",
+                        cursor: "not-allowed" as const,
+                    }
+                    : {}),
+            });
+
+        return (
+            <div className="flex flex-col gap-2 text-[var(--fg)] bg-[var(--topbar-bg)] overflow-y-auto h-full">
+                <button
+                    className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                    style={folder_btn_style(!binary_loaded)}
+                    disabled={!binary_loaded}
+                    onClick={Actions.fetch_source_files}
+                >
+                    Fetch source files
+                </button>
+
+                <CompletionDropdown
+                    list={this.state.source_file_paths}
+                    placeholder="Enter file path to view, press enter"
+                    onSelect={this.onDropdownSelect.bind(this)}
+                    max_items={10}
+                    show_all_on_empty
+                    disabled={!has_files}
+                />
+
+                <div className="flex flex-wrap gap-1">
+                    <button
+                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                        style={folder_btn_style(!has_files)}
+                        disabled={!has_files}
+                        onClick={this.expand_all}
+                    >
+                        Expand all
+                    </button>
+                    <button
+                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                        style={folder_btn_style(!has_files)}
+                        disabled={!has_files}
+                        onClick={this.collapse_all}
+                    >
+                        Collapse all
+                    </button>
+                    {can_reveal && (
+                        //TODO:button does what??
+                        <button
+                            className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
+                            style={btn_style}
+                            onClick={() =>
+                                this.reveal_path(
+                                    store.get("fullname_to_render"),
+                                )
+                            }
+                        >
+                            Reveal current file
+                        </button>
+                    )}
+                </div>
+
+                {store.get("source_file_paths").length > 0 && (
+                    <p style={{ color: "var(--muted)" }}>
+                        {store.get("source_file_paths").length} known files used
+                        to compile the inferior program
+                    </p>
+                )}
+
+                {hiding_entries && (
+                    <p
+                        style={{
+                            backgroundColor: "var(--accent-2)",
+                            color: "var(--bg)",
+                            padding: "4px",
+                        }}
+                    >
+                        Maximum entries in tree below is{" "}
+                        {this.max_filesystem_entries} (hiding{" "}
+                        {store.get("source_file_paths").length -
+                            this.max_filesystem_entries}
+                        ). All files can still be searched for in the input
+                        above.
+                    </p>
+                )}
+
+                <FileSystem
+                    rootnode={this.state.rootnode}
+                    onToggle={this.onToggle}
+                    onClickName={this.onClickName}
+                />
+            </div>
+        );
     }
 }
 
