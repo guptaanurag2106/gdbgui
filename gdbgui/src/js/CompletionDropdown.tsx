@@ -3,7 +3,6 @@ import React from "react";
 type CompletionDropdownProps = {
     list: string[];
     onSelect?: (text: string) => void;
-    onSubmit?: (text: string) => void;
     onChange?: (text: string) => void;
     placeholder?: string;
     initial_value?: string;
@@ -34,6 +33,7 @@ class CompletionDropdown extends React.Component<
     items: DropdownItem[] = [];
     timer: number | null = null;
     ulRef = React.createRef<HTMLUListElement>();
+    inputRef = React.createRef<HTMLInputElement>();
     _search_tokens: string[] = [];
     _damerau_cache: Map<string, number> = new Map();
 
@@ -59,7 +59,12 @@ class CompletionDropdown extends React.Component<
     ) {
         if (prevProps.list !== this.props.list) {
             this.items = this.make_dropdown_items(this.props.list);
-            this.search(this.state.term);
+            // only re-search while the user is interacting; after a
+            // selection the input is blurred, so a list change from the
+            // parent (e.g. new history entry) must not pop it back open
+            if (this.state.isFocused) {
+                this.search(this.state.term);
+            }
         }
         if (prevState.results !== this.state.results && this.ulRef.current) {
             this.ulRef.current.scrollTop = 0;
@@ -371,10 +376,13 @@ class CompletionDropdown extends React.Component<
     }
 
     select(i: number) {
-        const text = this.state.results[i];
-        if (text === undefined) return;
-        this.setState({ term: text, results: [], currentIndex: -1 });
-        if (this.props.onSelect) this.props.onSelect(text);
+        // if no highlighted entry submit term as-is
+        const text = i >= 0 ? this.state.results[i] : undefined;
+        const value = text === undefined ? this.state.term : text;
+        if (this.props.onChange) this.props.onChange(value);
+        this.setState({ term: value, results: [], currentIndex: -1 });
+        if (this.props.onSelect) this.props.onSelect(value);
+        this.inputRef.current?.blur();
     }
 
     scroll_active_into_view() {
@@ -414,14 +422,8 @@ class CompletionDropdown extends React.Component<
                 () => this.scroll_active_into_view(),
             );
         } else if (e.key === "Enter") {
-            if (this.state.currentIndex >= 0 && this.props.onSelect) {
-                e.preventDefault();
-                this.select(this.state.currentIndex);
-            } else if (this.props.onSubmit) {
-                e.preventDefault();
-                this.setState({ results: [], currentIndex: -1 });
-                this.props.onSubmit(this.state.term);
-            }
+            e.preventDefault();
+            this.select(this.state.currentIndex);
         } else if (e.key === "Escape") {
             this.setState({ results: [], currentIndex: -1 });
         }
@@ -439,18 +441,17 @@ class CompletionDropdown extends React.Component<
     }
 
     render() {
-        const { term, results, currentIndex } = this.state;
-        const show = results.length > 0;
         return (
             <div className="relative min-w-0 w-full">
                 <input
+                    ref={this.inputRef}
                     className="h-9 w-full rounded-r border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--fg)] shadow-sm outline-none focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={this.props.disabled}
                     autoComplete="off"
                     role="combobox"
                     aria-autocomplete="list"
                     placeholder={this.props.placeholder}
-                    value={term}
+                    value={this.state.term}
                     onChange={this.on_input_change.bind(this)}
                     onKeyDown={this.on_keydown.bind(this)}
                     onFocus={() =>
@@ -473,13 +474,13 @@ class CompletionDropdown extends React.Component<
                     style={{
                         maxHeight: (this.props.max_items! ?? 50) * ROW_HEIGHT,
                     }}
-                    hidden={!show}
+                    hidden={this.state.results.length === 0}
                 >
-                    {results.map((r, i) => (
+                    {this.state.results.map((r, i) => (
                         <li
                             key={i}
-                            className={`cursor-pointer break-words px-2 py-2 ${i === currentIndex ? "bg-[var(--hover)]" : ""}`}
-                            aria-selected={i === currentIndex}
+                            className={`cursor-pointer break-words px-2 py-2 ${i === this.state.currentIndex ? "bg-[var(--hover)]" : ""}`}
+                            aria-selected={i === this.state.currentIndex}
                             onMouseMove={() => this.on_li_mousemove(i)}
                             onMouseDown={(e) => this.on_li_mousedown(e, i)}
                         >

@@ -9,6 +9,7 @@ from typing import List, Optional
 import argparse
 import json
 import logging
+import os
 import platform
 import re
 import shlex
@@ -95,10 +96,11 @@ def get_parser() -> argparse.ArgumentParser:
             'i.e. --remap-sources=\'{"/buildmachine": "/current/machine"}\''
         ),
     )
-    # TODO:check if project_home is used for cli args (like actually set gdb working directory) etc as well
     other.add_argument(
-        "--project",
-        help='Set the project directory. When viewing the "folders" pane, paths are shown relative to this directory.',
+        "--cwd",
+        help="Set the current working directory."
+        " Default is the directory where you start gdbgui from",
+        default=os.getcwd(),
     )
     other.add_argument("-v", "--version", help="Print version", action="store_true")
 
@@ -144,12 +146,16 @@ def get_parser() -> argparse.ArgumentParser:
 def get_initial_binary_and_args(
     user_supplied_args: List[str], debug_program_and_args: Optional[str]
 ) -> List[str]:
+    input: List[str] = []
     if debug_program_and_args:
         # passed via positional
-        return shlex.split(debug_program_and_args)
+        input = shlex.split(debug_program_and_args)
     else:
         # passed via --args
-        return user_supplied_args
+        input = user_supplied_args
+    if len(input) > 0:
+        input[0] = os.path.realpath(input[0])
+    return input
 
 
 def main() -> None:
@@ -170,7 +176,7 @@ def main() -> None:
         "initial_binary_and_args": get_initial_binary_and_args(
             args.args, args.debug_program
         ),
-        "project_home": args.project,
+        "cwd": os.path.realpath(args.cwd),
         "remap_sources": {},
     }
     if args.remap_sources:

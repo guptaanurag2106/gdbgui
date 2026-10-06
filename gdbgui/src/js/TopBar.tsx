@@ -173,9 +173,7 @@ interface TopBarState {
     waiting_for_response: boolean;
     source_code_state: string;
 }
-interface TopBarProps {
-    initial_binary_and_args: string[];
-}
+interface TopBarProps {}
 
 //TODO:topbar doesn't show --project (project directory)
 class TopBar extends React.Component<TopBarProps, TopBarState> {
@@ -367,11 +365,7 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
                 }}
             >
                 <div className="flex h-9 items-center justify-center gap-20">
-                    <BinaryLoader
-                        initial_binary_and_args={
-                            this.props.initial_binary_and_args
-                        }
-                    />
+                    <BinaryLoader />
                     {spinner}
 
                     <ControlButtons />

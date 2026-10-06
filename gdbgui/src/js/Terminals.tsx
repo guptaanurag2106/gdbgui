@@ -115,8 +115,6 @@ export class Terminals extends React.Component {
 
         this.userPty.loadAddon(fitAddon);
         this.userPty.open(this.userPtyRef.current);
-        this.userPty.writeln(`running command: ${store.get("gdb_command")}`);
-        this.userPty.writeln("");
         this.userPty.attachCustomKeyEventHandler(
             // @ts-expect-error
             customKeyEventHandler({

@@ -1,16 +1,24 @@
 import copy
+from dataclasses import asdict, dataclass
 import json
 import os
 from pathlib import Path
 import shutil
-from typing import Any
-from .constants import THEMES, DEFAULT_THEME
 import tempfile
+from typing import Any, List, cast
+from .constants import THEMES, DEFAULT_THEME
 
 
 class Config:
     def __init__(self):
         raise Exception("initializing static class Config")
+
+    @dataclass
+    class Target:
+        binary_and_args: List[str]
+        project_cwd: str
+        gdb_cmd: str
+        # TODO: remap_sources?
 
     DEFAULT_CONFIG: dict[str, Any] = {
         "theme": DEFAULT_THEME,
@@ -22,7 +30,7 @@ class Config:
         "highlight_source_code": True,
         "middle_sizes": [20, 45, 35],
         "show_filesystem": True,
-        "past_binaries": [],
+        "targets": cast(List[Target], []),
     }
     CONFIG_KEYS = DEFAULT_CONFIG.keys()
 
@@ -118,9 +126,17 @@ class Config:
                 if type(value) is bool:
                     Config._config[key] = value
                     success = True
-            case "past_binaries":
+            case "targets":
                 if type(value) is list:
-                    Config._config[key] = value
+                    Config._config[key] = []
+                    for v in value:
+                        if v.get("binary_and_args", []) != []:
+                            target = Config.Target(
+                                v.get("binary_and_args", []),
+                                v.get("project_cwd", ""),
+                                v.get("gdb_cmd", ""),
+                            )
+                            Config._config[key].append(asdict(target))
                     success = True
             case _:
                 print(f"ERROR: unknown key `{key}` with value `{value}` in update_key")

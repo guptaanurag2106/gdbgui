@@ -544,10 +544,15 @@ const GdbApi = {
     get_break_list_cmd: function () {
         return "-break-list";
     },
-    get_load_binary_and_arguments_cmds(binary: any, args: any) {
+    get_load_binary_and_arguments_cmds(
+        binary: string,
+        args: string[],
+        cwd: string,
+    ) {
         let cmds = [
             `-file-exec-and-symbols ${binary}`, // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
             `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
+            `-environment-cd ${cwd}`, // Set the gdb cwd
         ];
         // add breakpoint if we don't already have one
         if (store.get("auto_add_breakpoint_to_main")) {

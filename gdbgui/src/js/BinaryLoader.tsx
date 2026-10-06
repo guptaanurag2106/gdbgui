@@ -17,8 +17,10 @@ const TARGET_TYPES = {
 };
 
 interface BinaryLoaderState {
-    past_binaries: string[];
-    user_input: string;
+    targets: Target[];
+    target_strings: string[];
+    user_binary_args_input: string;
+    user_cwd_input: string;
     initial_set_target_app: boolean;
     target_type: (typeof TARGET_TYPES)[keyof typeof TARGET_TYPES];
     dropdown_open: boolean;
@@ -28,44 +30,65 @@ interface BinaryLoaderState {
  * The BinaryLoader component allows the user to select their binary
  * and specify inputs
  */
-interface BinaryLoaderProps {
-    initial_binary_and_args: string[];
-}
-//TODO:allow to set project_home and gdb-cmd here only
+interface BinaryLoaderProps { }
+//TODO:allow to set cwd and gdb-cmd here only
 class BinaryLoader extends React.Component<
     BinaryLoaderProps,
     BinaryLoaderState
 > {
     dropdownRef = React.createRef<HTMLDivElement>();
+
     constructor(props: BinaryLoaderProps) {
         super(props);
 
-        const past_binaries = [...new Set<string>(store.get("past_binaries"))];
+        const targets = [...new Set<Target>(store.get("targets"))].map(
+            (target) => ({
+                ...target,
+                binary_and_args_comb: target.binary_and_args.join(" "),
+            }),
+        );
 
-        let user_input = props.initial_binary_and_args.join(" ");
-        if (!user_input) {
-            user_input = past_binaries[0];
+        let user_binary_args_input =
+            initial_data.initial_binary_and_args.join(" ");
+        let user_cwd_input = initial_data.cwd;
+        if (!user_binary_args_input) {
+            if (targets.length > 0) {
+                user_binary_args_input = targets[0].binary_and_args_comb;
+                user_cwd_input = targets[0].project_cwd;
+            } else {
+                user_binary_args_input = "";
+                user_cwd_input = "";
+            }
         }
 
         this.state = {
-            past_binaries: past_binaries,
-            user_input: user_input,
-            // initial_set_target_app: props.initial_binary_and_args.length, // if user supplied initial binary, load it immediately
-            initial_set_target_app: user_input.length > 0, // if user supplied initial binary, load it immediately
+            targets: targets,
+            target_strings: targets.map(
+                (target) => target.binary_and_args_comb,
+            ),
+            user_binary_args_input: user_binary_args_input,
+            user_cwd_input: user_cwd_input,
+            //TODO:this autoload doesn't seem to work
+            initial_set_target_app: user_binary_args_input.length > 0, // if user supplied initial binary, load it immediately
             target_type: TARGET_TYPES.file,
             dropdown_open: false,
         };
     }
+
     componentDidMount() {
         document.addEventListener("mousedown", this._handle_click_outside);
+        console.log("componentdidmount")
         if (this.state.initial_set_target_app) {
+            console.log("initial_set_target_app is true")
             this.setState({ initial_set_target_app: false });
             this.set_target_app();
         }
     }
+
     componentWillUnmount() {
         document.removeEventListener("mousedown", this._handle_click_outside);
     }
+
     _handle_click_outside = (e: MouseEvent) => {
         if (
             this.state.dropdown_open &&
@@ -75,8 +98,15 @@ class BinaryLoader extends React.Component<
             this.setState({ dropdown_open: false });
         }
     };
-    set_target_app() {
-        let user_input = (this.state.user_input || "").trim();
+
+    set_target_app(binary_and_args?: string) {
+        let user_input = (
+            binary_and_args ??
+            this.state.user_binary_args_input ??
+            ""
+        ).trim();
+        let user_cwd_input = (this.state.user_cwd_input || "").trim();
+        console.log(user_input, user_cwd_input);
 
         if (user_input === "") {
             Actions.add_console_entries(
@@ -86,12 +116,12 @@ class BinaryLoader extends React.Component<
             return;
         }
 
-        this._add_user_input_to_history(user_input);
+        this._add_user_input_to_history(user_input, user_cwd_input);
 
         if (this.state.target_type === TARGET_TYPES.file) {
             const { binary, args } =
                 this._parse_binary_and_args_from_user_input(user_input);
-            Actions.set_gdb_binary_and_arguments(binary, args);
+            Actions.set_gdb_binary_and_arguments(binary, args, user_cwd_input);
         } else if (this.state.target_type === TARGET_TYPES.server) {
             Actions.connect_to_gdbserver(user_input);
         } else if (this.state.target_type === TARGET_TYPES.process) {
@@ -99,26 +129,44 @@ class BinaryLoader extends React.Component<
         }
         Actions.get_target_features();
     }
+
     onchange_user_input(text: string) {
         if (initial_data.using_windows) {
             // replace backslashes with forward slashes when using windows
-            this.setState({ user_input: text.replace(/\\/g, "/") });
+            this.setState({ user_binary_args_input: text.replace(/\\/g, "/") });
         } else {
-            this.setState({ user_input: text });
+            this.setState({ user_binary_args_input: text });
         }
     }
+
     onselect_user_input(text: string) {
-        this.setState({ user_input: text });
+        this.setState({ user_binary_args_input: text });
+        this.set_target_app(text);
     }
-    _add_user_input_to_history(binary_and_args: any) {
-        const found_index = this.state.past_binaries.indexOf(binary_and_args);
+
+    _add_user_input_to_history(binary_and_args: string, cwd: string) {
+        const found_index = this.state.targets.findIndex(
+            (target) => target.binary_and_args_comb === binary_and_args,
+        );
+        let element: Target | null = null;
         if (found_index !== -1) {
-            this.state.past_binaries.splice(found_index, 1);
+            element = this.state.targets.splice(found_index, 1)[0];
         }
-        this.state.past_binaries.unshift(binary_and_args); // add to beginning
-        this.setState({ past_binaries: this.state.past_binaries });
-        update_config_key("past_binaries", this.state.past_binaries || []);
+        this.state.targets.unshift({
+            binary_and_args: binary_and_args.split(" "),
+            binary_and_args_comb: binary_and_args,
+            project_cwd: cwd,
+            gdb_cmd: element?.gdb_cmd || "",
+        }); // add to beginning
+        this.setState({
+            targets: this.state.targets,
+            target_strings: this.state.targets.map(
+                (target) => target.binary_and_args_comb,
+            ),
+        });
+        update_config_key("targets", this.state.targets || []);
     }
+
     /**
      * parse tokens with awareness of double quotes
      *
@@ -138,6 +186,7 @@ class BinaryLoader extends React.Component<
         }
         return { binary: binary, args: args.join(" ") };
     }
+
     render() {
         let button_text = "",
             title = "",
@@ -232,7 +281,7 @@ class BinaryLoader extends React.Component<
                         <button
                             type="button"
                             title={title}
-                            onClick={this.set_target_app.bind(this)}
+                            onClick={() => this.set_target_app()}
 
                             className="inline-flex items-center rounded border border-[var(--border)] bg-[var(--accent)] px-4 hover:opacity-90"
                             style={{ color: "var(--bg)" }}
@@ -243,13 +292,12 @@ class BinaryLoader extends React.Component<
 
                     <div className="min-w-0 flex-1">
                         <CompletionDropdown
-                            initial_value={this.state.user_input}
-                            list={this.state.past_binaries}
+                            initial_value={this.state.user_binary_args_input}
+                            list={this.state.target_strings}
                             placeholder={placeholder}
                             show_all_on_empty
                             onChange={this.onchange_user_input.bind(this)}
                             onSelect={this.onselect_user_input.bind(this)}
-                            onSubmit={this.set_target_app.bind(this)}
                         />
                     </div>
                 </div>

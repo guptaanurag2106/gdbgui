@@ -164,15 +164,16 @@ const Actions = {
         store.set("modal_body", body);
         store.set("show_modal", true);
     },
-    set_gdb_binary_and_arguments(binary: any, args: any) {
+    set_gdb_binary_and_arguments(binary: string, args: string[], cwd: string) {
         // remove list of source files associated with the loaded binary since we're loading a new one
         store.set("source_file_paths", []);
         //TODO:do we need to this? language set
         store.set("language", "c_family");
         store.set("inferior_binary_path", null);
         //reset
+        //TODO:this doesn't reset everything (breakpoints etc)
         Actions.inferior_program_exited();
-        let cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
+        let cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args, cwd);
         GdbApi.run_gdb_command(cmds);
         GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
         Actions.set_status_entry("Loaded binary", "info");

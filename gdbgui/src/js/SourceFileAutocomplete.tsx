@@ -20,10 +20,6 @@ class SourceFileAutocomplete extends React.Component<
 > {
     static defaultProps = { file_paths: [] };
 
-    onFileSelect(name: string) {
-        FileOps.user_select_file_to_view(name, 1);
-    }
-
     onSubmit(text: string) {
         const user_input = text.trim();
         if (user_input.length === 0) {
@@ -39,8 +35,7 @@ class SourceFileAutocomplete extends React.Component<
             <CompletionDropdown
                 list={this.props.file_paths}
                 placeholder="Enter file path to view, press enter"
-                onSelect={this.onFileSelect.bind(this)}
-                onSubmit={this.onSubmit.bind(this)}
+                onSelect={this.onSubmit.bind(this)}
                 max_items={10}
                 show_all_on_empty
                 disabled={this.props.disabled}

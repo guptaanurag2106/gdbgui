@@ -10,7 +10,6 @@ from starlette.routing import WebSocketRoute
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from .constants import DEFAULT_GDB_EXECUTABLE
 from .debugsession import DebugSession
 from .http_routes import routes
 
@@ -84,10 +83,12 @@ async def socket(socket: WebSocket):
 
     logger.info("socket connected")
     try:
-        gdb_command = socket.app.state.config.get("gdb_command", DEFAULT_GDB_EXECUTABLE)
-        mi_version = socket.app.state.config.get("mi_version", "mi2")
+        gdb_command = socket.app.state.config["gdb_command"]
+        mi_version = socket.app.state.config["mi_version"]
         debug_session = DebugSession(
-            gdb_command=gdb_command, mi_version=mi_version, socket=socket
+            gdb_command=gdb_command,
+            mi_version=mi_version,
+            socket=socket,
         )
         await socket.send_json(
             {

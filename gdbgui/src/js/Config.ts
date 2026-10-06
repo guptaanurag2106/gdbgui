@@ -18,7 +18,6 @@ const initial_store_data = {
     gdb_version: "unknown", // this is parsed from gdb's output
     gdb_version_array: [], // this is parsed from gdb's output
     gdb_pid: undefined,
-    gdb_command: initial_data.gdb_command,
     can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
     show_settings: false,
 
@@ -124,14 +123,14 @@ const initial_store_data = {
     middle_sizes: [30, 40, 29] as number[],
     gdbguiPty: null,
 
-    past_binaries: new Set(),
+    targets: new Set<Target>(),
 };
 
 export async function load_config() {
     await Util.get_json<Record<string, unknown>>("/config")
         .then((data) => {
             for (const [key, value] of Object.entries(data)) {
-                // @ts-expect-error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ debug: boolean; gdbgui_version: string; latest_gdbgui_version: string; gdb_version: string; gdb_version_array: never[]; gdb_pid: undefined; gdb_command: string; can_fetch_register_values: boolean; ... 65 more ...; past_binaries: Set<...>; }'.
+                // @ts-expect-error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ debug: boolean; gdbgui_version: string; latest_gdbgui_version: string; gdb_version: string; gdb_version_array: never[]; gdb_pid: undefined; can_fetch_register_values: boolean; ... 65 more ...; targets: Set<...>; }'.
                 initial_store_data[key] = value;
             }
         })

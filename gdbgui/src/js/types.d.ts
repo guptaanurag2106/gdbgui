@@ -27,15 +27,21 @@ declare module "statorgfc" {
 
 declare var initial_data: {
     gdbgui_version: string;
-    gdb_command: string;
     initial_binary_and_args: string[];
-    project_home: string | null;
+    cwd: string;
     remap_sources: any;
     themes: string[];
     signals: any;
     using_windows: boolean;
 };
 declare var debug: boolean;
+
+type Target = {
+    binary_and_args: string[];
+    binary_and_args_comb: string;
+    project_cwd: string;
+    gdb_cmd: string;
+};
 
 type SourceCodeObjType = Record<number, string>;
 

@@ -29,7 +29,7 @@ type State = any;
 
 class FoldersView extends React.Component<{}, State> {
     max_filesystem_entries: any;
-    project_home: any;
+    cwd: any;
     constructor(props: {}) {
         super(props);
         this.state = {
@@ -42,7 +42,7 @@ class FoldersView extends React.Component<{}, State> {
         );
 
         this.max_filesystem_entries = 300;
-        this.project_home = initial_data.project_home; /* global initial_data */
+        this.cwd = initial_data.cwd; /* global initial_data */
         this.onToggle = this.onToggle.bind(this);
         this.onClickName = this.onClickName.bind(this);
         this.reveal_path = this.reveal_path.bind(this);
@@ -185,8 +185,8 @@ class FoldersView extends React.Component<{}, State> {
             this.state.cursor.active = false;
         }
 
-        if (this.project_home) {
-            path = path.replace(this.project_home, "");
+        if (this.cwd) {
+            path = path.replace(this.cwd, "");
         }
 
         let names = path.split("/").filter((n: any) => n !== ""),
@@ -221,19 +221,19 @@ class FoldersView extends React.Component<{}, State> {
         }
 
         let rootnode = {
-            name: this.project_home || "root",
+            name: this.cwd || "root",
             toggled: true,
             children: [],
         };
 
         let relative_source_paths = source_paths;
 
-        if (this.project_home) {
-            let project_home = this.project_home;
+        if (this.cwd) {
+            let cwd = this.cwd;
             relative_source_paths = source_paths
-                .filter((p) => p.startsWith(project_home))
+                .filter((p) => p.startsWith(cwd))
                 .map((p) => {
-                    p = p.replace(project_home, "");
+                    p = p.replace(cwd, "");
                     return p;
                 });
         }

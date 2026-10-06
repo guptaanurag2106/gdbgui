@@ -29,19 +29,13 @@ templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 async def gdbgui(request: Request):
     """Render the main gdbgui interface"""
-    gdb_command = (
-        request.query_params["gdb_command"]
-        if ("gdb_command" in request.query_params)
-        else request.app.state.config["gdb_command"]
-    )
     # TODO:reading config twice, once here and once on page load
     config = Config.read()
 
     initial_data = {
         "gdbgui_version": __version__,
-        "gdb_command": gdb_command,
         "initial_binary_and_args": request.app.state.config["initial_binary_and_args"],
-        "project_home": request.app.state.config["project_home"],
+        "cwd": request.app.state.config["cwd"],
         "remap_sources": request.app.state.config["remap_sources"],
         "themes": THEMES,
         "signals": SIGNAL_NAME_TO_OBJ,

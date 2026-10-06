@@ -8,7 +8,7 @@ def test_routes():
     app.state.config = {
         "gdb_command": "gdb",
         "initial_binary_and_args": "",
-        "project_home": "",
+        "cwd": "",
         "remap_sources": "",
     }
     res = client.get("/")
@@ -19,7 +19,7 @@ def test_websocket():
     app.state.config = {
         "gdb_command": "gdb",
         "initial_binary_and_args": "",
-        "project_home": "",
+        "cwd": "",
         "remap_sources": "",
     }
     with client.websocket_connect("/ws") as ws:

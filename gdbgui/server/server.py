@@ -42,7 +42,7 @@ def run_server(
     port=DEFAULT_PORT,
     debug=False,
     open_browser=True,
-    browsername=None,
+    browsername: str | None = None,
 ):
     """Run the server of the gdbgui"""
 

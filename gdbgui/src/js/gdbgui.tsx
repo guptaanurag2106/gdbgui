@@ -49,11 +49,7 @@ class Gdbgui extends React.PureComponent<{}, any> {
             <div
                 className={`splitjs_container pygments-${this.state.theme || ""}`}
             >
-                <TopBar
-                    initial_binary_and_args={
-                        initial_data.initial_binary_and_args
-                    }
-                />
+                <TopBar />
 
                 <Split
                     direction="vertical"

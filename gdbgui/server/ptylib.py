@@ -21,6 +21,7 @@ class Pty:
 
     def __init__(self, *, cmd: Optional[str] = None, echo: bool = True):
         if cmd:
+            # inherits cwd of parent process (gdbgui)
             child_pid, fd = pty.fork()
             if child_pid == 0:
                 # this is the child process fork.
