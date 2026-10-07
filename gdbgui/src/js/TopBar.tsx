@@ -12,6 +12,7 @@ import constants from "./constants";
 import Util from "./Util";
 import { update_config_key } from "./Config";
 import { Menu, Loader2 } from "lucide-react";
+import Settings from "./Settings";
 
 const top_bar_action_class =
     "inline-flex h-full items-center px-1 bg-[var(--accent)] hover:opacity-90 disabled:cursor-not-allowed";
@@ -19,7 +20,7 @@ const top_bar_action_style: React.CSSProperties = { color: "var(--bg)" };
 
 let show_license = function () {
     Actions.show_modal(
-        "gdbgui license",
+        "License",
         <React.Fragment>
             <a href="https://github.com/guptaanurag2106/gdbgui/blob/master/LICENSE">
                 GNU General Public License v3.0
@@ -46,7 +47,7 @@ let show_license = function () {
 
 let show_about = function () {
     Actions.show_modal(
-        "About gdbgui",
+        "About",
         <div>
             <div>gdbgui, v{store.get("gdbgui_version")}</div>
             <div>Copyright © Chad Smith (original), Anurag Gupta (fork)</div>
@@ -61,7 +62,7 @@ let show_about = function () {
 
 let show_session_info = function () {
     Actions.show_modal(
-        "session information",
+        "Session Information",
         <React.Fragment>
             <table>
                 <tbody>
@@ -77,6 +78,13 @@ let show_session_info = function () {
                 </tbody>
             </table>
         </React.Fragment>,
+    );
+};
+
+let show_settings = function () {
+    Actions.show_modal(
+        "Settings",
+        <Settings />
     );
 };
 
@@ -102,13 +110,7 @@ let get_menu = function (open: boolean, on_toggle: () => void) {
             >
                 <li>
                     <button
-                        onClick={() =>
-                            store.set(
-                                "show_settings",
-                                !store.get("show_settings"),
-                            )
-                        }
-                        title="settings"
+                        onClick={show_settings}
                         className="w-full px-3 py-2 hover:bg-[var(--hover)]"
                     >
                         Settings
@@ -174,9 +176,8 @@ interface TopBarState {
     source_code_state: string;
     inferior_program: string;
 }
-interface TopBarProps {}
+interface TopBarProps { }
 
-//TODO:topbar doesn't show --project (project directory)
 class TopBar extends React.Component<TopBarProps, TopBarState> {
     spinner_timeout: any;
     spinner_timeout_msec: any;
@@ -190,7 +191,7 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             show_hamburger_menu: false,
             waiting_for_response: false,
             source_code_state: constants.source_code_states.NONE_AVAILABLE,
-            inferior_program: constants.inferior_states.unknown,
+            inferior_program: constants.inferior_states.exited,
         };
         // global state attached to this component
         store.connectComponentState(
@@ -198,7 +199,6 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             [
                 "source_code_state",
                 "waiting_for_response",
-                "theme",
                 "inferior_program",
             ],
             this.store_update_callback.bind(this),
@@ -267,9 +267,9 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
         let toggle_assm_button;
         if (
             this.state.source_code_state ===
-                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+            constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
             this.state.source_code_state ===
-                constants.source_code_states.ASSM_CACHED
+            constants.source_code_states.ASSM_CACHED
         ) {
             toggle_assm_button = (
                 <button
@@ -289,9 +289,9 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
         let reload_button;
         if (
             this.state.source_code_state ===
-                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+            constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
             this.state.source_code_state ===
-                constants.source_code_states.SOURCE_CACHED
+            constants.source_code_states.SOURCE_CACHED
         ) {
             reload_button = (
                 <button

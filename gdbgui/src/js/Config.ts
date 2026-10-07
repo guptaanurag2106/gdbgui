@@ -19,7 +19,6 @@ const initial_store_data = {
     gdb_version_array: [], // this is parsed from gdb's output
     gdb_pid: undefined,
     can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
-    show_settings: false,
 
     features: { features: [], target_features: [] }, // stores both cmd features and target features
 
@@ -161,6 +160,14 @@ export function toggle_config_key(key: string) {
     const val = store.get(key);
     store.set(key, !val);
     update_config_key(key, !val);
+}
+
+export function update_max_lines_of_code_to_fetch(new_value: any) {
+    if (new_value <= 0) {
+        new_value = constants.default_max_lines_of_code_to_fetch;
+    }
+    store.set("max_lines_of_code_to_fetch", new_value);
+    update_config_key("max_lines_of_code_to_fetch", new_value);
 }
 
 export default initial_store_data;

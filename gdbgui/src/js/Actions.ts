@@ -6,7 +6,6 @@ import Memory from "./Memory";
 import constants from "./constants";
 import React from "react";
 import Util from "./Util";
-import { update_config_key } from "./Config";
 void React; // using jsx implicity uses React
 
 const Actions = {
@@ -242,13 +241,6 @@ const Actions = {
             file.assembly = {};
         }
         store.set("cached_source_files", cached_source_files);
-    },
-    update_max_lines_of_code_to_fetch(new_value: any) {
-        if (new_value <= 0) {
-            new_value = constants.default_max_lines_of_code_to_fetch;
-        }
-        store.set("max_lines_of_code_to_fetch", new_value);
-        update_config_key("max_lines_of_code_to_fetch", new_value);
     },
     send_signal(signal_name: any, pid: any) {
         Util.post_json("/send_signal_to_pid", {

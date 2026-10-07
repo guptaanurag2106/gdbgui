@@ -15,6 +15,7 @@ class Modal extends React.Component<{}, State> {
             "modal_header",
         ]);
     }
+
     render() {
         return (
             <div
@@ -30,7 +31,7 @@ class Modal extends React.Component<{}, State> {
                     }
                 }}
             >
-                <div className="mx-auto w-full max-w-[500px] rounded border border-[var(--border)] bg-[var(--surface)] p-5 text-[var(--fg)] shadow-xl">
+                <div className="mx-auto max-w-[700px] rounded border border-[var(--border)] bg-[var(--surface)] p-8 text-[var(--fg)] shadow-xl">
                     <div className="flex justify-end">
                         <button
                             type="button"

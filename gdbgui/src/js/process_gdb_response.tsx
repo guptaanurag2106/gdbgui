@@ -195,6 +195,7 @@ const process_gdb_response = function (response_array: any) {
 
                     if (store.get("inferior_binary_path")) {
                         // @ts-expect-error ts-migrate(2339) FIXME: Property 'render' does not exist on type 'typeof M... Remove this comment to see the full error message
+                        //TODO: wtf is this fix it
                         Modal.render(
                             "Warning",
                             <div>

@@ -1,16 +1,15 @@
 import { store } from "statorgfc";
-import Actions from "./Actions";
 import ToolTip from "./ToolTip";
 import React from "react";
-import { toggle_config_key, update_config_key } from "./Config";
+import { toggle_config_key, update_config_key, update_max_lines_of_code_to_fetch } from "./Config";
 import { ChevronDown, X } from "lucide-react";
 
 /**
  * Settings modal when clicking the gear icon
  */
 class Settings extends React.Component {
-    max_source_file_lines_input: any;
-    save_button: any;
+    max_source_file_lines_input = React.createRef<HTMLInputElement>();
+    save_button = React.createRef<HTMLButtonElement>();
     settings_node: any;
     constructor(props: {}) {
         super(props);
@@ -20,17 +19,15 @@ class Settings extends React.Component {
             "themes",
             "gdb_version",
             "gdb_pid",
-            "show_settings",
             "auto_add_breakpoint_to_main",
             "pretty_print",
             "refresh_state_after_sending_console_command",
             "show_all_sent_commands_in_console",
             "highlight_source_code",
         ]);
-        this.get_update_max_lines_of_code_to_fetch =
-            this.get_update_max_lines_of_code_to_fetch.bind(this);
     }
-    static get_checkbox_row(store_key: any, text: any) {
+
+    static get_checkbox_row(store_key: string, text: string) {
         return (
             <label className="flex cursor-pointer items-start gap-2 py-1">
                 <input
@@ -43,38 +40,7 @@ class Settings extends React.Component {
             </label>
         );
     }
-    get_update_max_lines_of_code_to_fetch() {
-        return (
-            <div className="flex flex-wrap items-center gap-2 py-1">
-                <label htmlFor="max-source-file-lines">
-                    Maximum number of source file lines to display:
-                </label>
-                <input
-                    id="max-source-file-lines"
-                    className="w-24 rounded border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-[var(--fg)]"
-                    defaultValue={store.get("max_lines_of_code_to_fetch")}
-                    ref={(el) => (this.max_source_file_lines_input = el)}
-                />
-                <button
-                    className="rounded border border-[var(--border)] bg-[var(--hover)] px-2 py-1 text-[var(--fg)] hover:bg-[var(--accent)] hover:text-white"
-                    ref={(n) => (this.save_button = n)}
-                    onClick={() => {
-                        let new_value = parseInt(
-                            this.max_source_file_lines_input.value,
-                        );
-                        Actions.update_max_lines_of_code_to_fetch(new_value);
-                        ToolTip.show_tooltip_on_node(
-                            "saved!",
-                            this.save_button,
-                            1,
-                        );
-                    }}
-                >
-                    save
-                </button>
-            </div>
-        );
-    }
+
     get_table() {
         return (
             <div className="space-y-1">
@@ -82,7 +48,38 @@ class Settings extends React.Component {
                     "auto_add_breakpoint_to_main",
                     "Add breakpoint to main after loading executable",
                 )}
-                {this.get_update_max_lines_of_code_to_fetch()}
+
+                <div className="flex flex-wrap items-center gap-2 py-1">
+                    <label htmlFor="max-source-file-lines">
+                        Maximum number of source file lines to display:
+                    </label>
+                    <input
+                        id="max-source-file-lines"
+                        className="w-24 rounded border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-[var(--fg)]"
+                        defaultValue={store.get("max_lines_of_code_to_fetch")}
+                        ref={this.max_source_file_lines_input}
+                    />
+                    <button
+                        className="rounded border border-[var(--border)] bg-[var(--hover)] px-2 py-1 text-[var(--fg)] hover:bg-[var(--accent)] hover:text-white"
+                        ref={this.save_button}
+                        onClick={() => {
+                            if (this.max_source_file_lines_input.current) {
+                                let new_value = parseInt(
+                                    this.max_source_file_lines_input.current.value,
+                                );
+                                update_max_lines_of_code_to_fetch(new_value);
+                                ToolTip.show_tooltip_on_node(
+                                    "saved!",
+                                    this.save_button,
+                                    1,
+                                );
+                            }
+                        }}
+                    >
+                        save
+                    </button>
+                </div>
+
                 {Settings.get_checkbox_row(
                     "pretty_print",
                     "Pretty print dynamic variables (requires restart)",
@@ -132,43 +129,8 @@ class Settings extends React.Component {
         );
     }
 
-    //TODO:why is this not a Modal
     render() {
-        return (
-            <div
-                className={
-                    store.get("show_settings")
-                        ? "fixed inset-0 z-[120] overflow-auto bg-black/80 p-2.5"
-                        : "hidden"
-                }
-                ref={(el) => (this.settings_node = el)}
-                onClick={(e) => {
-                    if (e.target === this.settings_node) {
-                        store.set("show_settings", !store.get("show_settings"));
-                    }
-                }}
-            >
-                <div className="mx-auto max-h-[85%] w-full max-w-[800px] overflow-auto rounded border border-[var(--border)] bg-[var(--surface)] p-6 text-[var(--fg)] shadow-xl sm:p-10">
-                    <button
-                        className="float-right text-2xl leading-none text-[var(--muted)] hover:text-[var(--fg)]"
-                        onClick={() => store.set("show_settings", false)}
-                    >
-                        <X size={18} className="inline" />
-                    </button>
-                    <h4 className="mb-4 text-lg font-semibold">Settings</h4>
-                    {this.get_table()}
-                    <div className="mt-5 flex justify-end border-t border-[var(--border)] pt-4">
-                        <button
-                            className="rounded bg-[var(--accent)] px-3 py-2 font-medium hover:opacity-90"
-                            style={{ color: "var(--bg)" }}
-                            onClick={() => store.set("show_settings", false)}
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
+        return this.get_table()
     }
 }
 

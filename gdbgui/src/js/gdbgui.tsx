@@ -133,7 +133,6 @@ class Gdbgui extends React.PureComponent<{}, any> {
                 {/* below are elements that are only displayed under certain conditions */}
                 <Modal />
                 <HoverVar />
-                <Settings />
                 <ToolTip />
                 <textarea
                     style={{

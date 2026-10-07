@@ -17,8 +17,8 @@ class ToolTip extends React.Component {
         });
     }
     static show_tooltip_on_node(
-        content: any,
-        node: any,
+        content: string,
+        node: any, //TODO:make it take a ref
         show_for_n_sec: null | number = null,
     ) {
         store.set("tooltip", {
