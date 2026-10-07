@@ -28,7 +28,7 @@ interface BinaryLoaderState {
  * The BinaryLoader component allows the user to select their binary
  * and specify inputs
  */
-interface BinaryLoaderProps { }
+interface BinaryLoaderProps {}
 class BinaryLoader extends React.Component<
     BinaryLoaderProps,
     BinaryLoaderState
@@ -66,7 +66,8 @@ class BinaryLoader extends React.Component<
             user_binary_args_input: user_binary_args_input,
             user_cwd_input: user_cwd_input,
             //TODO:this autoload doesn't seem to work
-            initial_set_target_app: user_binary_args_input.length > 0, // if user supplied initial binary, load it immediately
+            initial_set_target_app:
+                initial_data.initial_binary_and_args.length > 0, // if user supplied initial binary, load it immediately
             target_type: TARGET_TYPES.file,
             dropdown_open: false,
         };
@@ -74,9 +75,7 @@ class BinaryLoader extends React.Component<
 
     componentDidMount() {
         document.addEventListener("mousedown", this._handle_click_outside);
-        console.log("componentdidmount")
         if (this.state.initial_set_target_app) {
-            console.log("initial_set_target_app is true")
             this.setState({ initial_set_target_app: false });
             this.set_target_app();
         }
@@ -103,7 +102,6 @@ class BinaryLoader extends React.Component<
             ""
         ).trim();
         let user_cwd_input = (this.state.user_cwd_input || "").trim();
-        console.log(user_input, user_cwd_input);
 
         if (user_input === "") {
             Actions.add_console_entries(
@@ -150,7 +148,7 @@ class BinaryLoader extends React.Component<
             element = this.state.targets.splice(found_index, 1)[0];
         }
         this.state.targets.unshift({
-            binary_and_args: [binary, ...args],
+            binary_and_args: [binary].concat(args),
             binary_and_args_comb: binary_and_args_comb,
             project_cwd: cwd,
             gdb_cmd: element?.gdb_cmd || "",
@@ -181,7 +179,7 @@ class BinaryLoader extends React.Component<
             binary = list_of_params[0];
             args = list_of_params.slice(1, len);
         }
-        return { binary: binary, args: args.join(" ") };
+        return { binary: binary, args: args };
     }
 
     render() {

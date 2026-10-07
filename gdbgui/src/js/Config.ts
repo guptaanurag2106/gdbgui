@@ -116,9 +116,6 @@ const initial_store_data = {
     status_message: "Connecting",
     status_message_level: "warning",
 
-    // if we try to write something before the websocket is connected, store it here
-    queuedGdbCommands: [],
-
     show_filesystem: true,
     middle_sizes: [30, 40, 29] as number[],
     gdbguiPty: null,

@@ -172,6 +172,7 @@ interface TopBarState {
     show_hamburger_menu: boolean;
     waiting_for_response: boolean;
     source_code_state: string;
+    inferior_program: string;
 }
 interface TopBarProps {}
 
@@ -189,11 +190,17 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             show_hamburger_menu: false,
             waiting_for_response: false,
             source_code_state: constants.source_code_states.NONE_AVAILABLE,
+            inferior_program: constants.inferior_states.unknown,
         };
         // global state attached to this component
         store.connectComponentState(
             this,
-            ["source_code_state", "waiting_for_response", "theme"],
+            [
+                "source_code_state",
+                "waiting_for_response",
+                "theme",
+                "inferior_program",
+            ],
             this.store_update_callback.bind(this),
         );
 
@@ -299,21 +306,27 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             );
         }
 
-        //TODO:not show unless file is loaded (same as condition for reload button??)
-        let fetch_disassembly_button = (
-            <button
-                onClick={() => {
-                    store.set("show_inline_disassembly", true);
-                    FileOps.fetch_assembly_cur_line();
-                }}
-                type="button"
-                title="fetch disassembly"
-                className={top_bar_action_class}
-                style={top_bar_action_style}
-            >
-                Fetch disassembly
-            </button>
-        );
+        let fetch_disassembly_button;
+        if (
+            (this.state.inferior_program ||
+                constants.inferior_states.unknown) !==
+            constants.inferior_states.unknown
+        ) {
+            fetch_disassembly_button = (
+                <button
+                    onClick={() => {
+                        store.set("show_inline_disassembly", true);
+                        FileOps.fetch_assembly_cur_line();
+                    }}
+                    type="button"
+                    title="fetch disassembly"
+                    className={top_bar_action_class}
+                    style={top_bar_action_style}
+                >
+                    Fetch disassembly
+                </button>
+            );
+        }
 
         let toggle_inline_disassembly_button;
         let source_file_obj = FileOps.get_source_file_obj_from_cache(

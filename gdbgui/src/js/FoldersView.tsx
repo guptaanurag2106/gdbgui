@@ -210,9 +210,9 @@ class FoldersView extends React.Component<{}, State> {
         let source_code_state = this.state.source_code_state,
             file_is_rendered =
                 source_code_state ===
-                constants.source_code_states.SOURCE_CACHED ||
+                    constants.source_code_states.SOURCE_CACHED ||
                 source_code_state ===
-                constants.source_code_states.ASSM_AND_SOURCE_CACHED,
+                    constants.source_code_states.ASSM_AND_SOURCE_CACHED,
             can_reveal =
                 file_is_rendered && this.state.source_file_paths.length,
             hiding_entries =
@@ -229,10 +229,10 @@ class FoldersView extends React.Component<{}, State> {
                 ...btn_style,
                 ...(disabled
                     ? {
-                        backgroundColor: "var(--hover)",
-                        color: "var(--muted)",
-                        cursor: "not-allowed" as const,
-                    }
+                          backgroundColor: "var(--hover)",
+                          color: "var(--muted)",
+                          cursor: "not-allowed" as const,
+                      }
                     : {}),
             });
 

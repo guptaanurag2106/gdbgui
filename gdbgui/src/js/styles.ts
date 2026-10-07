@@ -12,7 +12,7 @@ export const btn_style = {
 export const input_style = {
     display: "inline" as const,
     height: "25px",
-    width: "75px",
+    width: "100px",
     padding: "2px 4px",
     fontSize: "14px",
     border: "1px solid var(--border)",

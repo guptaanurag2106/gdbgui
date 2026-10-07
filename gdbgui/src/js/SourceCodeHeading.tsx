@@ -55,7 +55,8 @@ class SourceCodeHeading extends React.Component<{}, State> {
                     title="Enter line number, then press enter"
                     placeholder="jump to line"
                     style={input_style}
-                    type="number"
+                    className="&::-webkit-inner-spin-button]:appearance-none"
+                    inputMode="numeric"
                     onKeyUp={(e) => {
                         if (e.key === "Enter") {
                             Actions.set_line_state(

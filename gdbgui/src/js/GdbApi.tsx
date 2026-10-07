@@ -52,6 +52,7 @@ let pty_listeners: PtyListener[] = [];
  */
 const initial_data = window.initial_data;
 let socket: WebSocket | null = null;
+let queuedCommands: string[] = [];
 const GdbApi = {
     get_socket: function () {
         return socket;
@@ -103,6 +104,8 @@ const GdbApi = {
                 TIMEOUT_SEC * 1000,
             );
             GdbApi._init_handlers();
+            // run queued commands (auto load binary commands run before ws connects)
+            GdbApi.run_gdb_command(queuedCommands);
         } catch (error) {
             console.log("Error connecting to backend socket", error);
             socket = null;
@@ -466,10 +469,7 @@ const GdbApi = {
             }
         } else {
             log("queuing commands");
-            const queuedGdbCommands = store
-                .get("queuedGdbCommands")
-                .concat(cmds);
-            store.set("queuedGdbCommands", queuedGdbCommands);
+            queuedCommands.push(...cmds);
         }
     },
     run_command_and_refresh_state: function (user_cmd: string | any[]) {
@@ -551,7 +551,7 @@ const GdbApi = {
     ) {
         let cmds = [
             `-file-exec-and-symbols ${binary}`, // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
-            `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
+            `-exec-arguments ${args.join(" ")}`, // Set the inferior program arguments, to be used in the next `-exec-run`
             `-environment-cd ${cwd}`, // Set the gdb cwd
         ];
         // add breakpoint if we don't already have one
