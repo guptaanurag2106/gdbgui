@@ -1,11 +1,12 @@
 import React from "react";
 import ReactTable from "./ReactTable";
 import { store } from "statorgfc";
-import GdbApi from "./GdbApi";
+
+import { base_style, badge_style } from "./styles";
 import { FileLink } from "./Links";
+import GdbApi from "./GdbApi";
 import Memory from "./Memory";
 import { MemoryLink } from "./Links";
-import { base_style, badge_style } from "./styles";
 
 class FrameArguments extends React.Component {
     render_frame_arg(frame_arg: any) {
@@ -37,7 +38,6 @@ class FrameArguments extends React.Component {
 }
 
 type ThreadsState = any;
-
 class Threads extends React.Component<{}, ThreadsState> {
     thread_data: any;
     constructor(props: {}) {

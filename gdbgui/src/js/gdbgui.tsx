@@ -15,19 +15,18 @@ import { store, middleware } from "statorgfc";
 import Split from "react-split";
 
 import constants from "./constants";
-import GdbApi from "./GdbApi";
 import FileOps from "./FileOps";
 import FoldersView from "./FoldersView";
+import GdbApi from "./GdbApi";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
 import initial_store_data, { load_config, update_config_key } from "./Config";
 import MiddleLeft from "./MiddleLeft";
 import Modal from "./GdbguiModal";
 import RightSidebar from "./RightSidebar";
-import Settings from "./Settings";
 import ToolTip from "./ToolTip";
-import TopBar from "./TopBar";
 import ToolTipTourguide from "./ToolTipTourguide";
+import TopBar from "./TopBar";
 
 import "../css/gdbgui.css";
 import { Terminals } from "./Terminals";
@@ -99,10 +98,7 @@ class Gdbgui extends React.PureComponent<{}, any> {
                                 overflow: "auto",
                             }}
                         >
-                            <RightSidebar
-                                signals={initial_data.signals}
-                                debug={debug}
-                            />
+                            <RightSidebar />
                         </div>
                     </Split>
 

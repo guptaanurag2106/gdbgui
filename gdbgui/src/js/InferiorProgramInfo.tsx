@@ -1,35 +1,33 @@
 import React from "react";
+import { store } from "statorgfc";
 
 import Actions from "./Actions";
-import { store } from "statorgfc";
 import { btn_style, input_style } from "./styles";
 
-type State = any;
+type InferiorProgramInfoState = any;
 
-type Props = { signals: Record<string, string> };
+type InferiorProgramInfoProps = { signals: Record<string, number> };
 
-class InferiorProgramInfo extends React.Component<Props, State> {
-    constructor(props: Props) {
+class InferiorProgramInfo extends React.Component<
+    InferiorProgramInfoProps,
+    InferiorProgramInfoState
+> {
+    constructor(props: InferiorProgramInfoProps) {
         super(props);
-        this.state = {
-            selected_signal: "SIGINT",
-            other_pid: "",
-        };
         store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
-    }
-    get_signal_options() {
         // SIGKILL and SIGINT first, then the rest
         const ordered = Object.keys(this.props.signals).sort((a, b) => {
             const rank = (s: string) =>
                 s === "SIGINT" ? 0 : s === "SIGKILL" ? 1 : 2;
             return rank(a) - rank(b) || a.localeCompare(b);
         });
-        return ordered.map((s) => (
-            <option key={s} value={s}>
-                {`${s} (${this.props.signals[s]})`}
-            </option>
-        ));
+        this.state = {
+            selected_signal: "SIGINT",
+            other_pid: "",
+            ordered: ordered,
+        };
     }
+
     get_dropdown() {
         // Native select: the browser renders the popup list in its own
         // layer, so it is never clipped by the sidebar's overflow and
@@ -44,10 +42,15 @@ class InferiorProgramInfo extends React.Component<Props, State> {
                     });
                 }}
             >
-                {this.get_signal_options()}
+                {this.state.ordered.map((s: string) => (
+                    <option key={s} value={s}>
+                        {`${s} (${this.props.signals[s]})`}
+                    </option>
+                ))}
             </select>
         );
     }
+
     render() {
         let gdb_button = (
             <button
@@ -87,17 +90,19 @@ class InferiorProgramInfo extends React.Component<Props, State> {
         return (
             <div className="p-1.5 text-[var(--fg)]">
                 <div className="flex flex-wrap gap-1 items-center">
-                    <span>send</span>
+                    <span>Send</span>
                     {this.get_dropdown()}
                     <span>to</span>
                     {gdb_button}
-                    <span>or</span>
                     {inferior_button && (
                         <>
-                            {inferior_button}
                             <span>or</span>
+                            {inferior_button}
                         </>
                     )}
+                    {
+                        // TODO: is this needed?
+                        /*   <span>or</span>
                     <button
                         className="disabled:opacity-50 disabled:cursor-not-allowed"
                         style={btn_style}
@@ -120,7 +125,8 @@ class InferiorProgramInfo extends React.Component<Props, State> {
                             this.setState({ other_pid: e.currentTarget.value });
                         }}
                         value={this.state.other_pid}
-                    />
+                    />*/
+                    }
                 </div>
             </div>
         );

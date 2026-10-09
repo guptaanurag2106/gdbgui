@@ -4,19 +4,20 @@
 
 import React from "react";
 import { store } from "statorgfc";
+
 import constants from "./constants";
-import ReactTable from "./ReactTable";
-import Memory from "./Memory";
 import GdbApi from "./GdbApi";
+import Memory from "./Memory";
+import ReactTable from "./ReactTable";
 import register_descriptions from "./register_descriptions";
 
 const MAX_REGISTER_NAME_FETCH_COUNT = 5;
 let register_name_fetch_count = 0,
     register_name_fetch_timeout: any = null;
 
-type State = any;
+type RegistersState = any;
 
-class Registers extends React.Component<{}, State> {
+class Registers extends React.Component<{}, RegistersState> {
     constructor(props: {}) {
         super(props);
         store.connectComponentState(this, [
@@ -27,8 +28,14 @@ class Registers extends React.Component<{}, State> {
             "can_fetch_register_values",
         ]);
     }
+
+    static clear_cached_values() {
+        store.set("previous_register_values", []);
+        store.set("current_register_values", []);
+    }
+
     static get_update_cmds() {
-        let cmds: any = [];
+        let cmds: string[] = [];
         if (
             [
                 constants.inferior_states.paused,
@@ -37,6 +44,7 @@ class Registers extends React.Component<{}, State> {
         ) {
             return cmds;
         }
+
         if (store.get("can_fetch_register_values") === true) {
             if (store.get("register_names").length === 0) {
                 if (
@@ -56,6 +64,7 @@ class Registers extends React.Component<{}, State> {
                     }, 5000);
                 }
             }
+
             // update all registers values
             cmds.push(
                 constants.IGNORE_ERRORS_TOKEN_STR +
@@ -66,27 +75,16 @@ class Registers extends React.Component<{}, State> {
         }
         return cmds;
     }
-    static cache_register_names(names: any) {
-        // filter out non-empty names
-        store.set(
-            "register_names",
-            names.filter((name: any) => name),
-        );
-    }
+
     static clear_register_name_cache() {
         store.set("register_names", []);
     }
-    static clear_cached_values() {
-        store.set("previous_register_values", []);
-        store.set("current_register_values", []);
-    }
-    static inferior_program_exited() {
-        Registers.clear_cached_values();
-    }
+
     render() {
         let num_register_names = store.get("register_names").length,
             num_register_values = store.get("current_register_values").length;
 
+        //TODO: if mi-async is on then will there be data on not paused?
         if (this.state.inferior_program !== constants.inferior_states.paused) {
             return <span className="placeholder">no data to display</span>;
         }
@@ -173,6 +171,7 @@ class Registers extends React.Component<{}, State> {
             }
             return <ReactTable data={register_table_data} header={columns} />;
         }
+
         return <span className="placeholder">no data to display</span>;
     }
 }

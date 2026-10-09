@@ -1,11 +1,7 @@
-/**
- * A component to show/hide variable exploration when hovering over a variable
- * in the source code
- */
-
-import { store } from "statorgfc";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import React from "react";
 
+import { base_style, input_style } from "./styles";
 import Breakpoints from "./Breakpoints";
 import constants from "./constants";
 import Expressions from "./Expressions";
@@ -14,11 +10,9 @@ import InferiorProgramInfo from "./InferiorProgramInfo";
 import Locals from "./Locals";
 import Memory from "./Memory";
 import Registers from "./Registers";
-import Tree from "./Tree";
 import Threads from "./Threads";
 import ToolTipTourguide from "./ToolTipTourguide";
-import { base_style, input_style } from "./styles";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import Tree from "./Tree";
 
 let onmouseup_in_parent_callbacks: any = [],
     onmousemove_in_parent_callbacks: any = [];
@@ -37,11 +31,11 @@ let onmousemove_in_parent_callback = function (e: any) {
 type OwnCollapserState = any;
 
 type CollapserProps = {
-    id: string | undefined;
     title: string;
-    content: any;
+    content: JSX.Element;
     collapsed: boolean;
 };
+
 type CollapserState = OwnCollapserState & typeof Collapser.defaultProps;
 
 const titlebar_style = {
@@ -56,11 +50,12 @@ const titlebar_style = {
 };
 
 class Collapser extends React.Component<CollapserProps, CollapserState> {
-    static defaultProps = { collapsed: false, id: "" };
-    _height_when_clicked: any;
-    _page_y_orig: any;
-    _resizing: any;
-    collapser_box_node: any;
+    static defaultProps = { collapsed: false };
+    _height_when_clicked: number = 0;
+    _page_y_orig: number = 0;
+    _resizing: boolean = false;
+    collapser_box_node = React.createRef<HTMLDivElement>();
+
     constructor(props: CollapserProps) {
         super(props);
         this.state = {
@@ -68,7 +63,6 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
             autosize: true,
             height_px: null,
             _mouse_y_click_pos_px: null,
-            _height_when_clicked: null,
         };
         this.onmousedown_resizer = this.onmousedown_resizer.bind(this);
         this.onmouseup_resizer = this.onmouseup_resizer.bind(this);
@@ -81,17 +75,24 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
             this.onmousemove_resizer.bind(this),
         );
     }
+
     toggle_visibility() {
         this.setState({ collapsed: !this.state.collapsed });
     }
+
     onmousedown_resizer(e: any) {
-        this._resizing = true;
-        this._page_y_orig = e.pageY;
-        this._height_when_clicked = this.collapser_box_node.clientHeight;
+        if (this.collapser_box_node.current) {
+            this._resizing = true;
+            this._page_y_orig = e.pageY;
+            this._height_when_clicked =
+                this.collapser_box_node.current.clientHeight;
+        }
     }
+
     onmouseup_resizer() {
         this._resizing = false;
     }
+
     onmousemove_resizer(e: any) {
         if (this._resizing) {
             let dh = e.pageY - this._page_y_orig;
@@ -101,9 +102,11 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
             });
         }
     }
+
     onclick_restore_autosize() {
         this.setState({ autosize: true });
     }
+
     render() {
         let reset_size_button: JSX.Element | null = null;
         if (!this.state.autosize) {
@@ -166,7 +169,6 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
 
                 <div
                     className={this.state.collapsed ? "hidden" : ""}
-                    id={this.props.id}
                     style={{
                         height: this.state.autosize
                             ? "auto"
@@ -175,7 +177,7 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
                         padding: "4px 6px",
                         ...base_style,
                     }}
-                    ref={(n) => (this.collapser_box_node = n)}
+                    ref={this.collapser_box_node}
                 >
                     {this.props.content}
                 </div>
@@ -186,18 +188,19 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
     }
 }
 
-type RightSidebarProps = {
-    debug: boolean;
-    signals: any;
-};
-class RightSidebar extends React.Component<RightSidebarProps, any> {
-    constructor(props: RightSidebarProps) {
+class RightSidebar extends React.Component<{}, any> {
+    constructor(props: {}) {
         super(props);
-        store.connectComponentState(this, ["theme"]);
     }
+
+    componentDidMount() {
+        Tree.init();
+    }
+
     render() {
         let mi_output: JSX.Element | null = null;
-        if (this.props.debug) {
+        if (debug) {
+            /* global debug */
             mi_output = (
                 <Collapser title="gdb mi output" content={<GdbMiOutput />} />
             );
@@ -251,15 +254,17 @@ class RightSidebar extends React.Component<RightSidebarProps, any> {
                 />
 
                 <Collapser
-                    id="locals"
                     title="local variables"
+                    collapsed={false}
                     content={<Locals />}
                 />
+
                 <Collapser
-                    id="expressions"
                     title="expressions"
+                    collapsed={false}
                     content={<Expressions />}
                 />
+
                 <Collapser
                     title="Tree"
                     collapsed={true}
@@ -281,32 +286,36 @@ class RightSidebar extends React.Component<RightSidebarProps, any> {
                         </div>
                     }
                 />
+
                 <Collapser
-                    id="memory"
                     title="memory"
                     collapsed={true}
                     content={<Memory />}
                 />
-                <Collapser title="breakpoints" content={<Breakpoints />} />
+
+                <Collapser
+                    title="breakpoints"
+                    collapsed={false}
+                    content={<Breakpoints />}
+                />
+
                 <Collapser
                     title="registers"
                     collapsed={true}
                     content={<Registers />}
                 />
+
                 <Collapser
                     title="signals"
                     collapsed={true}
                     content={
-                        <InferiorProgramInfo signals={this.props.signals} />
+                        <InferiorProgramInfo signals={initial_data.signals} />
                     }
                 />
 
                 {mi_output}
             </div>
         );
-    }
-    componentDidMount() {
-        Tree.init();
     }
 }
 export default RightSidebar;

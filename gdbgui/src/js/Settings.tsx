@@ -1,8 +1,12 @@
-import { store } from "statorgfc";
-import ToolTip from "./ToolTip";
+import { ChevronDown } from "lucide-react";
 import React from "react";
-import { toggle_config_key, update_config_key, update_max_lines_of_code_to_fetch } from "./Config";
-import { ChevronDown, X } from "lucide-react";
+import { store } from "statorgfc";
+import {
+    toggle_config_key,
+    update_config_key,
+    update_max_lines_of_code_to_fetch,
+} from "./Config";
+import ToolTip from "./ToolTip";
 
 /**
  * Settings modal when clicking the gear icon
@@ -14,11 +18,7 @@ class Settings extends React.Component {
     constructor(props: {}) {
         super(props);
         store.connectComponentState(this, [
-            "debug",
             "theme",
-            "themes",
-            "gdb_version",
-            "gdb_pid",
             "auto_add_breakpoint_to_main",
             "pretty_print",
             "refresh_state_after_sending_console_command",
@@ -65,7 +65,8 @@ class Settings extends React.Component {
                         onClick={() => {
                             if (this.max_source_file_lines_input.current) {
                                 let new_value = parseInt(
-                                    this.max_source_file_lines_input.current.value,
+                                    this.max_source_file_lines_input.current
+                                        .value,
                                 );
                                 update_max_lines_of_code_to_fetch(new_value);
                                 ToolTip.show_tooltip_on_node(
@@ -130,7 +131,7 @@ class Settings extends React.Component {
     }
 
     render() {
-        return this.get_table()
+        return this.get_table();
     }
 }
 

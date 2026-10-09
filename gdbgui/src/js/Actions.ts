@@ -242,7 +242,7 @@ const Actions = {
         }
         store.set("cached_source_files", cached_source_files);
     },
-    send_signal(signal_name: any, pid: any) {
+    send_signal(signal_name: string, pid: number) {
         Util.post_json("/send_signal_to_pid", {
             signal_name: signal_name,
             pid: pid,

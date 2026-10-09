@@ -1,12 +1,13 @@
+import { ChevronDown } from "lucide-react";
 import React from "react";
 import { store } from "statorgfc";
-import constants from "./constants";
+
 import Actions from "./Actions";
-import Util from "./Util";
-import ToolTipTourguide from "./ToolTipTourguide";
 import CompletionDropdown from "./CompletionDropdown";
+import constants from "./constants";
+import ToolTipTourguide from "./ToolTipTourguide";
 import { update_config_key } from "./Config";
-import { ChevronDown } from "lucide-react";
+import Util from "./Util";
 
 const TARGET_TYPES = {
     file: "file",
@@ -65,7 +66,6 @@ class BinaryLoader extends React.Component<
             ),
             user_binary_args_input: user_binary_args_input,
             user_cwd_input: user_cwd_input,
-            //TODO:this autoload doesn't seem to work
             initial_set_target_app:
                 initial_data.initial_binary_and_args.length > 0, // if user supplied initial binary, load it immediately
             target_type: TARGET_TYPES.file,

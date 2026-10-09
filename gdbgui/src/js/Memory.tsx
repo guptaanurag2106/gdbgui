@@ -5,18 +5,19 @@
  * address. It also has methods to manage the global store of memory data.
  */
 
-import { store } from "statorgfc";
-import GdbApi from "./GdbApi";
-import constants from "./constants";
-import ReactTable from "./ReactTable";
-import { MemoryLink } from "./Links";
-import Actions from "./Actions";
 import React from "react";
+import { store } from "statorgfc";
+
+import Actions from "./Actions";
+import constants from "./constants";
+import GdbApi from "./GdbApi";
 import { input_style } from "./styles";
+import { MemoryLink } from "./Links";
+import ReactTable from "./ReactTable";
 
-type State = any;
+type MemoryState = any;
 
-class Memory extends React.Component<{}, State> {
+class Memory extends React.Component<{}, MemoryState> {
     static MAX_ADDRESS_DELTA_BYTES = 1000;
     static DEFAULT_ADDRESS_DELTA_BYTES = 31;
     static DEFAULT_BYTES_PER_LINE = 8;

@@ -31,9 +31,10 @@ declare var initial_data: {
     cwd: string;
     remap_sources: any;
     themes: string[];
-    signals: any;
+    signals: Record<string, number>;
     using_windows: boolean;
 };
+
 declare var debug: boolean;
 
 type Target = {

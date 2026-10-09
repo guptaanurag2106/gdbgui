@@ -1,18 +1,18 @@
+import { Menu, Loader2 } from "lucide-react";
 import React from "react";
-
 import { store } from "statorgfc";
+
+import Actions from "./Actions";
 import BinaryLoader from "./BinaryLoader";
+import constants from "./constants";
 import ControlButtons from "./ControlButtons";
-import SourceCodeHeading from "./SourceCodeHeading";
-import ToolTipTourguide from "./ToolTipTourguide";
 import FileOps from "./FileOps";
 import GdbApi from "./GdbApi";
-import Actions from "./Actions";
-import constants from "./constants";
-import Util from "./Util";
-import { update_config_key } from "./Config";
-import { Menu, Loader2 } from "lucide-react";
 import Settings from "./Settings";
+import SourceCodeHeading from "./SourceCodeHeading";
+import ToolTipTourguide from "./ToolTipTourguide";
+import { update_config_key } from "./Config";
+import Util from "./Util";
 
 const top_bar_action_class =
     "inline-flex h-full items-center px-1 bg-[var(--accent)] hover:opacity-90 disabled:cursor-not-allowed";
@@ -82,10 +82,7 @@ let show_session_info = function () {
 };
 
 let show_settings = function () {
-    Actions.show_modal(
-        "Settings",
-        <Settings />
-    );
+    Actions.show_modal("Settings", <Settings />);
 };
 
 let get_menu = function (open: boolean, on_toggle: () => void) {
@@ -176,7 +173,7 @@ interface TopBarState {
     source_code_state: string;
     inferior_program: string;
 }
-interface TopBarProps { }
+interface TopBarProps {}
 
 class TopBar extends React.Component<TopBarProps, TopBarState> {
     spinner_timeout: any;
@@ -196,11 +193,7 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
         // global state attached to this component
         store.connectComponentState(
             this,
-            [
-                "source_code_state",
-                "waiting_for_response",
-                "inferior_program",
-            ],
+            ["source_code_state", "waiting_for_response", "inferior_program"],
             this.store_update_callback.bind(this),
         );
 
@@ -267,9 +260,9 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
         let toggle_assm_button;
         if (
             this.state.source_code_state ===
-            constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
             this.state.source_code_state ===
-            constants.source_code_states.ASSM_CACHED
+                constants.source_code_states.ASSM_CACHED
         ) {
             toggle_assm_button = (
                 <button
@@ -289,9 +282,9 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
         let reload_button;
         if (
             this.state.source_code_state ===
-            constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+                constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
             this.state.source_code_state ===
-            constants.source_code_states.SOURCE_CACHED
+                constants.source_code_states.SOURCE_CACHED
         ) {
             reload_button = (
                 <button
@@ -446,8 +439,8 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
                         }}
                     >
                         {store.get("show_filesystem")
-                            ? "Hide filesystem"
-                            : "Show filesystem"}
+                            ? "Hide file tree"
+                            : "Show file tree"}
                     </button>
 
                     {reload_button}
