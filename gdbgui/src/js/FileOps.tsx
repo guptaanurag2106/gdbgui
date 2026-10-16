@@ -133,7 +133,7 @@ const FileOps = {
     init: function () {
         store.subscribeToKeys(
             [
-                "inferior_program",
+                "inferior_program_state",
                 "source_code_selection_state",
                 "paused_on_frame",
                 "current_assembly_address",
@@ -162,7 +162,8 @@ const FileOps = {
     },
     _store_change_callback: function () {
         if (
-            store.get("inferior_program") === constants.inferior_states.running
+            store.get("inferior_program_state") ===
+            constants.inferior_states.running
         ) {
             return;
         }
@@ -196,7 +197,7 @@ const FileOps = {
             constants.source_code_selection_states.PAUSED_FRAME
         ) {
             is_paused =
-                store.get("inferior_program") ===
+                store.get("inferior_program_state") ===
                 constants.inferior_states.paused;
             paused_addr = store.get("current_assembly_address");
             fullname = paused_frame_fullname;

@@ -30,7 +30,7 @@ interface FoldersViewState {
     rootnode: any;
     source_code_state: string;
     source_file_paths: string[];
-    inferior_program: string;
+    inferior_program_state: string;
     cursor: any;
 }
 
@@ -43,12 +43,16 @@ class FoldersView extends React.Component<{}, FoldersViewState> {
             rootnode: default_rootnode,
             source_code_state: constants.source_code_states.NONE_AVAILABLE,
             source_file_paths: [],
-            inferior_program: constants.inferior_states.exited,
+            inferior_program_state: constants.inferior_states.exited,
             cursor: null,
         };
         store.connectComponentState(
             this,
-            ["source_code_state", "source_file_paths", "inferior_program"],
+            [
+                "source_code_state",
+                "source_file_paths",
+                "inferior_program_state",
+            ],
             this.update_filesystem_data.bind(this),
         );
 
@@ -232,7 +236,7 @@ class FoldersView extends React.Component<{}, FoldersViewState> {
                 Array.isArray(this.state.source_file_paths) &&
                 this.state.source_file_paths.length > 0,
             binary_loaded =
-                (this.state.inferior_program ||
+                (this.state.inferior_program_state ||
                     constants.inferior_states.unknown) !==
                 constants.inferior_states.unknown,
             folder_btn_style = (disabled: boolean): React.CSSProperties => ({

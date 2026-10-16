@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import React from "react";
 
 import { base_style, input_style } from "./styles";
@@ -47,6 +47,9 @@ const titlebar_style = {
     color: "var(--fg)",
     backgroundColor: "var(--hover)",
     userSelect: "none" as const,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
 };
 
 class Collapser extends React.Component<CollapserProps, CollapserState> {
@@ -159,12 +162,12 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
                     style={titlebar_style}
                     onClick={this.toggle_visibility.bind(this)}
                 >
-                    {this.state.collapsed ? (
-                        <ChevronRight size={14} className="inline" />
-                    ) : (
-                        <ChevronDown size={14} className="inline" />
-                    )}{" "}
                     {this.props.title}
+                    {this.state.collapsed ? (
+                        <Plus size={14} />
+                    ) : (
+                        <Minus size={14} />
+                    )}
                 </div>
 
                 <div
@@ -173,8 +176,8 @@ class Collapser extends React.Component<CollapserProps, CollapserState> {
                         height: this.state.autosize
                             ? "auto"
                             : this.state.height_px + "px",
-                        overflow: this.state.autosize ? "visible" : "auto",
-                        padding: "4px 6px",
+                        overflowY: this.state.autosize ? "visible" : "auto",
+                        padding: "5px",
                         ...base_style,
                     }}
                     ref={this.collapser_box_node}
@@ -198,19 +201,10 @@ class RightSidebar extends React.Component<{}, any> {
     }
 
     render() {
-        let mi_output: JSX.Element | null = null;
-        if (debug) {
-            /* global debug */
-            mi_output = (
-                <Collapser title="gdb mi output" content={<GdbMiOutput />} />
-            );
-        }
-
         return (
             <div
                 style={{
                     backgroundColor: "var(--topbar-bg)",
-                    overflow: "auto",
                     fontSize: "14px",
                     color: "var(--fg)",
                 }}
@@ -248,19 +242,19 @@ class RightSidebar extends React.Component<{}, any> {
                 />
 
                 <Collapser
-                    title="threads"
+                    title="Threads"
                     collapsed={false}
                     content={<Threads />}
                 />
 
                 <Collapser
-                    title="local variables"
+                    title="Local variables"
                     collapsed={false}
                     content={<Locals />}
                 />
 
                 <Collapser
-                    title="expressions"
+                    title="Expressions"
                     collapsed={false}
                     content={<Expressions />}
                 />
@@ -288,32 +282,38 @@ class RightSidebar extends React.Component<{}, any> {
                 />
 
                 <Collapser
-                    title="memory"
+                    title="Memory"
                     collapsed={true}
                     content={<Memory />}
                 />
 
                 <Collapser
-                    title="breakpoints"
+                    title="Breakpoints"
                     collapsed={false}
                     content={<Breakpoints />}
                 />
 
                 <Collapser
-                    title="registers"
+                    title="Registers"
                     collapsed={true}
                     content={<Registers />}
                 />
 
                 <Collapser
-                    title="signals"
+                    title="Signals"
                     collapsed={true}
                     content={
                         <InferiorProgramInfo signals={initial_data.signals} />
                     }
                 />
 
-                {mi_output}
+                {debug && (
+                    <Collapser
+                        title="GDB/MI output"
+                        collapsed={true}
+                        content={<GdbMiOutput />}
+                    />
+                )}
             </div>
         );
     }

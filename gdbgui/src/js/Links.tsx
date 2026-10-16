@@ -1,5 +1,6 @@
-import Actions from "./Actions";
 import * as React from "react";
+
+import Actions from "./Actions";
 import CopyToClipboard from "./CopyToClipboard";
 import Memory from "./Memory";
 
@@ -15,6 +16,7 @@ export class MemoryLink extends React.Component<MemoryLinkProps> {
         // turn 0x00000000000000 into 0x0
         const address_no_leading_zeros =
             "0x" + parseInt(this.props.addr, 16).toString(16);
+
         return (
             <span
                 className="pointer text-[var(--accent)]"
@@ -31,14 +33,14 @@ export class MemoryLink extends React.Component<MemoryLinkProps> {
     static defaultProps = { style: { fontFamily: "monospace" } };
 }
 
-type Props = {
+type FileLinkProps = {
     file: string;
     fullname: string;
     line: string;
     num_lines?: number;
 };
 
-export class FileLink extends React.Component<Props> {
+export class FileLink extends React.Component<FileLinkProps> {
     render() {
         let line = parseInt(this.props.line);
         if (!line) {

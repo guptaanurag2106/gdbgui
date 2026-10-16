@@ -137,6 +137,7 @@ const process_gdb_response = function (response_array: any) {
             if ("register-names" in r.payload) {
                 let names = r.payload["register-names"];
                 // filter out empty names
+                // TODO: why would there be empty names
                 store.set(
                     "register_names",
                     names.filter((name: any) => name !== ""),
@@ -157,7 +158,7 @@ const process_gdb_response = function (response_array: any) {
             }
             if ("files" in r.payload) {
                 if (r.payload.files.length > 0) {
-                    //TODO: why would there be duplicates
+                    // TODO: why would there be duplicates
                     let source_file_paths = [
                         ...new Map(
                             r.payload.files.map((f: any) => [f.fullname, f]),

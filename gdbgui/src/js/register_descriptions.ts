@@ -255,4 +255,4 @@ export default {
     wcgr1: "WMMX control general-purpose register, synonymous with wc9",
     wcgr2: "WMMX control general-purpose register, synonymous with wc10",
     wcgr3: "WMMX control general-purpose register, synonymous with wc11",
-};
+} as Record<string, string>;

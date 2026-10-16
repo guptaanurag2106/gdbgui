@@ -171,7 +171,7 @@ interface TopBarState {
     show_hamburger_menu: boolean;
     waiting_for_response: boolean;
     source_code_state: string;
-    inferior_program: string;
+    inferior_program_state: string;
 }
 interface TopBarProps {}
 
@@ -188,12 +188,16 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
             show_hamburger_menu: false,
             waiting_for_response: false,
             source_code_state: constants.source_code_states.NONE_AVAILABLE,
-            inferior_program: constants.inferior_states.exited,
+            inferior_program_state: constants.inferior_states.exited,
         };
         // global state attached to this component
         store.connectComponentState(
             this,
-            ["source_code_state", "waiting_for_response", "inferior_program"],
+            [
+                "source_code_state",
+                "waiting_for_response",
+                "inferior_program_state",
+            ],
             this.store_update_callback.bind(this),
         );
 
@@ -301,7 +305,7 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
 
         let fetch_disassembly_button;
         if (
-            (this.state.inferior_program ||
+            (this.state.inferior_program_state ||
                 constants.inferior_states.unknown) !==
             constants.inferior_states.unknown
         ) {

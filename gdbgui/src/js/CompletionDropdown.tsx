@@ -1,4 +1,5 @@
 import React from "react";
+import { ChevronDown } from "lucide-react";
 
 type CompletionDropdownProps = {
     list: string[];
@@ -10,6 +11,7 @@ type CompletionDropdownProps = {
     max_items?: number;
     show_all_on_empty?: boolean;
     disabled?: boolean | undefined;
+    select_only?: boolean;
 };
 
 type CompletionDropdownState = {
@@ -45,7 +47,8 @@ class CompletionDropdown extends React.Component<
     constructor(props: CompletionDropdownProps) {
         super(props);
         this.state = {
-            term: this.props.initial_value || "",
+            term:
+                props.initial_value || (props.select_only ? props.list[0] : ""),
             results: [],
             currentIndex: -1,
             isFocused: false,
@@ -57,7 +60,7 @@ class CompletionDropdown extends React.Component<
         prevProps: CompletionDropdownProps,
         prevState: CompletionDropdownState,
     ) {
-        if (prevProps.list !== this.props.list) {
+        if (prevProps.list !== this.props.list && !this.props.select_only) {
             this.items = this.make_dropdown_items(this.props.list);
             // only re-search while the user is interacting; after a
             // selection the input is blurred, so a list change from the
@@ -347,6 +350,10 @@ class CompletionDropdown extends React.Component<
     }
 
     search(term: string) {
+        if (this.props.select_only) {
+            this.setState({ results: this.props.list, currentIndex: -1 });
+            return;
+        }
         let results: string[] = [];
         if (term.trim() === "") {
             if (this.props.show_all_on_empty && this.state.isFocused) {
@@ -446,6 +453,15 @@ class CompletionDropdown extends React.Component<
                 <input
                     ref={this.inputRef}
                     className="h-9 w-full rounded-r border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--fg)] shadow-sm outline-none focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
+                    style={
+                        this.props.select_only
+                            ? {
+                                  cursor: "default",
+                                  caretColor: "transparent",
+                                  paddingRight: "2rem",
+                              }
+                            : {}
+                    }
                     disabled={this.props.disabled}
                     autoComplete="off"
                     role="combobox"
@@ -467,7 +483,14 @@ class CompletionDropdown extends React.Component<
                             isFocused: false,
                         });
                     }}
+                    readOnly={this.props.select_only}
                 />
+                {this.props.select_only && (
+                    <ChevronDown
+                        size={16}
+                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)]"
+                    />
+                )}
                 <ul
                     ref={this.ulRef}
                     className="absolute left-0 right-0 top-9 z-[12] max-h-56 overflow-y-auto rounded border border-[var(--border)] bg-[var(--surface)] py-1 text-[var(--fg)] shadow-lg"

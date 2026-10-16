@@ -6,6 +6,7 @@ import Memory from "./Memory";
 import constants from "./constants";
 import React from "react";
 import Util from "./Util";
+import Registers from "./Registers";
 void React; // using jsx implicity uses React
 
 const Actions = {
@@ -20,14 +21,14 @@ const Actions = {
         Locals.clear();
     },
     inferior_program_starting: function () {
-        store.set("inferior_program", constants.inferior_states.running);
+        store.set("inferior_program_state", constants.inferior_states.running);
         Actions.clear_program_state();
     },
     inferior_program_resuming: function () {
-        store.set("inferior_program", constants.inferior_states.running);
+        store.set("inferior_program_state", constants.inferior_states.running);
     },
     inferior_program_paused: function (frame = {}) {
-        store.set("inferior_program", constants.inferior_states.paused);
+        store.set("inferior_program_state", constants.inferior_states.paused);
         store.set(
             "source_code_selection_state",
             constants.source_code_selection_states.PAUSED_FRAME,
@@ -44,11 +45,13 @@ const Actions = {
         Actions.refresh_state_for_gdb_pause();
     },
     inferior_program_exited: function () {
-        store.set("inferior_program", constants.inferior_states.exited);
+        store.set("inferior_program_state", constants.inferior_states.exited);
         store.set("disassembly_for_missing_file", []);
         store.set("root_gdb_tree_var", null);
-        store.set("previous_register_values", []);
-        store.set("current_register_values", []);
+
+        Registers.clear_cached_values();
+        Registers.clear_register_name_cache();
+
         store.set("inferior_pid", null);
         Actions.clear_program_state();
     },

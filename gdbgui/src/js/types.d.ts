@@ -54,3 +54,8 @@ type CachedFileType = {
     num_lines_in_file: number;
     exists: boolean;
 };
+
+type RegisterValue = {
+    number: string;
+    value: string;
+};

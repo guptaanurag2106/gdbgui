@@ -1,11 +1,12 @@
 import React from "react";
-import GdbApi from "./GdbApi";
-import { Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
 import { store } from "statorgfc";
+import { Terminal } from "xterm";
 import "xterm/css/xterm.css";
-import constants from "./constants";
+
 import Actions from "./Actions";
+import constants from "./constants";
+import { FitAddon } from "xterm-addon-fit";
+import GdbApi from "./GdbApi";
 import Util from "./Util";
 
 function customKeyEventHandler(config: {
@@ -47,6 +48,7 @@ function customKeyEventHandler(config: {
         return true;
     };
 }
+
 export class Terminals extends React.Component {
     userPtyRef: React.RefObject<any>;
     userPty: Terminal;
@@ -85,7 +87,6 @@ export class Terminals extends React.Component {
             macOptionIsMeta: true,
             scrollback: 9999,
             disableStdin: true,
-            // theme: { background: "#888" }
         });
     }
 
@@ -93,17 +94,6 @@ export class Terminals extends React.Component {
         return (
             <div className="relative bg-black p-0 m-0 h-full w-full">
                 <div className="absolute inset-0" ref={ref}></div>
-            </div>
-        );
-    }
-    render() {
-        let terminalsClass = "w-full h-full relative grid grid-cols-3 ";
-        return (
-            <div className={terminalsClass}>
-                {this.terminal(this.userPtyRef)}
-                {/* <GdbGuiTerminal /> */}
-                {this.terminal(this.gdbguiPtyRef)}
-                {this.terminal(this.programPtyRef)}
             </div>
         );
     }
@@ -254,5 +244,16 @@ export class Terminals extends React.Component {
         if (this.pty_listener) {
             GdbApi.remove_pty_listener(this.pty_listener);
         }
+    }
+
+    render() {
+        let terminalsClass = "w-full h-full relative grid grid-cols-3 ";
+        return (
+            <div className={terminalsClass}>
+                {this.terminal(this.userPtyRef)}
+                {this.terminal(this.gdbguiPtyRef)}
+                {this.terminal(this.programPtyRef)}
+            </div>
+        );
     }
 }

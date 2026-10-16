@@ -5,6 +5,7 @@
 import React from "react";
 import { store } from "statorgfc";
 
+import CompletionDropdown from "./CompletionDropdown";
 import constants from "./constants";
 import GdbApi from "./GdbApi";
 import Memory from "./Memory";
@@ -21,11 +22,12 @@ class Registers extends React.Component<{}, RegistersState> {
     constructor(props: {}) {
         super(props);
         store.connectComponentState(this, [
-            "inferior_program",
+            "inferior_program_state",
+            "register_names",
+            "register_radix",
+            "can_fetch_register_values",
             "previous_register_values",
             "current_register_values",
-            "register_names",
-            "can_fetch_register_values",
         ]);
     }
 
@@ -40,7 +42,7 @@ class Registers extends React.Component<{}, RegistersState> {
             [
                 constants.inferior_states.paused,
                 constants.inferior_states.running,
-            ].indexOf(store.get("inferior_program")) == -1
+            ].indexOf(store.get("inferior_program_state")) == -1
         ) {
             return cmds;
         }
@@ -68,11 +70,13 @@ class Registers extends React.Component<{}, RegistersState> {
             // update all registers values
             cmds.push(
                 constants.IGNORE_ERRORS_TOKEN_STR +
-                    "-data-list-register-values x",
+                    "-data-list-register-values " +
+                    store.get("register_radix"),
             );
         } else {
             Registers.clear_cached_values();
         }
+
         return cmds;
     }
 
@@ -80,12 +84,21 @@ class Registers extends React.Component<{}, RegistersState> {
         store.set("register_names", []);
     }
 
+    static refetch() {
+        Registers.clear_register_name_cache();
+        Registers.clear_cached_values();
+        GdbApi.run_gdb_command(Registers.get_update_cmds());
+    }
+
     render() {
         let num_register_names = store.get("register_names").length,
             num_register_values = store.get("current_register_values").length;
 
-        //TODO: if mi-async is on then will there be data on not paused?
-        if (this.state.inferior_program !== constants.inferior_states.paused) {
+        // TODO: if mi-async is on then will there be data on not paused?
+        if (
+            this.state.inferior_program_state !==
+            constants.inferior_states.paused
+        ) {
             return <span className="placeholder">no data to display</span>;
         }
 
@@ -97,40 +110,34 @@ class Registers extends React.Component<{}, RegistersState> {
                 register_name_fetch_count <= MAX_REGISTER_NAME_FETCH_COUNT)
         ) {
             // Somehow register names and values do not match. Clear cached values, then refetch both.
-            Registers.clear_register_name_cache();
-            Registers.clear_cached_values();
-            GdbApi.run_gdb_command(Registers.get_update_cmds());
+            Registers.refetch();
         } else if (num_register_names === num_register_values) {
-            let columns = [
-                    "name",
-                    "value (hex)",
-                    "value (decimal)",
-                    "description",
-                ],
-                register_table_data: any[] = [],
+            let columns = ["name", "value"],
+                register_table_data: string[][] = [],
                 register_names = store.get("register_names"),
                 register_values = store.get("current_register_values"),
                 previous_register_values = store.get(
                     "previous_register_values",
                 );
 
+            // TODO: firstly register_names/register_values has rax, eax, al, ah everything can/should we unify them
             for (let i in register_names) {
-                let name: any = register_names[i],
-                    obj = register_values.find((v: any) => v["number"] === i),
+                let name: string = register_names[i],
+                    obj = register_values.find(
+                        (v: RegisterValue) => v["number"] === i,
+                    ),
                     hex_val_raw = "",
-                    disp_hex_val: any = "",
-                    disp_dec_val: any = "",
-                    register_description =
-                        (register_descriptions as any)[name] || "";
+                    disp_val: string = "",
+                    register_description = register_descriptions[name] || "",
+                    changed = false;
 
                 if (obj && obj.value) {
                     hex_val_raw = obj["value"];
 
                     let old_obj = previous_register_values.find(
-                            (v: any) => v["number"] === i,
+                            (v: RegisterValue) => v["number"] === i,
                         ),
-                        old_hex_val_raw,
-                        changed = false;
+                        old_hex_val_raw = undefined;
                     if (old_obj) {
                         old_hex_val_raw = old_obj["value"];
                     }
@@ -145,31 +152,59 @@ class Registers extends React.Component<{}, RegistersState> {
 
                     // if hex value is a valid value, convert it to a link
                     // and display decimal format too
-                    if (obj["value"].indexOf("0x") === 0) {
-                        disp_hex_val =
-                            Memory.make_addrs_into_links_react(hex_val_raw);
-                        disp_dec_val = parseInt(obj["value"], 16).toString(10);
-                    }
-
-                    if (changed) {
-                        name = <span className="highlight">{name}</span>;
-                        disp_hex_val = (
-                            <span className="highlight">{disp_hex_val}</span>
-                        );
-                        disp_dec_val = (
-                            <span className="highlight">{disp_dec_val}</span>
-                        );
-                    }
+                    disp_val = Memory.make_addrs_into_links_react(hex_val_raw);
                 }
 
-                register_table_data.push([
-                    name,
-                    disp_hex_val,
-                    disp_dec_val,
-                    register_description,
-                ] as any[]);
+                const table_name = (
+                    <span
+                        title={register_description}
+                        className={changed ? "highlight" : ""}
+                    >
+                        {name}
+                    </span>
+                );
+                const table_disp_val = (
+                    <span className={changed ? "highlight" : ""}>
+                        {disp_val}
+                    </span>
+                );
+
+                register_table_data.push([table_name, table_disp_val] as any[]);
             }
-            return <ReactTable data={register_table_data} header={columns} />;
+
+            return (
+                <>
+                    <CompletionDropdown
+                        list={[
+                            "hex",
+                            "octal",
+                            "binary",
+                            "decimal",
+                            "raw",
+                            "natural",
+                        ]}
+                        placeholder="Select radix"
+                        /* key={store.get("register_radix")} */
+                        initial_value={
+                            constants.radix_fmt_to_repr[
+                                store.get("register_radix")
+                            ]
+                        }
+                        onSelect={(val: string) => {
+                            store.set(
+                                "register_radix",
+                                constants.radix_repr_to_fmt[val],
+                            );
+                            // clear old values as well otherwise it will always say changed
+                            Registers.clear_cached_values();
+                            GdbApi.run_gdb_command(Registers.get_update_cmds());
+                        }}
+                        show_all_on_empty
+                        select_only
+                    />
+                    <ReactTable data={register_table_data} header={columns} />
+                </>
+            );
         }
 
         return <span className="placeholder">no data to display</span>;

@@ -298,7 +298,7 @@ const GdbApi = {
             [
                 constants.inferior_states.unknown,
                 constants.inferior_states.paused,
-            ].indexOf(store.get("inferior_program")) !== -1
+            ].indexOf(store.get("inferior_program_state")) !== -1
         );
     },
     click_continue_button: function (reverse = false) {
@@ -485,7 +485,7 @@ const GdbApi = {
     backtrace: function () {
         let cmds = ["backtrace"];
         cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
-        store.set("inferior_program", constants.inferior_states.paused);
+        store.set("inferior_program_state", constants.inferior_states.paused);
         GdbApi.run_gdb_command(cmds);
     },
     /**

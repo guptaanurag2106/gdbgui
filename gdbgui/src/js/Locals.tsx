@@ -5,6 +5,7 @@
 
 import React from "react";
 import { store } from "statorgfc";
+
 import GdbVariable from "./GdbVariable";
 
 class Locals extends React.Component {
@@ -12,6 +13,16 @@ class Locals extends React.Component {
         super(props);
         store.connectComponentState(this, ["expressions", "locals"]);
     }
+
+    get_autocreated_obj_from_expr(expr: any) {
+        for (let obj of store.get("expressions")) {
+            if (obj.expression === expr && obj.expr_type === "local") {
+                return obj;
+            }
+        }
+        return null;
+    }
+
     render() {
         let content = [];
         let sorted_local_objs = [...store.get("locals")];
@@ -52,14 +63,7 @@ class Locals extends React.Component {
             return content;
         }
     }
-    get_autocreated_obj_from_expr(expr: any) {
-        for (let obj of store.get("expressions")) {
-            if (obj.expression === expr && obj.expr_type === "local") {
-                return obj;
-            }
-        }
-        return null;
-    }
+
     static clear_autocreated_exprs() {
         let exprs_objs_to_remove = store
             .get("expressions")
@@ -68,10 +72,12 @@ class Locals extends React.Component {
             GdbVariable.delete_gdb_variable(obj.name),
         );
     }
+
     static clear() {
         store.set("locals", []);
         Locals.clear_autocreated_exprs();
     }
+
     static save_locals(locals: any) {
         let locals_with_meta = locals.map((local: any) => {
             // add field to local
@@ -82,6 +88,7 @@ class Locals extends React.Component {
         });
         store.set("locals", locals_with_meta);
     }
+
     static can_local_be_expanded(local: any) {
         // gdb returns list of locals. We may want to turn that local into a GdbVariable
         // to explore its children

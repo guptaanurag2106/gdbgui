@@ -6,7 +6,6 @@
  *
  */
 
-/* global initial_data */
 /* global debug */
 
 import ReactDOM from "react-dom";
@@ -14,6 +13,7 @@ import React from "react";
 import { store, middleware } from "statorgfc";
 import Split from "react-split";
 
+import "../css/gdbgui.css";
 import constants from "./constants";
 import FileOps from "./FileOps";
 import FoldersView from "./FoldersView";
@@ -24,12 +24,10 @@ import initial_store_data, { load_config, update_config_key } from "./Config";
 import MiddleLeft from "./MiddleLeft";
 import Modal from "./GdbguiModal";
 import RightSidebar from "./RightSidebar";
+import { Terminals } from "./Terminals";
 import ToolTip from "./ToolTip";
 import ToolTipTourguide from "./ToolTipTourguide";
 import TopBar from "./TopBar";
-
-import "../css/gdbgui.css";
-import { Terminals } from "./Terminals";
 import StatusFooter from "./StatusFooter";
 
 class Gdbgui extends React.PureComponent<{}, any> {

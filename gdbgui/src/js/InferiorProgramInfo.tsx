@@ -3,10 +3,13 @@ import { store } from "statorgfc";
 
 import Actions from "./Actions";
 import { btn_style, input_style } from "./styles";
+import CompletionDropdown from "./CompletionDropdown";
 
 type InferiorProgramInfoState = any;
 
-type InferiorProgramInfoProps = { signals: Record<string, number> };
+type InferiorProgramInfoProps = {
+    signals: Record<string, number>;
+};
 
 class InferiorProgramInfo extends React.Component<
     InferiorProgramInfoProps,
@@ -22,33 +25,12 @@ class InferiorProgramInfo extends React.Component<
             return rank(a) - rank(b) || a.localeCompare(b);
         });
         this.state = {
-            selected_signal: "SIGINT",
+            selected_signal: "",
             other_pid: "",
-            ordered: ordered,
+            ordered: ordered.map(
+                (s: string) => `${s} (${this.props.signals[s]})`,
+            ),
         };
-    }
-
-    get_dropdown() {
-        // Native select: the browser renders the popup list in its own
-        // layer, so it is never clipped by the sidebar's overflow and
-        // never shifts layout or covers the sections below.
-        return (
-            <select
-                style={{ ...input_style, width: "auto" }}
-                value={this.state.selected_signal}
-                onChange={(e) => {
-                    this.setState({
-                        selected_signal: e.currentTarget.value,
-                    });
-                }}
-            >
-                {this.state.ordered.map((s: string) => (
-                    <option key={s} value={s}>
-                        {`${s} (${this.props.signals[s]})`}
-                    </option>
-                ))}
-            </select>
-        );
     }
 
     render() {
@@ -88,21 +70,30 @@ class InferiorProgramInfo extends React.Component<
         }
 
         return (
-            <div className="p-1.5 text-[var(--fg)]">
+            <div className="text-[var(--fg)]">
                 <div className="flex flex-wrap gap-1 items-center">
                     <span>Send</span>
-                    {this.get_dropdown()}
+
+                    <CompletionDropdown
+                        list={this.state.ordered}
+                        placeholder="Select signal"
+                        onSelect={(val: string) =>
+                            this.setState({
+                                selected_signal: val.split(" ")[0],
+                            })
+                        }
+                        show_all_on_empty
+                    />
+
                     <span>to</span>
-                    {gdb_button}
                     {inferior_button && (
                         <>
-                            <span>or</span>
                             {inferior_button}
+                            <span>or</span>
                         </>
                     )}
-                    {
-                        // TODO: is this needed?
-                        /*   <span>or</span>
+                    {gdb_button}
+                    <span>or</span>
                     <button
                         className="disabled:opacity-50 disabled:cursor-not-allowed"
                         style={btn_style}
@@ -125,8 +116,7 @@ class InferiorProgramInfo extends React.Component<
                             this.setState({ other_pid: e.currentTarget.value });
                         }}
                         value={this.state.other_pid}
-                    />*/
-                    }
+                    />
                 </div>
             </div>
         );

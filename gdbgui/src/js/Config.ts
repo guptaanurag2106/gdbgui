@@ -18,7 +18,6 @@ const initial_store_data = {
     gdb_version: "unknown", // this is parsed from gdb's output
     gdb_version_array: [], // this is parsed from gdb's output
     gdb_pid: undefined,
-    can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
 
     features: { features: [], target_features: [] }, // stores both cmd features and target features
 
@@ -50,7 +49,7 @@ const initial_store_data = {
     refresh_state_after_sending_console_command: true, // If true, send commands to refresh GUI store after each command is sent from console
     show_all_sent_commands_in_console: debug, // show all sent commands if in debug mode
 
-    inferior_program: constants.inferior_states.unknown,
+    inferior_program_state: constants.inferior_states.unknown,
     inferior_pid: null,
 
     paused_on_frame: undefined,
@@ -87,9 +86,11 @@ const initial_store_data = {
     inferior_binary_path_last_modified_unix_sec: null,
 
     // registers
-    register_names: [],
-    previous_register_values: [],
-    current_register_values: [],
+    register_names: [] as string[],
+    register_radix: "x", // x: Hexadecimal, o: Octal, t: Binary, d: Decimal, r: Raw, N: Natural
+    previous_register_values: [] as RegisterValue[],
+    current_register_values: [] as RegisterValue[],
+    can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
 
     // memory
     memory_cache: {},

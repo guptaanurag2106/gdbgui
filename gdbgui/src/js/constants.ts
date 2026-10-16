@@ -69,6 +69,23 @@ let constants = {
     } as Record<any, string>,
 
     colorTypeMap: {} as Record<string, string>,
+
+    radix_repr_to_fmt: {
+        hex: "x",
+        octal: "o",
+        binary: "t",
+        decimal: "d",
+        raw: "r",
+        natural: "N",
+    } as Record<string, string>,
+    radix_fmt_to_repr: {
+        x: "hex",
+        o: "octal",
+        t: "binary",
+        d: "decimal",
+        r: "raw",
+        N: "natural",
+    } as Record<string, string>,
 };
 
 const colorTypeMap = {} as Record<string, string>;
