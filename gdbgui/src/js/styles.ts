@@ -1,14 +1,5 @@
 export const base_style = { fontSize: "14px", color: "var(--fg)" };
 
-export const btn_style = {
-    backgroundColor: "var(--accent)",
-    color: "var(--bg)",
-    padding: "2px",
-    fontSize: "14px",
-    cursor: "pointer" as const,
-    border: "none",
-};
-
 export const input_style = {
     display: "inline" as const,
     height: "25px",

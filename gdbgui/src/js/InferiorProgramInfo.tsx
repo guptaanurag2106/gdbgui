@@ -2,7 +2,7 @@ import React from "react";
 import { store } from "statorgfc";
 
 import Actions from "./Actions";
-import { btn_style, input_style } from "./styles";
+import { input_style } from "./styles";
 import CompletionDropdown from "./CompletionDropdown";
 
 type InferiorProgramInfoState = any;
@@ -36,7 +36,7 @@ class InferiorProgramInfo extends React.Component<
     render() {
         let gdb_button = (
             <button
-                style={btn_style}
+                className="btn"
                 type="button"
                 title="Send signal to gdb"
                 onClick={() =>
@@ -54,7 +54,7 @@ class InferiorProgramInfo extends React.Component<
         if (this.state.inferior_pid) {
             inferior_button = (
                 <button
-                    style={btn_style}
+                    className="btn"
                     type="button"
                     title="Send signal to program being debugged"
                     onClick={() =>
@@ -95,8 +95,7 @@ class InferiorProgramInfo extends React.Component<
                     {gdb_button}
                     <span>or</span>
                     <button
-                        className="disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={btn_style}
+                        className="btn"
                         disabled={!this.state.other_pid}
                         type="button"
                         title="Send signal to custom PID. Enter PID to enable this button."

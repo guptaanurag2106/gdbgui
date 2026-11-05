@@ -24,6 +24,7 @@ button {
   --bg: #232629; /* .pygments-stata-dark background */
   --fg: #cccccc; /* .n */
   --muted: #777777; /* .c */
+  --disabled-fg: #777777;
   --border: #3d4349;
   --surface: #232629;
   --topbar-bg: #1c1f22;
@@ -46,6 +47,7 @@ button {
   --bg: #202020; /* .pygments-native background */
   --fg: #d0d0d0; /* .n */
   --muted: #ababab; /* .c */
+  --disabled-fg: #6d6d6d;
   --border: #3d3d3d;
   --surface: #202020;
   --topbar-bg: #191919;
@@ -68,6 +70,7 @@ button {
   --bg: #282828;
   --fg: #ebdbb2;
   --muted: #928374;
+  --disabled-fg: #928374;
   --border: #504945;
   --surface: #282828;
   --topbar-bg: #1d2021;
@@ -135,6 +138,25 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   border-color: var(--accent) !important;
   box-shadow: none !important;
+}
+/* quiet buttons: rest = one step above bg, subtle border; accent border +
+   hover bg on hover; fades to surface when disabled */
+.btn {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: var(--hover);
+  color: var(--fg);
+  padding: 2px 6px;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background-color: var(--hll);
+}
+.btn:disabled {
+  color: var(--disabled-fg);
+  background-color: var(--surface);
+  border-color: var(--surface);
+  cursor: not-allowed;
 }
 /* source code */
 #code_table {

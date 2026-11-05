@@ -15,8 +15,7 @@ import { update_config_key } from "./Config";
 import Util from "./Util";
 
 const top_bar_action_class =
-    "inline-flex h-full items-center px-1 bg-[var(--accent)] hover:opacity-90 disabled:cursor-not-allowed";
-const top_bar_action_style: React.CSSProperties = { color: "var(--bg)" };
+    "btn inline-flex h-full items-center px-1 disabled:cursor-not-allowed";
 
 let show_license = function () {
     Actions.show_modal(
@@ -276,7 +275,6 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
                         "Toggle between assembly flavors. The options are Intel or AT&T."
                     }
                     className={top_bar_action_class}
-                    style={top_bar_action_style}
                 >
                     {this.state.assembly_flavor === "intel" ? "Intel" : "AT&T"}
                 </button>
@@ -296,7 +294,6 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
                     type="button"
                     title="Erase file from local cache and re-fetch it"
                     className={top_bar_action_class}
-                    style={top_bar_action_style}
                 >
                     Reload file
                 </button>
@@ -318,7 +315,6 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
                     type="button"
                     title="fetch disassembly"
                     className={top_bar_action_class}
-                    style={top_bar_action_style}
                 >
                     Fetch disassembly
                 </button>
@@ -345,7 +341,6 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
                     type="button"
                     title="Show/Hide disassembly"
                     className={top_bar_action_class}
-                    style={top_bar_action_style}
                 >
                     <span>
                         {store.get("show_inline_disassembly") ? "Hide" : "Show"}{" "}
@@ -395,7 +390,6 @@ class TopBar extends React.Component<TopBarProps, TopBarState> {
                 <div className="flex items-center gap-2 mt-4 h-7">
                     <button
                         className={top_bar_action_class}
-                        style={top_bar_action_style}
                         title="Toggle file explorer visibility"
                         onClick={() => {
                             let middle_pane_sizes = store.get("middle_sizes"),

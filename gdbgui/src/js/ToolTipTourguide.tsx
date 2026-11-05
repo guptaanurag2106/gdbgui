@@ -107,7 +107,7 @@ class ToolTipTourguide extends React.Component<ToolTipTourguideProps, State> {
             dismiss = is_last_step ? null : (
                 <button
                     type="button"
-                    className="pointer rounded border border-[var(--border)] bg-[var(--hover)] px-2 py-1 text-[var(--fg)] hover:bg-[var(--accent)] hover:text-[var(--bg)]"
+                    className="btn pointer px-2 py-1"
                     onClick={ToolTipTourguide.dismiss}
                 >
                     Dismiss
@@ -132,8 +132,7 @@ class ToolTipTourguide extends React.Component<ToolTipTourguideProps, State> {
                 {dismiss}
                 <button
                     type="button"
-                    className="pointer ml-2 rounded bg-[var(--accent)] px-2 py-1 hover:opacity-90"
-                    style={{ color: "var(--bg)" }}
+                    className="btn pointer ml-2 px-2 py-1"
                     onClick={ToolTipTourguide.next}
                 >
                     {is_last_step ? "Finish" : "Next"}

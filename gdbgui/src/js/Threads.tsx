@@ -216,7 +216,7 @@ class Threads extends React.Component<{}, ThreadsState> {
         } else {
             selected = (
                 <button
-                    className={`${badge_style} cursor-pointer`}
+                    className="btn cursor-pointer px-1 py-px text-[11px]"
                     onClick={() => {
                         Threads.select_thread_id(thread.id);
                     }}

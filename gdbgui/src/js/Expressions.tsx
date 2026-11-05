@@ -1,7 +1,8 @@
 import React from "react";
 import { store } from "statorgfc";
-import GdbVariable from "./GdbVariable";
+
 import constants from "./constants";
+import GdbVariable from "./GdbVariable";
 
 class Expressions extends React.Component {
     objs_to_delete: any;
@@ -18,7 +19,7 @@ class Expressions extends React.Component {
         );
         // only render variables in scope that were not created for the Locals component
         this.objs_to_render = sorted_expression_objs.filter(
-            //TODO: does it just remove not in scope variable? may be just show not in scope
+            // TODO: does it just remove not in scope variable? may be just show not in scope
             (obj: any) => obj.in_scope === "true" && obj.expr_type === "expr",
         );
         this.objs_to_delete = sorted_expression_objs.filter(
@@ -59,6 +60,7 @@ class Expressions extends React.Component {
             </div>
         );
     }
+
     static keydown_on_input(e: any) {
         if (e.keyCode === constants.ENTER_BUTTON_NUM) {
             let expr = e.currentTarget.value,

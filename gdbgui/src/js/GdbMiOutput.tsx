@@ -62,8 +62,7 @@ class GdbMiOutput extends React.Component<{}, State> {
             <div>
                 <button
                     title="clear all mi output"
-                    className="pointer inline-flex items-center gap-1 bg-[var(--accent)] px-1 py-1 text-[14px] hover:opacity-90"
-                    style={{ color: "var(--bg)" }}
+                    className="btn pointer inline-flex items-center gap-1 px-1"
                     onClick={() => store.set("gdb_mi_output", [])}
                 >
                     clear output

@@ -6,7 +6,6 @@ import constants from "./constants";
 import FileOps from "./FileOps";
 import FileSystem from "./FileSystem";
 import Util from "./Util";
-import { btn_style } from "./styles";
 
 const default_rootnode = {
     name: 'Load inferior program, then click "Fetch source files" to populate this window',
@@ -238,23 +237,12 @@ class FoldersView extends React.Component<{}, FoldersViewState> {
             binary_loaded =
                 (this.state.inferior_program_state ||
                     constants.inferior_states.unknown) !==
-                constants.inferior_states.unknown,
-            folder_btn_style = (disabled: boolean): React.CSSProperties => ({
-                ...btn_style,
-                ...(disabled
-                    ? {
-                          backgroundColor: "var(--hover)",
-                          color: "var(--muted)",
-                          cursor: "not-allowed" as const,
-                      }
-                    : {}),
-            });
+                constants.inferior_states.unknown;
 
         return (
             <div className="flex flex-col gap-2 text-[var(--fg)] bg-[var(--topbar-bg)] overflow-y-auto h-full">
                 <button
-                    className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                    style={folder_btn_style(!binary_loaded)}
+                    className="btn mt-1 inline-flex h-7 items-center px-2"
                     disabled={!binary_loaded}
                     onClick={Actions.fetch_source_files}
                 >
@@ -272,16 +260,14 @@ class FoldersView extends React.Component<{}, FoldersViewState> {
 
                 <div className="flex flex-wrap gap-1">
                     <button
-                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                        style={folder_btn_style(!has_files)}
+                        className="btn inline-flex h-7 items-center px-2"
                         disabled={!has_files}
                         onClick={this.expand_all}
                     >
                         Expand all
                     </button>
                     <button
-                        className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                        style={folder_btn_style(!has_files)}
+                        className="btn inline-flex h-7 items-center px-2"
                         disabled={!has_files}
                         onClick={this.collapse_all}
                     >
@@ -290,8 +276,7 @@ class FoldersView extends React.Component<{}, FoldersViewState> {
                     {can_reveal && (
                         //TODO:button does what??
                         <button
-                            className="inline-flex h-7 items-center px-2 py-1 hover:opacity-90"
-                            style={btn_style}
+                            className="btn inline-flex h-7 items-center px-2"
                             onClick={() =>
                                 this.reveal_path(
                                     store.get("fullname_to_render"),

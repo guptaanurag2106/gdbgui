@@ -278,8 +278,7 @@ class BinaryLoader extends React.Component<
                             title={title}
                             onClick={() => this.set_target_app()}
 
-                            className="inline-flex items-center rounded border border-[var(--border)] bg-[var(--accent)] px-4 hover:opacity-90"
-                            style={{ color: "var(--bg)" }}
+                            className="btn inline-flex items-center px-4"
                         >
                             {button_text}
                         </button>

@@ -630,7 +630,7 @@ class Graph extends React.Component<Props, State> {
                         />
                     </div>
                     <button
-                        className="cursor-pointer rounded border border-[var(--border)] bg-[var(--bg)] px-1.5 py-0.5 text-[var(--fg)] hover:bg-[var(--hover)]"
+                        className="btn cursor-pointer px-1.5 py-0.5"
                         style={{
                             display: this.state.show_reset
                                 ? "inline-block"

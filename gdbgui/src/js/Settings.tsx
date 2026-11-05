@@ -60,7 +60,7 @@ class Settings extends React.Component {
                         ref={this.max_source_file_lines_input}
                     />
                     <button
-                        className="rounded border border-[var(--border)] bg-[var(--hover)] px-2 py-1 text-[var(--fg)] hover:bg-[var(--accent)] hover:text-white"
+                        className="btn px-2 py-1"
                         ref={this.save_button}
                         onClick={() => {
                             if (this.max_source_file_lines_input.current) {

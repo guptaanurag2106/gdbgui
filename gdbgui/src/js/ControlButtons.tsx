@@ -21,8 +21,7 @@ class ControlButtons extends React.Component<{}, State> {
         store.connectComponentState(this, ["reverse_supported"]);
     }
     render() {
-        let btn_class =
-            "inline-flex h-full px-2 items-center border border-[var(--border)] bg-[var(--surface)] text-[var(--fg)] hover:bg-[var(--hover)]";
+        let btn_class = "btn inline-flex h-full px-2 items-center";
 
         return (
             <div>

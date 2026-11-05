@@ -51,8 +51,7 @@ class Modal extends React.Component<{}, State> {
                     <div className="flex justify-end border-t border-[var(--border)] pt-4">
                         <button
                             type="button"
-                            className="rounded bg-[var(--accent)] px-3 py-2 font-medium hover:opacity-90"
-                            style={{ color: "var(--bg)" }}
+                            className="btn px-3 py-2 font-medium"
                             onClick={Actions.toggle_modal_visibility}
                         >
                             Close
