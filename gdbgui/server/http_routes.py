@@ -3,12 +3,12 @@ import logging
 import os
 
 from pygments.lexers import get_lexer_for_filename
+from pygments.util import ClassNotFound
 from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse
 from starlette.routing import Route, Mount
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
-from typing import cast
 
 from gdbgui import __version__
 from .htmllistformatter import HtmlListFormatter
@@ -119,7 +119,7 @@ async def read_file(request: Request):
                 ]
             try:
                 lexer = get_lexer_for_filename(path)
-            except Exception:
+            except ClassNotFound:
                 lexer = None
 
             if lexer and should_highlight():
@@ -157,8 +157,7 @@ async def read_file(request: Request):
 
 async def get_last_modified_unix_sec(request: Request):
     """Get last modified unix time for a given file"""
-    path = request.query_params.get("path")
-    path = cast(str, os.path.expanduser(path))
+    path = os.path.expanduser(request.query_params.get("path") or "")
     if path and os.path.isfile(path):
         try:
             last_modified = os.path.getmtime(path)

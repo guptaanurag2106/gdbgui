@@ -61,11 +61,11 @@ def run_server(
     protocol = "http://"
     url_with_prefix = "http://" + url
 
-    url = (host, port)
+    host_and_port = (host, port)
 
     if open_browser is True and debug is False:
         browsertext = repr(browsername) if browsername else "default browser"
-        args = (browsertext,) + url
+        args = (browsertext,) + host_and_port
         text = ("Opening gdbgui with %s at " + protocol + "%s:%d") % args
         print(colorize(text))
         threading.Thread(
@@ -74,7 +74,9 @@ def run_server(
             daemon=True,
         ).start()
     else:
-        print(colorize(f"View gdbgui at {protocol}{url[0]}:{url[1]}"))
+        print(
+            colorize(f"View gdbgui at {protocol}{host_and_port[0]}:{host_and_port[1]}")
+        )
 
     print("exit gdbgui by pressing CTRL+C")
     try:

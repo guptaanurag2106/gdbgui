@@ -115,6 +115,7 @@ async def socket(socket: WebSocket):
         )
         print(e)
         await socket.close(reason=f"failed to create debug session {e}")
+        return
 
     async with socket.app.state.single_user_lock:
         socket.app.state.socket = socket

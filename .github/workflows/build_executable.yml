@@ -1,11 +1,11 @@
 name: Build native gdbgui executables with pyinstaller and pex
 
-on:
-  pull_request:
-  push:
-    branches:
-      - master
-  release:
+# on:
+#   pull_request:
+#   push:
+#     branches:
+#       - master
+#   release:
 
 jobs:
   build:

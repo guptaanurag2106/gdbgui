@@ -218,7 +218,7 @@ def install_deps(*extra: str) -> bool:
             "vulture",
             "flake8",
             "httpx2",
-            "mypy==1.6.1",
+            "mypy==1.19.1",
             "check-manifest",
             "build",
             "twine",
