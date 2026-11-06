@@ -59,9 +59,9 @@ let ChildVarFetcher = {
  * to fetch, and fetches them in serial.
  */
 let VarCreator = {
-    _queue: [] as { expression: any; expr_type: string }[], // list of objs with keys expr_being_created, expr_type
+    _queue: [] as { expression: string; expr_type: string }[], // list of objs with keys expr_being_created, expr_type
     _is_fetching: false,
-    expr_being_created: null,
+    expr_being_created: null as string | null,
     expr_type: "",
 
     _fetch_next_in_queue: function () {
@@ -103,7 +103,7 @@ let VarCreator = {
      * Create a new variable in gdb. gdb automatically chooses and assigns
      * a unique variable name.
      */
-    create_variable: function (expression: any, expr_type: string) {
+    create_variable: function (expression: string, expr_type: string) {
         VarCreator._queue.push({
             expression: expression,
             expr_type: expr_type,
@@ -162,7 +162,9 @@ let VarCreator = {
     },
 };
 
-class GdbVariable extends React.Component<any> {
+type GdbVariableProps = any;
+
+class GdbVariable extends React.Component<GdbVariableProps, {}> {
     render() {
         const is_root = true;
 
@@ -488,7 +490,7 @@ class GdbVariable extends React.Component<any> {
         }
         return path;
     }
-    static create_variable(expression: any, expr_type: string) {
+    static create_variable(expression: string, expr_type: string) {
         VarCreator.create_variable(expression, expr_type);
     }
     static gdb_created_root_variable(r: any) {

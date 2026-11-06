@@ -124,7 +124,7 @@ class Registers extends React.Component<{}, RegistersState> {
             for (let i in register_names) {
                 let name: string = register_names[i],
                     obj = register_values.find(
-                        (v: RegisterValue) => v["number"] === i,
+                        (v: GdbRegisterValue) => v["number"] === i,
                     ),
                     hex_val_raw = "",
                     disp_val: string = "",
@@ -135,7 +135,7 @@ class Registers extends React.Component<{}, RegistersState> {
                     hex_val_raw = obj["value"];
 
                     let old_obj = previous_register_values.find(
-                            (v: RegisterValue) => v["number"] === i,
+                            (v: GdbRegisterValue) => v["number"] === i,
                         ),
                         old_hex_val_raw = undefined;
                     if (old_obj) {

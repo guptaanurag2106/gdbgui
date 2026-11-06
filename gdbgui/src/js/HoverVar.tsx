@@ -5,6 +5,7 @@
 
 import React from "react";
 import { store } from "statorgfc";
+
 import constants from "./constants";
 import GdbVariable from "./GdbVariable";
 
@@ -13,8 +14,6 @@ class HoverVar extends React.Component {
     static exit_timeout = undefined; // debounce removing the box
     static left = 0;
     static top = 0;
-
-    obj: any;
 
     constructor(props: {}) {
         super(props);
@@ -30,6 +29,7 @@ class HoverVar extends React.Component {
                 }
             }
         });
+
         document.body.addEventListener("mouseout", (e) => {
             if (e.target instanceof HTMLElement) {
                 if (
@@ -43,15 +43,68 @@ class HoverVar extends React.Component {
 
         store.connectComponentState(this, ["expressions"]);
     }
+
+    static mouseover_variable(e: any) {
+        HoverVar.clear_hover_state();
+
+        let rect = e.target.getBoundingClientRect(),
+            var_name = e.target.textContent;
+
+        // store coordinates of where the box should be displayed
+        HoverVar.left = rect.left;
+        HoverVar.top = rect.bottom;
+
+        const WAIT_TIME_SEC = 0.5;
+        // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
+        HoverVar.enter_timeout = setTimeout(() => {
+            if (
+                store.get("inferior_program_state") ===
+                constants.inferior_states.paused
+            ) {
+                GdbVariable.create_variable(var_name, "hover");
+            }
+        }, WAIT_TIME_SEC * 1000);
+    }
+
+    static mouseout_variable(e: any) {
+        void e;
+        const WAIT_TIME_SEC = 0.1;
+        // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
+        HoverVar.exit_timeout = setTimeout(() => {
+            HoverVar.clear_hover_state();
+        }, WAIT_TIME_SEC * 1000);
+    }
+
+    static mouseover_hover_window(e: any) {
+        // Mouse went from hovering over variable name in source code to
+        // hovering over the window showing the contents of the variable.
+        // Don't remove the window in this case.
+        clearTimeout(HoverVar.exit_timeout);
+    }
+
+    static mouseout_hover_window(e: any) {
+        HoverVar.clear_hover_state();
+    }
+
+    static clear_hover_state() {
+        clearTimeout(HoverVar.enter_timeout);
+        clearTimeout(HoverVar.exit_timeout);
+        let exprs_objs_to_remove = store
+            .get("expressions")
+            .filter(
+                (obj: any) =>
+                    obj.expr_type === "hover" && obj.in_scope === "true",
+            );
+        exprs_objs_to_remove.map((obj: any) =>
+            GdbVariable.delete_gdb_variable(obj.name),
+        );
+    }
+
     render() {
-        let hover_objs = store
-                .get("expressions")
-                .filter((o: any) => o.expr_type === "hover"),
-            obj;
-        if (Array.isArray(hover_objs) && hover_objs.length === 1) {
-            obj = hover_objs[0];
-        }
-        this.obj = obj;
+        //TODO: this is not very good just checking if expr type is hover see a bug on it in todo.md
+        let obj = store
+            .get("expressions")
+            .find((expr: GdbExpression) => expr.expr_type === "hover");
         if (obj) {
             let style: React.CSSProperties = {
                 position: "absolute",
@@ -72,6 +125,7 @@ class HoverVar extends React.Component {
                 boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                 zIndex: 9999,
             };
+
             return (
                 <div
                     style={style}
@@ -90,56 +144,6 @@ class HoverVar extends React.Component {
         } else {
             return <div className="hidden">no variable hovered</div>;
         }
-    }
-    static mouseover_variable(e: any) {
-        HoverVar.clear_hover_state();
-
-        let rect = e.target.getBoundingClientRect(),
-            var_name = e.target.textContent;
-
-        // store coordinates of where the box should be displayed
-        HoverVar.left = rect.left;
-        HoverVar.top = rect.bottom;
-
-        const WAIT_TIME_SEC = 0.5;
-        // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
-        HoverVar.enter_timeout = setTimeout(() => {
-            if (
-                store.get("inferior_program") ===
-                constants.inferior_states.paused
-            ) {
-                GdbVariable.create_variable(var_name, "hover");
-            }
-        }, WAIT_TIME_SEC * 1000);
-    }
-    static mouseout_variable(e: any) {
-        void e;
-        const WAIT_TIME_SEC = 0.1;
-        // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
-        HoverVar.exit_timeout = setTimeout(() => {
-            HoverVar.clear_hover_state();
-        }, WAIT_TIME_SEC * 1000);
-    }
-    static mouseover_hover_window(e: any) {
-        void e;
-        // Mouse went from hovering over variable name in source code to
-        // hovering over the window showing the contents of the variable.
-        // Don't remove the window in this case.
-        clearTimeout(HoverVar.exit_timeout);
-    }
-    static mouseout_hover_window(e: any) {
-        void e;
-        HoverVar.clear_hover_state();
-    }
-    static clear_hover_state() {
-        clearTimeout(HoverVar.enter_timeout);
-        clearTimeout(HoverVar.exit_timeout);
-        let exprs_objs_to_remove = store
-            .get("expressions")
-            .filter((obj: any) => obj.expr_type === "hover");
-        exprs_objs_to_remove.map((obj: any) =>
-            GdbVariable.delete_gdb_variable(obj.name),
-        );
     }
 }
 

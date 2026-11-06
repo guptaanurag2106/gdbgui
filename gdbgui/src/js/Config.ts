@@ -52,13 +52,13 @@ const initial_store_data = {
     inferior_program_state: constants.inferior_states.unknown,
     inferior_pid: null,
 
-    paused_on_frame: undefined,
+    paused_on_frame: undefined as GdbFrame | undefined,
     selected_frame_num: 0,
-    thread_ids: undefined,
-    current_thread_id: undefined,
-    stack: [],
-    locals: [],
-    threads: [],
+    thread_ids: undefined as string[] | undefined,
+    current_thread_id: undefined as number | undefined,
+    stack: [] as GdbFrame[],
+    locals: [] as GdbLocal[],
+    threads: [] as GdbThread[],
 
     // source files
     source_file_paths: [], // all the paths gdb says were used to compile the target binary
@@ -88,8 +88,8 @@ const initial_store_data = {
     // registers
     register_names: [] as string[],
     register_radix: "x", // x: Hexadecimal, o: Octal, t: Binary, d: Decimal, r: Raw, N: Natural
-    previous_register_values: [] as RegisterValue[],
-    current_register_values: [] as RegisterValue[],
+    previous_register_values: [] as GdbRegisterValue[],
+    current_register_values: [] as GdbRegisterValue[],
     can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
 
     // memory
@@ -102,7 +102,7 @@ const initial_store_data = {
     breakpoints: [],
 
     // expressions
-    expressions: [], // array of dicts. Key is expression, value has various keys. See Expressions component.
+    expressions: [] as GdbExpression[], // array of dicts. Key is expression, value has various keys. See Expressions component.
     root_gdb_tree_var: null, // draw tree for this variable
 
     waiting_for_response: false,

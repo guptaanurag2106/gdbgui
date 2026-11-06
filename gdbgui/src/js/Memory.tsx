@@ -256,6 +256,8 @@ class Memory extends React.Component<{}, MemoryState> {
      * @param text: string to convert address-like text into clickable components
      * return react component
      */
+    // TODO: not a very good function just because it has 0x in it doesn't make it an address
+    // should it check if valid readable address atleast?
     static make_addrs_into_links_react(text: any) {
         let matches = text.match(/(0x[\d\w]+)/g);
         if (text && matches && matches.length) {

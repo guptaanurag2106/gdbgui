@@ -8,8 +8,12 @@ import GdbApi from "./GdbApi";
 import Memory from "./Memory";
 import { MemoryLink } from "./Links";
 
-class FrameArguments extends React.Component {
-    render_frame_arg(frame_arg: any) {
+type FrameArgumentsProps = {
+    args: GdbFrameArg[] | undefined;
+};
+
+class FrameArguments extends React.Component<FrameArgumentsProps> {
+    render_frame_arg(frame_arg: GdbFrameArg) {
         return [
             frame_arg.name,
             Memory.make_addrs_into_links_react(frame_arg.value),
@@ -17,12 +21,7 @@ class FrameArguments extends React.Component {
     }
 
     render() {
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'args' does not exist on type 'Readonly<{... Remove this comment to see the full error message
-        let frame_args = this.props.args;
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'args' does not exist on type 'Readonly<{... Remove this comment to see the full error message
-        if (!this.props.args) {
-            frame_args = [];
-        }
+        let frame_args = this.props.args ?? [];
         return (
             <ReactTable
                 data={frame_args.map(this.render_frame_arg)}
@@ -37,9 +36,15 @@ class FrameArguments extends React.Component {
     }
 }
 
-type ThreadsState = any;
+type ThreadsState = {
+    threads: GdbThread[];
+    thread_ids: string[] | undefined;
+    current_thread_id: number | undefined;
+    stack: GdbFrame[];
+    selected_frame_num: number;
+};
 class Threads extends React.Component<{}, ThreadsState> {
-    thread_data: any;
+    thread_data: Record<string, GdbFrame[]> = {}; // per thread table of func, file, addr, args
     constructor(props: {}) {
         super(props);
         store.connectComponentState(this, [
@@ -49,86 +54,20 @@ class Threads extends React.Component<{}, ThreadsState> {
             "stack",
             "selected_frame_num",
         ]);
-        this.thread_data = {}; // per thread table of func, file, addr, args
     }
 
-    static select_thread_id(thread_id: any) {
+    static select_thread_id(thread_id: string) {
         GdbApi.select_thread_id(thread_id);
     }
 
-    static select_frame(framenum: any) {
+    static select_frame(framenum: number) {
         store.set("selected_frame_num", framenum);
         store.set("line_of_source_to_flash", null);
         store.set("make_current_line_visible", true);
         GdbApi.select_frame(framenum);
     }
 
-    render() {
-        if (this.state.threads.length <= 0) {
-            this.thread_data = {};
-            return null;
-        }
-
-        let content = [];
-        let thread_ids =
-            this.state.thread_ids || this.state.threads.map((t: any) => t.id);
-        for (let thread_id of Object.keys(this.thread_data)) {
-            if (thread_ids.indexOf(thread_id) === -1) {
-                delete this.thread_data[thread_id];
-            }
-        }
-
-        for (let thread_id of thread_ids) {
-            for (let thread of this.state.threads) {
-                if (thread.id == thread_id) {
-                    this.update_thread_data(thread);
-                    break;
-                }
-            }
-        }
-
-        for (let thread of this.state.threads) {
-            let is_current_thread_being_rendered =
-                parseInt(thread.id) === this.state.current_thread_id;
-            let stack = this.thread_data[thread.id];
-            if (!stack) {
-                continue;
-            }
-            let row_data;
-            try {
-                row_data = Threads.get_row_data_for_stack(
-                    stack,
-                    this.state.selected_frame_num,
-                    thread.id,
-                    is_current_thread_being_rendered,
-                );
-            } catch (err) {
-                row_data = ["unknown", "unknown", "unknown"];
-                console.log(err);
-            }
-            content.push(
-                Threads.get_thread_header(
-                    thread,
-                    is_current_thread_being_rendered,
-                ),
-            );
-            content.push(
-                <ReactTable
-                    data={row_data}
-                    style={{
-                        ...base_style,
-                        marginBottom: 0,
-                        borderCollapse: "collapse",
-                    }}
-                    key={thread.id}
-                    header={["func", "file", "addr", "args"]}
-                />,
-            );
-        }
-        return <div className="text-[var(--fg)]">{content}</div>;
-    }
-
-    update_thread_data(thread: any) {
+    update_thread_data(thread: GdbThread) {
         let thread_id = thread.id;
         if (parseInt(thread_id) === this.state.current_thread_id) {
             let stack = this.get_current_thread_stack(thread);
@@ -142,7 +81,7 @@ class Threads extends React.Component<{}, ThreadsState> {
         }
     }
 
-    get_current_thread_stack(thread: any) {
+    get_current_thread_stack(thread: GdbThread): GdbFrame[] | null {
         if (!thread.frame || !Array.isArray(this.state.stack)) {
             return null;
         }
@@ -163,7 +102,7 @@ class Threads extends React.Component<{}, ThreadsState> {
         }
 
         let previous_stack = this.thread_data[thread.id] || [];
-        let stack = this.state.stack.map((frame: any) => {
+        let stack = this.state.stack.map((frame: GdbFrame): GdbFrame => {
             let previous_frame = Threads.get_matching_previous_frame(
                 frame,
                 previous_stack,
@@ -188,7 +127,10 @@ class Threads extends React.Component<{}, ThreadsState> {
         return stack;
     }
 
-    static get_matching_previous_frame(frame: any, previous_stack: any) {
+    static get_matching_previous_frame(
+        frame: GdbFrame,
+        previous_stack: GdbFrame[],
+    ): GdbFrame | null {
         for (let previous_frame of previous_stack) {
             if (previous_frame && previous_frame.addr === frame.addr) {
                 return previous_frame;
@@ -207,8 +149,8 @@ class Threads extends React.Component<{}, ThreadsState> {
     }
 
     static get_thread_header(
-        thread: any,
-        is_current_thread_being_rendered: any,
+        thread: GdbThread,
+        is_current_thread_being_rendered: boolean,
     ) {
         let selected;
         if (is_current_thread_being_rendered) {
@@ -244,12 +186,13 @@ class Threads extends React.Component<{}, ThreadsState> {
             </span>
         );
     }
+
     static get_frame_row(
-        frame: any,
-        is_selected_frame: any,
-        thread_id: any,
-        is_current_thread_being_rendered: any,
-        frame_num: any,
+        frame: GdbFrame,
+        is_selected_frame: boolean,
+        thread_id: string,
+        is_current_thread_being_rendered: boolean,
+        frame_num: number,
     ) {
         let onclick;
         let title;
@@ -285,16 +228,15 @@ class Threads extends React.Component<{}, ThreadsState> {
                 line={frame.line}
             />,
             <MemoryLink addr={frame.addr} />,
-            // @ts-expect-error ts-migrate(2769) FIXME: Property 'args' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
             <FrameArguments args={frame.args} />,
         ];
     }
 
     static get_row_data_for_stack(
-        stack: any,
-        selected_frame_num: any,
-        thread_id: any,
-        is_current_thread_being_rendered: any,
+        stack: GdbFrame[],
+        selected_frame_num: number,
+        thread_id: string,
+        is_current_thread_being_rendered: boolean,
     ) {
         let row_data = [];
         let frame_num = 0;
@@ -319,7 +261,8 @@ class Threads extends React.Component<{}, ThreadsState> {
         }
         return row_data;
     }
-    static update_stack(stack: any) {
+
+    static update_stack(stack: GdbFrame[]) {
         store.set("stack", stack);
         store.set(
             "paused_on_frame",
@@ -341,6 +284,7 @@ class Threads extends React.Component<{}, ThreadsState> {
         );
         store.set("make_current_line_visible", true);
     }
+
     static update_thread_ids(thread_id: string | string[]) {
         if (typeof thread_id == "string") {
             store.set("thread_ids", [thread_id]);
@@ -348,8 +292,75 @@ class Threads extends React.Component<{}, ThreadsState> {
             store.set("thread_ids", thread_id);
         }
     }
-    set_thread_id(id: any) {
+    set_thread_id(id: string) {
         store.set("current_thread_id", parseInt(id));
+    }
+
+    render() {
+        if (this.state.threads.length <= 0) {
+            this.thread_data = {};
+            return null;
+        }
+
+        let thread_ids =
+            this.state.thread_ids || this.state.threads.map((t) => t.id);
+        for (let thread_id of Object.keys(this.thread_data)) {
+            if (thread_ids.indexOf(thread_id) === -1) {
+                delete this.thread_data[thread_id];
+            }
+        }
+
+        for (let thread_id of thread_ids) {
+            for (let thread of this.state.threads) {
+                if (thread.id === thread_id) {
+                    this.update_thread_data(thread);
+                    break;
+                }
+            }
+        }
+
+        let content = [];
+        for (let thread of this.state.threads) {
+            let is_current_thread_being_rendered =
+                parseInt(thread.id) === this.state.current_thread_id;
+            let stack = this.thread_data[thread.id];
+            if (!stack) {
+                continue;
+            }
+            let row_data;
+            try {
+                row_data = Threads.get_row_data_for_stack(
+                    stack,
+                    this.state.selected_frame_num,
+                    thread.id,
+                    is_current_thread_being_rendered,
+                );
+            } catch (err) {
+                row_data = ["unknown", "unknown", "unknown"];
+                console.log(err);
+            }
+
+            content.push(
+                Threads.get_thread_header(
+                    thread,
+                    is_current_thread_being_rendered,
+                ),
+            );
+
+            content.push(
+                <ReactTable
+                    data={row_data}
+                    style={{
+                        ...base_style,
+                        marginBottom: 0,
+                        borderCollapse: "collapse",
+                    }}
+                    key={thread.id}
+                    header={["func", "file", "addr", "args"]}
+                />,
+            );
+        }
+        return <div>{content}</div>;
     }
 }
 

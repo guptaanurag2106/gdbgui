@@ -55,7 +55,42 @@ type CachedFileType = {
     exists: boolean;
 };
 
-type RegisterValue = {
+type GdbRegisterValue = {
     number: string;
     value: string;
 };
+
+type GdbFrameArg = {
+    name: string;
+    value: string;
+};
+
+// frame from -stack-list-frames, or thread["frame"] from -thread-info
+type GdbFrame = {
+    addr: string;
+    func: string;
+    fullname: string;
+    file: string;
+    line: string;
+    args?: GdbFrameArg[] | undefined;
+};
+
+// thread from -thread-info
+type GdbThread = {
+    id: string;
+    state: string;
+    "target-id": string;
+    name?: string;
+    core?: number;
+    frame?: GdbFrame;
+};
+
+type GdbLocal = any;
+// {
+// in_scope: "true" "invalid" //string
+// expr_type: string
+// name string
+//expression any
+// }
+
+type GdbExpression = GdbLocal;

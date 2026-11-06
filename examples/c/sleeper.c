@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <math.h>
 
+int glob = 0;
+
 double test_function(int x) {
     if (x < 10) {
         return 10 * sin(x * 0.8);
@@ -55,7 +57,9 @@ int main(int argc, char **argv) {
     // while this loop is running, you cannot interact with
     // gdb until you interrupt (send signal SIGINT) to gdb
     // or the inferior process
-    y = test_function(x++);
+    y = test_function(x);
+    x += glob;
+    glob++;
     printf("sleeping...\n");
     usleep(100);
     printf("Finished sleeping. Repeating.\n");
